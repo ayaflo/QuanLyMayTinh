@@ -119,3 +119,9 @@ def claim_device_code(
     )
 
     return device, access_token, refresh_token
+
+
+# Aliases for specification consistency
+generate_pairing_code = create_pairing_code
+verify_and_claim_code = claim_device_code
+

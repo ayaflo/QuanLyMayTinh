@@ -17,20 +17,21 @@
 - [x] T012 Add heartbeat Pydantic schemas in server/schemas.py
 
 ## Phase 3: Core Security & Enrollment Services
-- [ ] T013 Implement hash_password function using Argon2id in server/security.py
-- [ ] T014 Implement verify_password function in server/security.py
-- [ ] T015 Implement create_access_token function with HMAC in server/security.py
-- [ ] T016 Implement generate_pairing_code function in server/services/enrollment_service.py
-- [ ] T017 Implement verify_and_claim_code function in server/services/enrollment_service.py
+- [x] T013 Implement hash_password function using Argon2id in server/security.py
+- [x] T014 Implement verify_password function in server/security.py
+- [x] T015 Implement create_access_token function with HMAC in server/security.py
+- [x] T016 Implement generate_pairing_code function in server/services/enrollment_service.py
+- [x] T017 Implement verify_and_claim_code function in server/services/enrollment_service.py
 
 ## Phase 4: Server Routes & Endpoints
-- [ ] T018 Initialize FastAPI app and CORS middleware in server/main.py
-- [ ] T019 Implement POST /api/v1/auth/login endpoint in server/routes/auth.py
-- [ ] T020 Implement POST /api/v1/enroll/create-code endpoint in server/routes/enroll.py
-- [ ] T021 Implement POST /api/v1/enroll/claim endpoint in server/routes/enroll.py
-- [ ] T022 Implement POST /api/v1/heartbeat endpoint in server/routes/heartbeat.py
-- [ ] T023 Register auth, enroll, and heartbeat routers in server/main.py
-- [ ] T024 Create initial parent seed script in server/seed.py
+- [x] T018 Initialize FastAPI app and CORS middleware in server/main.py
+- [x] T019 Implement POST /api/v1/auth/login endpoint in server/routes/auth.py
+- [x] T020 Implement POST /api/v1/enroll/create-code endpoint in server/routes/enroll.py
+- [x] T021 Implement POST /api/v1/enroll/claim endpoint in server/routes/enroll.py
+- [x] T022 Implement POST /api/v1/heartbeat endpoint in server/routes/heartbeat.py
+- [x] T023 Register auth, enroll, and heartbeat routers in server/main.py
+- [x] T024 Create initial parent seed script in server/seed.py
+
 
 ## Phase 5: Parent Dashboard Web UI
 - [ ] T025 Create base HTML layout in dashboard/templates/base.html
