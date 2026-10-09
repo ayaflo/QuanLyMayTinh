@@ -44,5 +44,14 @@ if (Test-Path $AgentReq) {
     & $VenvPython -m pip install -r $AgentReq --quiet
 }
 
+# 5. Khoi tao bien moi truong tu .env.example neu chua co .env
+$EnvFile = Join-Path $RootDir ".env"
+$EnvExample = Join-Path $RootDir ".env.example"
+if ((-not (Test-Path $EnvFile)) -and (Test-Path $EnvExample)) {
+    Write-Host "  -> Khoi tao .env tu .env.example..." -ForegroundColor Gray
+    Copy-Item $EnvExample $EnvFile
+}
+
 Write-Host "=== Hoan tat khoi tao moi truong thanh cong! ===" -ForegroundColor Green
 Write-Host "De kich hoat moi truong ao, chay: .\.venv\Scripts\Activate.ps1" -ForegroundColor Cyan
+Write-Host "(Neu gap loi ExecutionPolicy tren PowerShell, chay truoc: Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass)" -ForegroundColor DarkGray

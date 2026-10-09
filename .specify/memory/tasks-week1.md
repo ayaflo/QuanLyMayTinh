@@ -1,20 +1,20 @@
 # Spec Kit Tasks: Week 1 (Version 0.1) - Open Guardian Kids (OGK)
 
 ## Phase 1: Setup & Environment
-- [ ] T001 Create server dependency declaration file in server/requirements.txt
-- [ ] T002 Create agent dependency declaration file in agent/requirements.txt
-- [ ] T003 Create environment configuration template in .env.example
-- [ ] T004 Create environment setup script in scripts/setup_env.ps1
+- [x] T001 Create server dependency declaration file in server/requirements.txt
+- [x] T002 Create agent dependency declaration file in agent/requirements.txt
+- [x] T003 Create environment configuration template in .env.example
+- [x] T004 Create environment setup script in scripts/setup_env.ps1
 
 ## Phase 2: Server Database Models & Schemas
-- [ ] T005 Create database connection and SQLite WAL engine in server/database.py
-- [ ] T006 Create Parent model in server/models.py
-- [ ] T007 Add Device model in server/models.py
-- [ ] T008 Add PairingCode model in server/models.py
-- [ ] T009 Add HeartbeatLog model in server/models.py
-- [ ] T010 Create authentication Pydantic schemas in server/schemas.py
-- [ ] T011 Add enrollment Pydantic schemas in server/schemas.py
-- [ ] T012 Add heartbeat Pydantic schemas in server/schemas.py
+- [x] T005 Create database connection and SQLite WAL engine in server/database.py
+- [x] T006 Create Parent model in server/models.py
+- [x] T007 Add Device model in server/models.py
+- [x] T008 Add PairingCode model in server/models.py
+- [x] T009 Add HeartbeatLog model in server/models.py
+- [x] T010 Create authentication Pydantic schemas in server/schemas.py
+- [x] T011 Add enrollment Pydantic schemas in server/schemas.py
+- [x] T012 Add heartbeat Pydantic schemas in server/schemas.py
 
 ## Phase 3: Core Security & Enrollment Services
 - [ ] T013 Implement hash_password function using Argon2id in server/security.py
