@@ -8,6 +8,9 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import RedirectResponse
+
 # Ensure project root is in sys.path
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if PROJECT_ROOT not in sys.path:
@@ -18,11 +21,13 @@ try:
     from server.routes.auth import router as auth_router
     from server.routes.enroll import router as enroll_router
     from server.routes.heartbeat import router as heartbeat_router
+    from server.routes.dashboard import router as dashboard_router
 except ImportError:
     from database import engine, Base
     from routes.auth import router as auth_router
     from routes.enroll import router as enroll_router
     from routes.heartbeat import router as heartbeat_router
+    from routes.dashboard import router as dashboard_router
 
 
 
@@ -40,6 +45,11 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+# Mount Static Files for Web Dashboard UI
+STATIC_DIR = os.path.join(PROJECT_ROOT, "dashboard", "static")
+if os.path.exists(STATIC_DIR):
+    app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
@@ -54,15 +64,15 @@ app.include_router(auth_router, prefix="/api/v1/auth", tags=["Authentication"])
 app.include_router(enroll_router, prefix="/api/v1/enroll", tags=["Enrollment"])
 app.include_router(heartbeat_router, prefix="/api/v1/heartbeat", tags=["Heartbeat"])
 
+# Register Dashboard View Router (T030)
+app.include_router(dashboard_router, tags=["Dashboard"])
+
 
 @app.get("/", tags=["General"])
 def root():
-    """Health check / root endpoint."""
-    return {
-        "app": "Open Guardian Kids (OGK)",
-        "version": "0.1.0",
-        "status": "running"
-    }
+    """Redirect to dashboard devices page."""
+    return RedirectResponse(url="/devices")
+
 
 
 @app.get("/api/v1/health", tags=["General"])

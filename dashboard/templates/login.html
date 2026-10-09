@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Đăng nhập Phụ huynh - OGK{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-card">
+        <div class="auth-header">
+            <div class="auth-logo">🛡️</div>
+            <h1 class="auth-title">Đăng Nhập Phụ Huynh</h1>
+            <p class="auth-subtitle">Cổng quản lý và đồng hành cùng máy tính của trẻ</p>
+        </div>
+
+        {% if error %}
+            <div class="alert alert-danger">
+                <span>⚠️</span>
+                <div>{{ error }}</div>
+            </div>
+        {% endif %}
+
+        <form method="POST" action="/login">
+            <div class="form-group">
+                <label for="username" class="form-label">Tên đăng nhập</label>
+                <input 
+                    type="text" 
+                    id="username" 
+                    name="username" 
+                    class="form-input" 
+                    placeholder="Ví dụ: parent_admin" 
+                    value="{{ username|default('') }}" 
+                    required 
+                    autofocus
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="password" class="form-label">Mật khẩu</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    class="form-input" 
+                    placeholder="••••••••••••" 
+                    required
+                >
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">
+                Đăng Nhập Vào Hệ Thống
+            </button>
+        </form>
+
+        <div style="margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border-subtle); font-size: 0.8125rem; color: var(--text-dim); text-align: center;">
+            Tài khoản quản trị mặc định: <code style="color: var(--accent-cyan);">parent_admin</code> / <code style="color: var(--accent-cyan);">Admin@123456</code>
+        </div>
+    </div>
+</div>
+{% endblock %}

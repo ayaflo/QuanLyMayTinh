@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+
+{% block title %}Quản lý Thiết bị - OGK{% endblock %}
+
+{% block content %}
+<!-- Dashboard Header -->
+<div class="dashboard-header">
+    <div class="dashboard-title-group">
+        <h1>Quản Lý Thiết Bị Trẻ Em</h1>
+        <p>Theo dõi tình trạng hoạt động và kết nối của các máy tính được phụ huynh bảo hộ</p>
+    </div>
+    <button id="btnOpenPairModal" class="btn btn-primary">
+        <span>➕</span> Thêm Thiết Bị Mới
+    </button>
+</div>
+
+<!-- Quick Statistics Cards -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon-wrapper stat-icon-blue">💻</div>
+        <div>
+            <div class="stat-value">{{ devices|length }}</div>
+            <div class="stat-label">Tổng Thiết Bị</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon-wrapper stat-icon-green">🟢</div>
+        <div>
+            <div class="stat-value">{{ online_count|default(0) }}</div>
+            <div class="stat-label">Đang Hoạt Động (Online)</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon-wrapper stat-icon-gray">⚪</div>
+        <div>
+            <div class="stat-value">{{ offline_count|default(0) }}</div>
+            <div class="stat-label">Ngoại Tuyến (Offline)</div>
+        </div>
+    </div>
+</div>
+
+<!-- Devices Table Section (T027) -->
+<div class="section-card">
+    <div class="section-header">
+        <h2 class="section-title">Danh Sách Máy Tính Đã Kết Nối</h2>
+        <span class="text-dim" style="font-size: 0.8125rem;">Tự động cập nhật mỗi 15 giây</span>
+    </div>
+
+    {% if devices and devices|length > 0 %}
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Tên Thiết Bị</th>
+                        <th>Mã Định Danh (Fingerprint)</th>
+                        <th>Trạng Thái</th>
+                        <th>Nhịp Tim Gần Nhất</th>
+                        <th>Thời Điểm Đăng Ký</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for dev in devices %}
+                        <tr>
+                            <td>
+                                <div class="device-name-col">
+                                    <div class="device-avatar">🖥️</div>
+                                    <div>
+                                        <div class="device-title">{{ dev.device_name }}</div>
+                                        <div class="device-sub">ID: #{{ dev.id }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <code style="font-family: 'JetBrains Mono', monospace; font-size: 0.825rem; color: var(--accent-cyan); background: rgba(6, 182, 212, 0.08); padding: 0.2rem 0.5rem; border-radius: 4px;">
+                                    {{ dev.device_fingerprint[:16] }}...
+                                </code>
+                            </td>
+                            <td>
+                                {% if dev.status == 'online' %}
+                                    <span class="badge-status badge-online">
+                                        <span class="status-dot dot-online"></span> Trực tuyến
+                                    </span>
+                                {% else %}
+                                    <span class="badge-status badge-offline">
+                                        <span class="status-dot dot-offline"></span> Ngoại tuyến
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if dev.last_seen %}
+                                    <span title="{{ dev.last_seen.strftime('%Y-%m-%d %H:%M:%S UTC') }}">
+                                        {{ dev.last_seen.strftime('%H:%M:%S %d/%m/%Y') }}
+                                    </span>
+                                {% else %}
+                                    <span class="text-dim">Chưa có dữ liệu</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-dim">
+                                #{{ dev.id }}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <!-- Empty State -->
+        <div class="empty-state">
+            <div class="empty-icon">🛡️</div>
+            <h3 class="empty-title">Chưa có máy tính nào được kết nối</h3>
+            <p class="empty-desc">
+                Nhấn vào nút <strong>"Thêm Thiết Bị Mới"</strong> để nhận mã ghép đôi 8 ký tự và nhập vào tác tử OGK Agent trên máy tính của trẻ.
+            </p>
+            <button class="btn btn-primary btn-open-modal-trigger">
+                <span>➕</span> Tạo Mã Ghép Đôi Đầu Tiên
+            </button>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Pairing Code Generation Modal (T028) -->
+<div id="pairingModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-dialog">
+        <div class="modal-header">
+            <h3 id="modalTitle" class="modal-title">Ghép Đôi Thiết Bị Mới</h3>
+            <button id="btnCloseModal" class="modal-close" aria-label="Đóng">&times;</button>
+        </div>
+
+        <p style="color: var(--text-muted); font-size: 0.875rem;">
+            Mã ghép đôi ngẫu nhiên 8 ký tự an toàn dưới đây dùng để xác thực Agent máy của con với tài khoản của bạn:
+        </p>
+
+        <!-- Code Box -->
+        <div class="code-display-box">
+            <div id="pairingCodeDisplay" class="code-value">--------</div>
+            <div class="countdown-box">
+                <span>⏱️ Hiệu lực:</span>
+                <strong id="countdownTimer" style="font-family: 'JetBrains Mono', monospace;">10:00</strong>
+            </div>
+        </div>
+
+        <ol class="instructions-list">
+            <li>Mở ứng dụng <strong>OGK Agent</strong> trên máy tính Windows của trẻ.</li>
+            <li>Khi hộp thoại yêu cầu ghép đôi xuất hiện, nhập chính xác 8 ký tự phía trên.</li>
+            <li>Thiết bị sẽ tự động xuất hiện trong danh sách quản lý sau khi kích hoạt thành công.</li>
+        </ol>
+
+        <div class="modal-actions">
+            <button id="btnCopyCode" class="btn btn-secondary">
+                <span>📋</span> Sao Chép Mã
+            </button>
+            <button id="btnDoneModal" class="btn btn-primary">
+                Hoàn Tất & Làm Mới
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let countdownInterval = null;
+    let currentCode = "";
+
+    const modal = document.getElementById('pairingModal');
+    const btnOpen = document.getElementById('btnOpenPairModal');
+    const btnClose = document.getElementById('btnCloseModal');
+    const btnDone = document.getElementById('btnDoneModal');
+    const btnCopy = document.getElementById('btnCopyCode');
+    const codeDisplay = document.getElementById('pairingCodeDisplay');
+    const timerDisplay = document.getElementById('countdownTimer');
+
+    // Attach trigger to empty-state button if present
+    document.querySelectorAll('.btn-open-modal-trigger').forEach(b => {
+        b.addEventListener('click', openModalAndGenerateCode);
+    });
+
+    if (btnOpen) {
+        btnOpen.addEventListener('click', openModalAndGenerateCode);
+    }
+
+    if (btnClose) {
+        btnClose.addEventListener('click', closeModal);
+    }
+
+    if (btnDone) {
+        btnDone.addEventListener('click', () => {
+            closeModal();
+            window.location.reload();
+        });
+    }
+
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+    });
+
+    async function openModalAndGenerateCode() {
+        modal.classList.add('active');
+        codeDisplay.textContent = "ĐANG TẠO...";
+        timerDisplay.textContent = "10:00";
+
+        try {
+            const res = await fetch('/api/v1/enroll/create-code', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            if (!res.ok) {
+                throw new Error("Không thể tạo mã ghép đôi");
+            }
+
+            const data = await res.json();
+            currentCode = data.code;
+            codeDisplay.textContent = data.code;
+
+            // Start 10-minute (600s) countdown timer
+            startCountdown(600);
+        } catch (err) {
+            codeDisplay.textContent = "LỖI";
+            alert("Lỗi khi tạo mã: " + err.message);
+        }
+    }
+
+    function closeModal() {
+        modal.classList.remove('active');
+        if (countdownInterval) clearInterval(countdownInterval);
+    }
+
+    function startCountdown(totalSeconds) {
+        if (countdownInterval) clearInterval(countdownInterval);
+        let remaining = totalSeconds;
+
+        function updateDisplay() {
+            const m = Math.floor(remaining / 60);
+            const s = remaining % 60;
+            timerDisplay.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+            if (remaining <= 0) {
+                clearInterval(countdownInterval);
+                codeDisplay.style.color = 'var(--status-danger)';
+                timerDisplay.textContent = "HẾT HẠN";
+            }
+            remaining--;
+        }
+
+        updateDisplay();
+        countdownInterval = setInterval(updateDisplay, 1000);
+    }
+
+    btnCopy.addEventListener('click', async () => {
+        if (!currentCode) return;
+        try {
+            await navigator.clipboard.writeText(currentCode);
+            btnCopy.innerHTML = "<span>✅</span> Đã Sao Chép!";
+            setTimeout(() => {
+                btnCopy.innerHTML = "<span>📋</span> Sao Chép Mã";
+            }, 2000);
+        } catch (e) {
+            prompt("Sao chép mã này:", currentCode);
+        }
+    });
+
+    // Auto reload every 20 seconds to show latest heartbeats
+    setInterval(() => {
+        if (!modal.classList.contains('active')) {
+            window.location.reload();
+        }
+    }, 20000);
+</script>
+{% endblock %}

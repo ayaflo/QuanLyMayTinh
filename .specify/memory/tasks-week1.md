@@ -34,12 +34,13 @@
 
 
 ## Phase 5: Parent Dashboard Web UI
-- [ ] T025 Create base HTML layout in dashboard/templates/base.html
-- [ ] T026 Create login page template in dashboard/templates/login.html
-- [ ] T027 Create device management template in dashboard/templates/devices.html
-- [ ] T028 Add pairing code generation modal to dashboard/templates/devices.html
-- [ ] T029 Create responsive stylesheet in dashboard/static/style.css
-- [ ] T030 Create dashboard view routes in server/routes/dashboard.py
+- [x] T025 Create base HTML layout in dashboard/templates/base.html
+- [x] T026 Create login page template in dashboard/templates/login.html
+- [x] T027 Create device management template in dashboard/templates/devices.html
+- [x] T028 Add pairing code generation modal to dashboard/templates/devices.html
+- [x] T029 Create responsive stylesheet in dashboard/static/style.css
+- [x] T030 Create dashboard view routes in server/routes/dashboard.py
+
 
 ## Phase 6: Client Agent
 - [ ] T031 Create agent configuration file in agent/config.py

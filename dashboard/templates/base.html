@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Open Guardian Kids (OGK){% endblock %} - Bảng Điều Khiển</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛡️</text></svg>">
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <header class="header">
+        <div class="nav-container">
+            <a href="/devices" class="brand">
+                <div class="brand-icon">🛡️</div>
+                <div>
+                    <span class="brand-name">OGK Dashboard</span>
+                    <span class="brand-badge">v0.1</span>
+                </div>
+            </a>
+
+            <div class="nav-actions">
+                {% if parent %}
+                    <div class="user-tag">
+                        <div class="user-avatar">{{ parent.username[0]|upper }}</div>
+                        <span>{{ parent.username }}</span>
+                    </div>
+                    <a href="/logout" class="btn btn-danger-ghost btn-sm" title="Đăng xuất">
+                        Đăng xuất ⏻
+                    </a>
+                {% else %}
+                    <a href="/login" class="btn btn-primary btn-sm">
+                        Đăng nhập
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+        {% if error %}
+            <div class="alert alert-danger">
+                <span>⚠️</span>
+                <div>{{ error }}</div>
+            </div>
+        {% endif %}
+        {% if message %}
+            <div class="alert alert-success">
+                <span>✅</span>
+                <div>{{ message }}</div>
+            </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Ethical Footer (NT1-NT6) -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div>
+                <strong>Open Guardian Kids</strong> — <span class="ethics-tag">Đồng hành, không theo dõi lén</span>
+            </div>
+            <div>
+                Bảo vệ dữ liệu cá nhân theo Nghị định 13/2023/NĐ-CP & Luật Trẻ em 2016
+            </div>
+        </div>
+    </footer>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>
