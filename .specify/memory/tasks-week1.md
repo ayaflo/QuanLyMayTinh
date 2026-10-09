@@ -56,9 +56,9 @@
 
 
 ## Phase 7: Verification & Documentation
-- [ ] T041 Create architecture documentation in docs/KienTrucHeThong.md
-- [ ] T042 Create draft privacy table in docs/PRIVACY.md
-- [ ] T043 Create authentication unit tests in tests/test_auth.py
-- [ ] T044 Create enrollment unit tests in tests/test_enrollment.py
-- [ ] T045 Create heartbeat unit tests in tests/test_heartbeat.py
-- [ ] T046 Create end-to-end verification checklist in docs/VERIFY_WEEK1.md
+- [x] T041 Create architecture documentation in docs/KienTrucHeThong.md
+- [x] T042 Create draft privacy table in docs/PRIVACY.md
+- [x] T043 Create authentication unit tests in tests/test_auth.py
+- [x] T044 Create enrollment unit tests in tests/test_enrollment.py
+- [x] T045 Create heartbeat unit tests in tests/test_heartbeat.py
+- [x] T046 Create end-to-end verification checklist in docs/VERIFY_WEEK1.md
