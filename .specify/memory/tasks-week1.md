@@ -43,16 +43,17 @@
 
 
 ## Phase 6: Client Agent
-- [ ] T031 Create agent configuration file in agent/config.py
-- [ ] T032 Implement get_device_fingerprint function in agent/fingerprint.py
-- [ ] T033 Implement save_credentials function in agent/storage.py
-- [ ] T034 Implement load_credentials function in agent/storage.py
-- [ ] T035 Implement pair_with_server function in agent/enrollment_client.py
-- [ ] T036 Implement send_heartbeat function in agent/heartbeat_client.py
-- [ ] T037 Implement run_heartbeat_loop function in agent/heartbeat_client.py
-- [ ] T038 Implement init_tray_icon function using pystray in agent/tray.py
-- [ ] T039 Add startup notification popup in agent/tray.py
-- [ ] T040 Implement agent entry point in agent/main.py
+- [x] T031 Create agent configuration file in agent/config.py
+- [x] T032 Implement get_device_fingerprint function in agent/fingerprint.py
+- [x] T033 Implement save_credentials function in agent/storage.py
+- [x] T034 Implement load_credentials function in agent/storage.py
+- [x] T035 Implement pair_with_server function in agent/enrollment_client.py
+- [x] T036 Implement send_heartbeat function in agent/heartbeat_client.py
+- [x] T037 Implement run_heartbeat_loop function in agent/heartbeat_client.py
+- [x] T038 Implement init_tray_icon function using pystray in agent/tray.py
+- [x] T039 Add startup notification popup in agent/tray.py
+- [x] T040 Implement agent entry point in agent/main.py
+
 
 ## Phase 7: Verification & Documentation
 - [ ] T041 Create architecture documentation in docs/KienTrucHeThong.md

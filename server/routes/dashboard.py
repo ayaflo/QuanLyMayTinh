@@ -4,10 +4,12 @@ Renders Jinja2 HTML templates for login, device management, and pairing code mod
 
 import os
 from typing import Optional
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, Request, Response, Form, status
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
+
 
 try:
     from ..database import get_db
@@ -126,6 +128,28 @@ def devices_page(
         return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
 
     devices = db.query(Device).filter(Device.parent_id == parent.id).order_by(Device.id.desc()).all()
+
+    # Dynamic Online/Offline calculation:
+    # A device is considered Online if it sent a heartbeat within the last 120 seconds (2 x 60s cycle)
+    now = datetime.now(timezone.utc)
+    ONLINE_TIMEOUT_SECONDS = 120
+
+    has_status_changed = False
+    for dev in devices:
+        if dev.last_seen:
+            last = dev.last_seen if dev.last_seen.tzinfo else dev.last_seen.replace(tzinfo=timezone.utc)
+            is_active = (now - last).total_seconds() <= ONLINE_TIMEOUT_SECONDS
+            new_status = "online" if is_active else "offline"
+        else:
+            new_status = "offline"
+
+        if dev.status != new_status:
+            dev.status = new_status
+            has_status_changed = True
+
+    if has_status_changed:
+        db.commit()
+
     online_count = sum(1 for d in devices if d.status == "online")
     offline_count = len(devices) - online_count
 
@@ -139,4 +163,5 @@ def devices_page(
             "offline_count": offline_count
         }
     )
+
 
