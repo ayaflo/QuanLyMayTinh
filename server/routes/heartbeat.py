@@ -11,12 +11,12 @@ from sqlalchemy.orm import Session
 
 try:
     from ..database import get_db
-    from ..models import Device, HeartbeatLog
+    from ..models import Device, HeartbeatLog, Policy
     from ..schemas import HeartbeatRequest, HeartbeatResponse
     from ..security import decode_access_token
 except (ImportError, ValueError):
     from server.database import get_db
-    from server.models import Device, HeartbeatLog
+    from server.models import Device, HeartbeatLog, Policy
     from server.schemas import HeartbeatRequest, HeartbeatResponse
     from server.security import decode_access_token
 
@@ -81,8 +81,12 @@ def receive_heartbeat(
     db.add(heartbeat_log)
     db.commit()
 
+    # Query current policy version for device (F4)
+    current_policy = db.query(Policy).filter(Policy.device_id == device.id).first()
+    policy_version = current_policy.version if current_policy else 1
+
     return HeartbeatResponse(
         status="ok",
-        policy_version=1,
+        policy_version=policy_version,
         server_time=now
     )
