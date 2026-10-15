@@ -13,12 +13,14 @@ from sqlalchemy.orm import Session
 
 try:
     from ..database import get_db
-    from ..models import Parent, Device
+    from ..models import Parent, Device, Policy, AuditLog
     from ..security import verify_password, create_access_token, decode_access_token
+    from ..services.policy_service import get_or_create_default_policy
 except (ImportError, ValueError):
     from server.database import get_db
-    from server.models import Parent, Device
+    from server.models import Parent, Device, Policy, AuditLog
     from server.security import verify_password, create_access_token, decode_access_token
+    from server.services.policy_service import get_or_create_default_policy
 
 # Locate dashboard templates directory
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -153,12 +155,26 @@ def devices_page(
     online_count = sum(1 for d in devices if d.status == "online")
     offline_count = len(devices) - online_count
 
+    # Week 2: Load policies and recent audit logs for parent's devices
+    policies_map = {dev.id: get_or_create_default_policy(db, dev.id) for dev in devices}
+    dev_ids = [d.id for d in devices]
+    audit_logs = (
+        db.query(AuditLog)
+        .filter(AuditLog.device_id.in_(dev_ids))
+        .order_by(AuditLog.id.desc())
+        .limit(20)
+        .all()
+        if dev_ids else []
+    )
+
     return templates.TemplateResponse(
         request=request,
         name="devices.html",
         context={
             "parent": parent,
             "devices": devices,
+            "policies_map": policies_map,
+            "audit_logs": audit_logs,
             "online_count": online_count,
             "offline_count": offline_count
         }
