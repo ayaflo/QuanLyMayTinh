@@ -103,3 +103,42 @@ def decode_access_token(token: str) -> Optional[Dict[str, Any]]:
         return payload
     except Exception:
         return None
+
+
+# ============================================================================
+# Week 2 (Version 0.2): Policy Integrity Verification (HMAC-SHA256)
+# ============================================================================
+
+def calculate_policy_hmac(
+    device_id: int,
+    version: int,
+    weekday_quota_minutes: int,
+    weekend_quota_minutes: int,
+    schedule_matrix: str
+) -> str:
+    """Calculate HMAC-SHA256 hexadecimal signature for policy integrity verification (F4)."""
+    canonical_str = f"{device_id}:{version}:{weekday_quota_minutes}:{weekend_quota_minutes}:{schedule_matrix}"
+    return hmac.new(
+        SECRET_KEY.encode("utf-8"),
+        canonical_str.encode("utf-8"),
+        hashlib.sha256
+    ).hexdigest()
+
+
+def verify_policy_hmac(
+    device_id: int,
+    version: int,
+    weekday_quota_minutes: int,
+    weekend_quota_minutes: int,
+    schedule_matrix: str,
+    signature: str
+) -> bool:
+    """Verify HMAC-SHA256 signature of a policy payload against tampering."""
+    expected = calculate_policy_hmac(
+        device_id=device_id,
+        version=version,
+        weekday_quota_minutes=weekday_quota_minutes,
+        weekend_quota_minutes=weekend_quota_minutes,
+        schedule_matrix=schedule_matrix
+    )
+    return hmac.compare_digest(expected, signature)

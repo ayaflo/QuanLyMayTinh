@@ -71,3 +71,71 @@ class HeartbeatResponse(BaseModel):
     server_time: datetime = Field(default_factory=utc_now, description="Server UTC time for monotonic drift check")
 
     model_config = ConfigDict(from_attributes=True)
+
+
+# ============================================================================
+# Week 2 (Version 0.2): Policy, Audit Logs & Emergency Commands Schemas
+# ============================================================================
+
+class PolicyUpdate(BaseModel):
+    """Schema for updating device screen time policy from Parent Dashboard."""
+    weekday_quota_minutes: Optional[int] = Field(None, ge=1, le=1440, description="Daily limit in minutes for Mon-Fri")
+    weekend_quota_minutes: Optional[int] = Field(None, ge=1, le=1440, description="Daily limit in minutes for Sat-Sun")
+    schedule_matrix: Optional[str] = Field(None, min_length=336, max_length=336, description="336-character 0/1 weekly schedule matrix")
+
+
+class PolicyResponse(BaseModel):
+    """Schema for policy payload sent to Agent and Dashboard."""
+    device_id: int
+    version: int
+    weekday_quota_minutes: int
+    weekend_quota_minutes: int
+    schedule_matrix: str
+    hmac_signature: str
+    updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class AuditLogItem(BaseModel):
+    """Schema for single audit log entry (NT5)."""
+    id: int
+    parent_id: Optional[int] = None
+    device_id: int
+    action: str
+    old_value: Optional[str] = None
+    new_value: Optional[str] = None
+    ip_address: Optional[str] = None
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class AuditLogResponse(BaseModel):
+    """Schema for list of audit log items."""
+    total: int
+    items: list[AuditLogItem]
+
+
+class CommandCreateRequest(BaseModel):
+    """Schema for creating an emergency command from Dashboard."""
+    command_type: str = Field(..., description="Action: 'lock_now', 'unlock', 'add_time'")
+    minutes: Optional[int] = Field(15, ge=1, le=180, description="Additional minutes if command_type is 'add_time'")
+
+
+class CommandResponse(BaseModel):
+    """Schema for command dispatch status."""
+    id: int
+    device_id: int
+    command_type: str
+    status: str
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class WSCommandMessage(BaseModel):
+    """Schema for JSON message dispatched over WebSocket to child agent."""
+    action: str = Field(..., description="Command action: 'lock_now', 'unlock', 'add_time', 'policy_updated'")
+    payload: Optional[Dict[str, Any]] = None
+    timestamp: datetime = Field(default_factory=utc_now)

@@ -43,6 +43,8 @@ class Device(Base):
 
     parent = relationship("Parent", back_populates="devices")
     heartbeats = relationship("HeartbeatLog", back_populates="device", cascade="all, delete-orphan")
+    policy = relationship("Policy", back_populates="device", uselist=False, cascade="all, delete-orphan")
+    commands = relationship("DeviceCommand", back_populates="device", cascade="all, delete-orphan")
 
 
 class PairingCode(Base):
@@ -68,3 +70,61 @@ class HeartbeatLog(Base):
     status_payload = Column(Text, nullable=True)
 
     device = relationship("Device", back_populates="heartbeats")
+
+
+# ============================================================================
+# Week 2 (Version 0.2): Policy, Audit Logs & Emergency Commands
+# ============================================================================
+
+# Default schedule matrix: 7 days x 48 slots (30m each) = 336 chars.
+# Slots 12..43 (06:00 to 22:00) allowed ('1'), night slots (22:00 to 06:00) locked ('0').
+DEFAULT_DAILY_SCHEDULE = ("0" * 12) + ("1" * 32) + ("0" * 4)  # 48 chars
+DEFAULT_SCHEDULE_MATRIX = DEFAULT_DAILY_SCHEDULE * 7           # 336 chars
+
+
+class Policy(Base):
+    """Time governance and access policy assigned to an enrolled device (F1 & F4)."""
+    __tablename__ = "policies"
+
+    id = Column(Integer, primary_key=True, index=True)
+    device_id = Column(Integer, ForeignKey("devices.id", ondelete="CASCADE"), unique=True, nullable=False)
+    version = Column(Integer, default=1, nullable=False)
+    weekday_quota_minutes = Column(Integer, default=90, nullable=False)   # 90m default
+    weekend_quota_minutes = Column(Integer, default=150, nullable=False)  # 150m default
+    schedule_matrix = Column(String(336), default=DEFAULT_SCHEDULE_MATRIX, nullable=False)
+    hmac_signature = Column(String(64), nullable=False)
+    updated_at = Column(DateTime, default=utc_now, onupdate=utc_now, nullable=False)
+
+    device = relationship("Device", back_populates="policy")
+
+
+class AuditLog(Base):
+    """Audit log tracking parent policy modifications and emergency overrides (NT5)."""
+    __tablename__ = "audit_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    parent_id = Column(Integer, ForeignKey("parents.id", ondelete="SET NULL"), nullable=True)
+    device_id = Column(Integer, ForeignKey("devices.id", ondelete="CASCADE"), nullable=False)
+    action = Column(String(50), nullable=False)  # e.g., 'update_policy', 'lock_now', 'unlock', 'add_15m'
+    old_value = Column(Text, nullable=True)
+    new_value = Column(Text, nullable=True)
+    ip_address = Column(String(45), nullable=True)
+    created_at = Column(DateTime, default=utc_now, nullable=False)
+
+    parent = relationship("Parent")
+    device = relationship("Device")
+
+
+class DeviceCommand(Base):
+    """Queue of emergency commands dispatched to child agents via WebSocket (< 5s)."""
+    __tablename__ = "device_commands"
+
+    id = Column(Integer, primary_key=True, index=True)
+    device_id = Column(Integer, ForeignKey("devices.id", ondelete="CASCADE"), nullable=False)
+    command_type = Column(String(30), nullable=False)  # 'lock_now', 'unlock', 'add_time'
+    payload = Column(Text, nullable=True)  # JSON extra parameters
+    status = Column(String(20), default="pending", nullable=False)  # pending, delivered, executed
+    created_at = Column(DateTime, default=utc_now, nullable=False)
+    delivered_at = Column(DateTime, nullable=True)
+
+    device = relationship("Device", back_populates="commands")
