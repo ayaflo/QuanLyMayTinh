@@ -1,0 +1,492 @@
+XÂY D
+Ự
+NG 
+Ứ
+NG D
+Ụ
+NG H
+Ỗ
+ TR
+Ợ
+ QU
+Ả
+N LÝ VI
+Ệ
+C S
+Ử
+ D
+Ụ
+NG MÁY TÍNH C
+Ủ
+A TR
+Ẻ
+ EM 
+'Công cụ đồng hành, không phải phần mềm theo dõi lén'
+Hạng mục
+Nội dung
+Hình thức
+Đồ án môn học theo nhóm — 02 sinh viên/nhóm
+Thời lượng
+04 tuần 
+Nền tảng
+Agent trên Windows 10/11 (x64)
+Công nghệ
+Python 3.11+ · FastAPI · SQLite · SQLAlchemy · Uvicorn · pywin32/psutil
+Trọng tâm đánh giá
+Kỹ thuật hệ thống và mạng 
+Hình thức chấm
+Sản phẩm + báo cáo  và vấn đáp cá nhân 
+1. M
+ụ
+c tiêu h
+ọ
+c t
+ậ
+p (Learning Outcomes)
+LO1 — Thiết kế kiến trúc client–server phân tán gồm tác tử (agent) đầu cuối, máy chủ điều phối và bảng điều khiển web; đặc tả giao thức đồng bộ cấu hình và sự kiện.
+LO2 — Hiện thực và giải thích cơ chế kiểm soát truy cập mạng ở tầng phân giải tên miền (DNS) và tầng tiến trình (process) trên hệ điều hành Windows.
+LO3 — Phân tích các đường vòng (bypass) mà người dùng cuối có thể sử dụng và đề xuất biện pháp đối phó tương xứng, có nêu rõ giới hạn.
+LO4 — Áp dụng nguyên tắc bảo mật (xác thực, mã hóa, phân quyền, nhật ký kiểm toán) và nguyên tắc tối thiểu dữ liệu (data minimisation) cho dữ liệu cá nhân của trẻ em.
+LO5 — Vận dụng khung pháp lý Việt Nam về bảo vệ trẻ em trên không gian mạng vào quyết định thiết kế cụ thể trong mã nguồn.
+LO6 — Đo lường, kiểm thử và bảo vệ được các lựa chọn kỹ thuật của mình trước phản biện trực tiếp.
+2. Tri
+ế
+t lý thi
+ế
+t k
+ế
+ b
+ắ
+t bu
+ộ
+c: minh b
+ạ
+ch v
+ớ
+i tr
+ẻ
+Đây là ràng buộc thiết kế có tính bắt buộc, không phải khuyến nghị. Sản phẩm là công cụ hỗ trợ cha mẹ đồng hành cùng con, không phải phần mềm gián điệp. Mọi quyết định kiến trúc phải nhất quán với sáu nguyên tắc sau.
+#
+Nguyên tắc
+Biểu hiện bắt buộc trong sản phẩm
+NT1
+Trẻ biết mình đang được hỗ trợ
+Biểu tượng khay hệ thống luôn hiển thị khi agent chạy
+; thông báo khi agent khởi động.
+NT2
+Tối thiểu dữ liệu
+Chỉ thu thập siêu dữ liệu sử dụng: tên ứng dụng, tên miền, thời lượng, dấu thời gian. 
+[
+Không lưu URL đầy đủ, tiêu đề cửa sổ, nội dung gõ phím, ảnh chụp màn hình.
+]
+NT3
+Trẻ có tiếng nói
+Nút 'Xin thêm giờ' và '
+Con
+ nghĩ trang này bị chặn nhầm' gửi yêu cầu tới phụ huynh; mọi yêu cầu được ghi nhận và có phản hồi.
+NT4
+Mọi hành động phải giải thích được
+Khi chặn ứng dụng hoặc trang web, hiển thị lý do và ai đặt ra luật đó; không im lặng hoặc giả vờ lỗi mạng.
+NT5
+Minh bạch hai chiều
+Trẻ được xem cùng bộ báo cáo mà phụ huynh xem (giao diện thân thiện) và xem được nhật ký thay đổi luật của phụ huynh.
+NT6
+An toàn có ưu tiên tuyệt đối
+Danh sách miễn chặn vĩnh viễn: cổng thông tin trường học, Tổng đài quốc gia bảo vệ trẻ em 111, dịch vụ cứu hộ khẩn cấp. Việc khóa máy không bao giờ chặn cuộc gọi khẩn cấp của hệ điều hành
+..
+.
+DANH MỤC CẤM Không hiện thực: (1) đọc nội dung tin nhắn, email, tài liệu; (
+2
+) ẩn tiến trình, ẩn dịch vụ, kỹ thuật rootkit hoặc chống gỡ theo kiểu mã độc; (
+3
+) gửi dữ liệu tới dịch vụ bên thứ ba; (
+4
+) thử nghiệm trên trẻ em thật hoặc trên máy của người khác mà không có sự đồng ý.
+[
+3. Khung pháp lý và chu
+ẩ
+n tham chi
+ế
+u
+]
+Nhóm phải trích dẫn chính xác (tự kiểm chứng văn bản gốc — việc trích sai điều khoản sẽ bị trừ điểm) và quan trọng hơn, phải chỉ ra được dòng mã hoặc màn hình nào trong sản phẩm hiện thực hóa yêu cầu pháp lý đó.
+Văn bản
+Nội dung liên quan
+Yêu cầu tương ứng trong sản phẩm
+Luật Trẻ em 2016 (Điều 21)
+Quyền bí mật đời sống riêng tư của trẻ em
+NT2, NT5; bảng đối chiếu 'trường dữ liệu — mục đích thu thập' trong PRIVACY.md
+Luật An ninh mạng 2018 (Điều 29)
+Bảo vệ trẻ em trên không gian mạng; trách nhiệm của cha mẹ, người giám hộ
+Chức năng lọc nội dung theo độ tuổi; cơ chế báo cáo cho phụ huynh
+Nghị định 13/2023/NĐ-CP
+Bảo vệ dữ liệu cá nhân; quy định riêng với dữ liệu cá nhân của trẻ em; nguyên tắc mục đích, tối thiểu, hạn chế lưu trữ
+Sự đồng ý của cha mẹ khi ghép đôi thiết bị; thời hạn lưu 90 ngày; chức năng xóa dữ liệu theo yêu cầu
+Quyết định 830/QĐ-TTg (2021)
+Chương trình bảo vệ và hỗ trợ trẻ em tương tác lành mạnh, sáng tạo trên môi trường mạng
+Định hướng sản phẩm: hỗ trợ và giáo dục, không chỉ ngăn chặn
+OWASP ASVS v4 (mức 1)
+Kiểm chứng bảo mật ứng dụng web
+Checklist tự đánh giá tối thiểu 20 mục cho dashboard và API
+NIST SP 800-63B
+Quản lý định danh và xác thực
+Chính sách mật khẩu, băm mật khẩu, chống dò mật khẩu cho tài khoản phụ huynh
+4. Ki
+ế
+n trúc h
+ệ
+ th
+ố
+ng
+4.1. Sơ đ
+ồ
+ t
+ổ
+ng th
+ể
+   MÁY C
+Ủ
+A TR
+Ẻ
+ (Windows 10/11)                    MÁY CH
+Ủ
+ (LAN ho
+ặ
+c VPS lab)
+ +---------------------------------+           +-------------------------------+
+ |  OGK-Agent (Python)             |           |  OGK-Server (FastAPI)         |
+ |  +---------------------------+  |  HTTPS    |  +-------------------------+  |
+ |  | Windows Service (SYSTEM)  |  |  TLS1.2+  |  | /auth  /enroll  /policy |  |
+ |  |  - Policy Enforcer        |<-+---------->+->| /events /commands       |  |
+ |  |  - Screen-time Counter    |  | heartbeat |  | /reports /audit         |  |
+ |  |  - App Controller         |  |   60s     |  +-------------------------+  |
+ |  |  - DNS Proxy 127.0.0.1:53 |  |           |  |  SQLite + SQLAlchemy    |  |
+ |  |  - Local cache (SQLite)   |  | WebSocket |  |  (policy, event, audit) |  |
+ |  +---------------------------+  | lenh gap  |  +-------------------------+  |
+ |  +---------------------------+  |           +---------------^---------------+
+ |  | Tray UI (quyen user)      |  |                           | HTTPS
+ |  |  - Dong ho con lai        |  |                  +--------+--------+
+ |  |  - Nut 'Xin them gio'     |  |                  | Dashboard phu   |
+ |  |  - Man hinh minh bach     |  |                  | huynh (web)     |
+ |  +---------------------------+  |                  | Lich - Bao cao  |
+ +---------------------------------+                  +-----------------+
+        ^ named pipe / localhost                      Cau hinh tu xa, moi thiet bi
+4.2. Thành ph
+ầ
+n và trách nhi
+ệ
+m
+Thành phần
+Trách nhiệm chính
+Ghi chú kỹ thuật
+OGK-Agent — Service
+Áp dụng chính sách, đếm thời gian, chặn ứng dụng, phân giải DNS có lọc, đệm sự kiện khi mất mạng
+Chạy dưới LocalSystem; dùng pywin32 (win32serviceutil), psutil; khởi động lại bằng Service Recovery Options của SCM
+OGK-Agent — Tray UI
+Giao diện dành cho trẻ: thời gian còn lại, lý do bị chặn, gửi yêu cầu
+Chạy trong phiên người dùng; giao tiếp với service qua named pipe hoặc 
+HTTP 127.0.0.1 có token cục bộ
+OGK-Server
+Xác thực phụ huynh, quản lý thiết bị/trẻ, phát hành chính sách, nhận sự kiện, tổng hợp báo cáo, ghi nhật ký kiểm toán
+FastAPI + Uvicorn + TLS; SQLite với WAL; phân trang và giới hạn tần suất (rate limit)
+Dashboard phụ huynh
+Cấu hình từ xa: quota, lịch tuần, danh sách ứng dụng/miền, duyệt yêu cầu, xem báo cáo
+Jinja2 + HTMX hoặc React nhẹ; phải dùng được trên trình duyệt điện thoại
+Kho dữ liệu cục bộ
+Bản sao chính sách gần nhất + hàng đợi sự kiện
+SQLite trong ProgramData với ACL chỉ SYSTEM/Administrators được ghi
+4.3. Vòng đ
+ờ
+i và giao th
+ứ
+c (b
+ắ
+t bu
+ộ
+c đ
+ặ
+c t
+ả
+ trong báo cáo)
+Ghép đôi (enrollment): phụ huynh tạo mã ghép 8 ký tự có hạn 10 phút trên dashboard; agent gửi mã kèm device fingerprint; server trả device_id và cặp token (access ngắn hạn, refresh dài hạn). Đây chính là điểm ghi nhận sự đồng ý của cha mẹ theo Nghị định 13/2023.
+Nhịp tim (heartbeat) 60 giây: agent gửi trạng thái, quota đã dùng, policy_version hiện có; server trả policy_version mới nhất và danh sách lệnh chờ. Lệch phiên bản thì agent gọi GET /policy.
+Lệnh khẩn qua WebSocket: khóa ngay, mở khóa, cộng thêm 15 phút — yêu cầu độ trễ dưới 5 giây.
+Chế độ ngoại tuyến: agent áp chính sách trong bộ nhớ đệm, tiếp tục đếm giờ, đệm sự kiện; khi có mạng thì đồng bộ theo lô, có khóa chống trùng (idempotency key) để sự kiện không bị đếm hai lần.
+Chính sách hết hạn: nhóm phải tự quyết định fail-open hay fail-closed sau N ngày mất kết nối và bảo vệ lựa chọn đó khi vấn đáp.
+5. Đ
+ặ
+c t
+ả
+ ch
+ứ
+c năng
+Ký hiệu: BẮT BUỘC = điều kiện cần để được chấm; NÊN CÓ = tính vào điểm khá/giỏi; CÓ THÌ TỐT = điểm thưởng, không bắt buộc.
+F1. Qu
+ả
+n lý th
+ờ
+i gian s
+ử
+ d
+ụ
+ng
+Mức
+Yêu cầu
+Tiêu chí nghiệm thu
+BẮT BUỘC
+Hạn mức theo ngày (ví dụ 90 phút), cấu hình riêng cho ngày thường và cuối tuần
+Đặt quota 3 phút, hệ thống khóa đúng hạn
+BẮT BUỘC
+Lịch tuần cho phép/khóa với độ phân giải 30 phút (ma trận 7×48)
+Ngoài khung giờ cho phép, máy bị khóa trong 5 giây
+BẮT BUỘC
+Đếm thời gian sử dụng thực: không tính khi máy khóa hoặc không có thao tác quá 5 phút
+Sai số ≤ ±30 giây trên mỗi giờ so với đồng hồ bấm tay
+BẮT BUỘC
+Cảnh báo trước 10, 5 và 1 phút; có khoảng ân hạn 60 giây để trẻ lưu bài
+Quan sát được trong demo D1
+BẮT BUỘC
+Chống chỉnh đồng hồ hệ thống để kéo dài thời gian
+Lùi đồng hồ 3 giờ: quota không được tăng, sự kiện bị ghi nhận
+NÊN CÓ
+Ngân sách theo nhóm ứng dụng (ví dụ: học tập không giới hạn, trò chơi 45 phút)
+Hai bộ đếm độc lập hoạt động đúng
+CÓ THÌ TỐT
+Cơ chế thưởng giờ khi hoàn thành nhiệm vụ do phụ huynh giao
+—
+F2. L
+ọ
+c và ki
+ể
+m soát 
+ứ
+ng d
+ụ
+ng/website theo đ
+ộ
+ tu
+ổ
+i
+Mức
+Yêu cầu
+Tiêu chí nghiệm thu
+BẮT BUỘC
+Kiểm soát ứng dụng theo danh sách cho phép/chặn, đối chiếu tên tiến trình kèm mã băm SHA-256 của tệp thực thi
+Đổi tên notepad.exe thành game.exe vẫn bị nhận diện đúng
+BẮT BUỘC
+Khi chặn: kết thúc tiến trình và hiển thị cửa sổ giải thích lý do, không im lặng
+Quan sát trong demo
+BẮT BUỘC
+Lọc website bằng DNS proxy cục bộ tại 127.0.0.1:53, hỗ trợ chặn theo tên miền và toàn bộ tên miền con
+Chặn ≥ 95% trong bộ 50 tên miền kiểm thử; 0 dương tính giả trên 20 tên miền giáo dục
+BẮT BUỘC
+Hạ tầng phân loại theo 6 nhóm: giáo dục, giải trí, mạng xã hội, trò chơi, không phù hợp lứa tuổi, chưa phân loại — có chính sách mặc định cho trẻ 6–11 tuổi
+Bảng phân loại nộp kèm, tối thiểu 200 mục
+BẮT BUỘC
+Cưỡng chế SafeSearch của công cụ tìm kiếm bằng bản ghi DNS (ví dụ ánh xạ sang forcesafesearch)
+Kiểm chứng bằng nslookup và bằng trình duyệt
+NÊN CÓ
+Đối phó DNS-over-HTTPS: chặn danh sách điểm cuối DoH phổ biến, trả NXDOMAIN cho tên miền canary, khuyến nghị thiết lập chính sách trình duyệt
+Bật DoH trong Chrome: nêu rõ kết quả và cách xử lý
+NÊN CÓ
+Chặn cấu hình lại DNS thủ công (khóa thiết lập card mạng hoặc chuyển hướng cổng 53)
+Đổi DNS sang 8.8.8.8: chứng minh vẫn bị chặn hoặc giải thích giới hạn
+CÓ THÌ TỐT
+Proxy HTTP/HTTPS cục bộ để lọc theo đường dẫn; hoặc bộ lọc WFP
+—
+Quy định về dữ liệu kiểm thử: bộ 50 tên miền phải dùng địa chỉ công khai, an toàn (ví dụ các miền example, miền của trường học, báo điện tử). Tuyệt đối không sử dụng, truy cập hay đính kèm tên miền có nội dung người lớn để 'thử nghiệm'. Nhóm nào nộp danh sách như vậy sẽ bị trừ 10 điểm.
+F3. Ghi nh
+ậ
+n và báo cáo ho
+ạ
+t đ
+ộ
+ng (minh b
+ạ
+ch)
+BẮT BUỘC — Lược đồ sự kiện chỉ gồm: ts, device_id, child_id, type, subject, duration_sec, policy_id. Trong đó type thuộc {app_start, app_stop, domain_query, blocked_app, blocked_domain, quota_warning, locked, unlock_request, override_granted}. Trường subject là tên ứng dụng hoặc tên miền cấp hai, không phải URL đầy đủ.
+BẮT BUỘC — Dashboard phụ huynh: biểu đồ thời lượng theo ngày và theo tuần, top 10 ứng dụng, top 10 tên miền, số lần bị chặn, danh sách yêu cầu của trẻ.
+BẮT BUỘC — Màn hình 'Hôm nay em đã dùng gì' cho trẻ, hiển thị cùng dữ liệu bằng ngôn ngữ đơn giản và hình ảnh minh họa.
+BẮT BUỘC — Thời hạn lưu trữ 90 ngày, có tác vụ tự động xóa; nút 'Xóa toàn bộ dữ liệu của con tôi' xóa đồng thời trên server và trong bộ đệm của agent.
+BẮT BUỘC — Tệp PRIVACY.md dạng bảng: mỗi trường dữ liệu ↔ mục đích ↔ thời hạn lưu ↔ ai xem được. Trường nào không giải thích được mục đích thì phải loại khỏi lược đồ.
+NÊN CÓ — Xuất báo cáo tuần ra PDF hoặc CSV.
+CÓ THÌ TỐT — Gợi ý 'thời gian nghỉ mắt' theo quy tắc 20-20-20 cho học sinh tiểu học.
+F4. Agent, b
+ả
+ng đi
+ề
+u khi
+ể
+n và c
+ấ
+u hình t
+ừ
+ xa
+BẮT BUỘC — Mô hình dữ liệu hỗ trợ 1 phụ huynh : n trẻ : m thiết bị.
+BẮT BUỘC — Thay đổi chính sách trên dashboard có hiệu lực trên máy trẻ trong vòng 60 giây; lệnh khẩn (khóa ngay, cộng giờ) trong vòng 5 giây.
+BẮT BUỘC — Chính sách có đánh số phiên bản và ký hiệu toàn vẹn (HMAC hoặc chữ ký) để agent từ chối chính sách bị sửa đổi.
+BẮT BUỘC — Nhật ký kiểm toán mọi thay đổi: ai, lúc nào, từ địa chỉ IP nào, giá trị cũ và mới. Trẻ được quyền xem nhật ký này (nguyên tắc NT5).
+NÊN CÓ — Quy trình gỡ cài đặt hợp pháp: nhập mật khẩu phụ huynh trên chính máy trẻ, có ghi sự kiện gỡ.
+CÓ THÌ TỐT — Chế độ 'tạm nghỉ của phụ huynh' (tạm dừng toàn bộ kiểm soát trong 2 giờ, có ghi log).
+F5. B
+ả
+o m
+ậ
+t và quy
+ề
+n riêng tư
+Hạng mục
+Yêu cầu tối thiểu
+Xác thực phụ huynh
+Băm mật khẩu bằng Argon2id hoặc scrypt (passlib); tối thiểu 10 ký tự; khóa tạm 15 phút sau 5 lần sai; giới hạn tần suất theo IP. TOTP hai yếu tố là điểm cộng.
+Phiên làm việc
+Cookie HttpOnly, Secure, SameSite=Lax; hạn phiên 12 giờ; đăng xuất hủy phiên phía máy chủ; chống CSRF cho mọi thao tác ghi.
+Kênh truyền
+TLS 1.2+ (có thể dùng CA tự ký trong môi trường phòng lab); agent ghim chứng chỉ (certificate pinning) và từ chối kết nối khi không khớp.
+Định danh thiết bị
+Token truy cập hạn 15 phút + refresh token; gắn với device_id; danh sách thu hồi khi gỡ thiết bị.
+Dữ liệu lưu trữ
+Mã hóa trường nhạy cảm bằng AES-GCM; khóa lấy từ biến môi trường hoặc DPAPI, không hardcode; băm bí mật thiết bị.
+Phân quyền
+Ba vai trò: parent, child-view, admin. Bắt buộc kiểm tra quyền sở hữu ở tầng truy vấn để chống IDOR (không chỉ ẩn nút trên giao diện).
+Đặc quyền cục bộ
+Tài khoản của trẻ không thuộc nhóm Administrators; thư mục cấu hình của agent đặt ACL chỉ SYSTEM và Administrators được ghi.
+Mô hình mối đe dọa
+Bảng STRIDE tối thiểu 8 mối đe dọa, bắt buộc bao gồm kịch bản 'chính trẻ là người tấn công' và kịch bản 'sản phẩm bị lạm dụng để theo dõi người lớn (stalkerware)'.
+Chống lạm dụng
+Sản phẩm không được có chế độ ẩn. Nếu không thể hiển thị biểu tượng, agent phải tự dừng. Tài liệu phải nêu rõ phạm vi sử dụng hợp pháp.
+6. H
+ạ
+ng m
+ụ
+c đào sâu b
+ắ
+t bu
+ộ
+c: k
+ỹ
+ thu
+ậ
+t h
+ệ
+ th
+ố
+ng và m
+ạ
+ng
+nhóm phải nộp thêm một Báo cáo kỹ thuật (phụ lục của báo cáo chính) gồm đủ sáu mục dưới đây. Thiếu mục nào trừ điểm mục đó.
+#
+Nội dung
+Yêu cầu cụ thể
+M1
+Sơ đồ luồng gói tin
+Vẽ đường đi đầy đủ khi trẻ mở một trang bị chặn: trình duyệt → stub resolver → DNS proxy của agent → tra cứu danh sách → phản hồi; kèm ảnh chụp Wireshark hoặc tcpdump minh họa truy vấn và phản hồi.
+M2
+So sánh phương án chặn
+Bảng so sánh tệp hosts, DNS proxy cục bộ, proxy HTTP(S), bộ lọc WFP theo 5 tiêu chí: độ chính xác, khả năng chặn HTTPS, chi phí hiện thực, khả năng bị vượt, ảnh hưởng hiệu năng. Nêu rõ vì sao chọn phương án chính.
+M3
+Phân tích đường vòng
+Tối thiểu 7 kỹ thuật vượt rào: đổi DNS thủ công, DNS-over-HTTPS, DNS-over-TLS, VPN/proxy công cộng, truy cập trực tiếp bằng địa chỉ IP, Safe Mode, khởi động từ USB, tài khoản Windows khác, kết thúc tiến trình. Mỗi kỹ thuật: mô tả, kết quả thử nghiệm thực tế, biện pháp đối phó hoặc lý do chấp nhận rủi ro.
+M4
+Đo hiệu năng
+CPU và RAM của agent lúc rảnh và lúc cao điểm; độ trễ phân giải DNS (p50, p95) có và không có agent; độ trễ áp dụng chính sách từ dashboard đến máy trẻ. Mỗi phép đo tối thiểu 30 mẫu, có nêu phương pháp đo.
+M5
+Khả năng chịu lỗi
+Ba kịch bản: mất mạng, máy chủ ngừng hoạt động, agent bị kết thúc. Mô tả hành vi mong đợi, hành vi thực tế và thời gian phục hồi.
+M6
+Đồng bộ thời gian
+Cơ chế chống lệch và chống chỉnh đồng hồ: sử dụng đồng hồ đơn điệu (monotonic clock), đối chiếu thời gian máy chủ mỗi nhịp tim, ngưỡng cảnh báo.
+7
+. Kế hoạch 04 tuần
+Tuần
+Mục tiêu
+Sản phẩm cuối tuần
+Tuần 1
+Khảo sát, chốt kiến trúc, dựng khung chạy được đầu–cuối
+Tài liệu kiến trúc + PRIVACY.md bản nháp + khung: agent gửi nhịp tim, server nhận, dashboard đăng nhập được
+Tuần 2
+F1 và lõi F4
+Quota và lịch tuần hoạt động; khóa máy đúng hạn; đẩy chính sách từ dashboard xuống agent
+Tuần 3
+F2 và F3
+DNS proxy lọc được tên miền; chặn ứng dụng; sự kiện đổ về server; biểu đồ báo cáo; màn hình minh bạch cho trẻ
+Tuần 4
+F5, chống đường vòng, đo lường, hoàn thiện
+Bảo mật hoàn chỉnh, báo cáo kỹ thuật mạng, bộ kiểm thử, báo cáo chính, slide, video demo
+8
+. Sản phẩm phải nộp
+Thư mục / tệp
+Nội dung
+Ghi chú
+/agent
+Mã nguồn agent, requirements.txt, hướng dẫn cài dịch vụ
+Phải chạy được trên máy Windows sạch
+/server
+Mã nguồn FastAPI, migration, dữ liệu mẫu (seed)
+Kèm tài khoản demo trong README
+/dashboard
+Giao diện phụ huynh và màn hình minh bạch cho trẻ
+Dùng được trên trình duyệt điện thoại
+/tests
+Kiểm thử tự động: tối thiểu 15 unit test và 5 kịch bản tích hợp
+Nộp kèm ảnh chụp kết quả chạy
+/docs/BaoCao.docx
+Báo cáo chính 20–30 trang
+Có mục phân công và tự đánh giá đóng góp theo phần trăm
+/docs/BaoCaoKyThuatMang.pdf
+Phụ lục M1–M6
+Hạng mục trọng tâm chấm điểm
+/docs/PRIVACY.md
+Bảng dữ liệu – mục đích – thời hạn – người xem
+Viết thêm một phiên bản dành cho trẻ đọc
+/docs/THREATMODEL.md
+Bảng STRIDE và checklist ASVS
+Tối thiểu 8 mối đe dọa
+/docs/AI_USAGE.md
+Khai báo sử dụng công cụ AI
+Nêu rõ phần nào, công cụ nào, đã kiểm chứng ra sao
+/demo/video.mp4
+Video demo 5–7 phút
+Có phụ đề hoặc thuyết minh tiếng Việt
+/README.md
+Cài đặt được trong 15 phút trên máy sạch
+Giảng viên sẽ cài thử theo đúng tài liệu này
+Ph
+ụ
+ l
+ụ
+c. B
+ộ
+ d
+ữ
+ li
+ệ
+u ki
+ể
+m th
+ử
+ g
+ợ
+i ý
+Nhóm
+Số lượng
+Nguyên tắc chọn
+Giáo dục
+20
+Cổng thông tin trường học, thư viện số, từ điển, nền tảng học trực tuyến — dùng để kiểm tra dương tính giả
+Giải trí phù hợp lứa tuổi
+10
+Kênh video thiếu nhi, trang truyện tranh giáo dục
+Mạng xã hội
+8
+Kiểm tra chính sách mặc định cho nhóm 6–11 tuổi
+Trò chơi trực tuyến
+7
+Kiểm tra ngân sách thời gian theo nhóm ứng dụng
+Điểm cuối DoH
+5
+Kiểm tra khả năng phát hiện và xử lý DNS-over-HTTPS
+Tên miền mô phỏng cần chặn
+10
+Bắt buộc dùng tên miền thử nghiệm trung tính hoặc miền do nhóm tự đăng ký; tuyệt đối không dùng nội dung người lớn thật
+— Hết —
