@@ -17,14 +17,22 @@ try:
     from agent.storage import load_credentials
     from agent.enrollment_client import pair_with_server
     from agent.heartbeat_client import start_heartbeat_thread
-    from agent.tray import init_tray_icon, show_startup_notification
+    from agent.tray import init_tray_icon, show_startup_notification, show_tray_notification
+    from agent.screen_time_tracker import ScreenTimeTracker
+    from agent.system_locker import SystemLocker
+    from agent.policy_syncer import sync_policy_from_server
+    from agent.ws_listener import WebSocketListener
 except ImportError:
     from config import APP_TITLE, APP_VERSION, SERVER_URL, DEVICE_NAME
     from fingerprint import get_device_fingerprint
     from storage import load_credentials
     from enrollment_client import pair_with_server
     from heartbeat_client import start_heartbeat_thread
-    from tray import init_tray_icon, show_startup_notification
+    from tray import init_tray_icon, show_startup_notification, show_tray_notification
+    from screen_time_tracker import ScreenTimeTracker
+    from system_locker import SystemLocker
+    from policy_syncer import sync_policy_from_server
+    from ws_listener import WebSocketListener
 
 
 def print_banner():
@@ -98,24 +106,79 @@ def main():
 
     print(f"\n [✓] Đã xác thực thiết bị ID: #{creds['device_id']} ({creds.get('device_name', DEVICE_NAME)})")
 
-    # Step 2: Start Heartbeat telemetry thread (every 60 seconds)
+    # Step 2: Sync initial policy from server (F4)
+    sync_policy_from_server()
+
+    # Step 3: Initialize Locker & Time Tracker (F1)
+    tray_icon_holder = [None]  # Mutable box for tray icon reference
+
+    def handle_lock_trigger(reason: str):
+        print(f"\n [!] CƯỠNG CHẾ KHÓA MÁY: {reason}")
+        system_locker.lock_now(reason)
+        if tray_icon_holder[0]:
+            show_tray_notification(tray_icon_holder[0], "Khóa Màn Hình", reason)
+
+    def handle_warning(msg: str):
+        print(f"\n [i] CẢNH BÁO THỜI GIAN: {msg}")
+        if tray_icon_holder[0]:
+            show_tray_notification(tray_icon_holder[0], "Thời Gian Sử Dụng", msg)
+
+    tracker = ScreenTimeTracker(
+        on_lock_trigger=handle_lock_trigger,
+        on_warning=handle_warning
+    )
+    system_locker = SystemLocker(is_lock_required_fn=lambda: tracker.is_locked)
+
+    # Step 4: Initialize WebSocket Emergency Command Listener (< 5s)
+    def handle_ws_command(action: str, payload: dict):
+        if action == "lock_now":
+            tracker.is_locked = True
+            system_locker.lock_now("Khóa máy khẩn cấp từ phụ huynh")
+            if tray_icon_holder[0]:
+                show_tray_notification(tray_icon_holder[0], "Lệnh Khẩn Cấp", "Phụ huynh đã khóa màn hình máy tính!")
+        elif action == "unlock":
+            tracker.is_locked = False
+            tracker.grace_period_active = False
+            if tray_icon_holder[0]:
+                show_tray_notification(tray_icon_holder[0], "Lệnh Khẩn Cấp", "Phụ huynh đã mở khóa màn hình cho em.")
+        elif action == "add_time":
+            mins = payload.get("minutes", 15)
+            tracker.add_bonus_minutes(mins)
+            if tray_icon_holder[0]:
+                show_tray_notification(tray_icon_holder[0], "Thưởng Thời Gian", f"Phụ huynh đã cộng thêm {mins} phút sử dụng!")
+        elif action == "policy_updated":
+            sync_policy_from_server()
+
+    ws_listener = WebSocketListener(on_command=handle_ws_command)
+
+    # Step 5: Start background workers
     hb_thread, stop_event = start_heartbeat_thread()
+    tracker.start()
+    system_locker.start_enforcement()
+    ws_listener.start()
 
     def on_exit():
         stop_event.set()
+        tracker.stop()
+        system_locker.stop_enforcement()
+        ws_listener.stop()
 
-    # Step 3: Run tray icon or wait loop
+    # Step 6: Run tray icon or headless wait loop
     if args.headless:
-        print(" [*] Chế độ Headless: Nhịp tim đang chạy nền. Nhấn Ctrl+C để thoát.")
+        print(" [*] Chế độ Headless: Nhịp tim, bộ đếm giờ và WebSocket đang chạy nền. Nhấn Ctrl+C để thoát.")
         try:
             while not stop_event.is_set():
                 stop_event.wait(1)
         except KeyboardInterrupt:
             print("\n [x] Dừng Agent.")
-            stop_event.set()
+            on_exit()
     else:
         print(" [*] Khởi động biểu tượng khay hệ thống (System Tray Icon)...")
-        tray_icon = init_tray_icon(on_exit_callback=on_exit)
+        tray_icon = init_tray_icon(
+            on_exit_callback=on_exit,
+            get_remaining_minutes_fn=tracker.get_remaining_minutes
+        )
+        tray_icon_holder[0] = tray_icon
 
         # Principle NT1: Alert child visibly on startup
         def on_tray_setup(icon):
@@ -132,9 +195,9 @@ def main():
             except KeyboardInterrupt:
                 pass
         finally:
-            stop_event.set()
+            on_exit()
 
-    print(" [*] Tác tử Open Guardian Kids đã kết thúc.")
+    print(" [*] Tác tử Open Guardian Kids đã kết thúc an toàn.")
 
 
 if __name__ == "__main__":

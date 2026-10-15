@@ -88,7 +88,21 @@ def on_transparency_view(icon, item):
         pass
 
 
-def init_tray_icon(on_exit_callback: Optional[Callable] = None) -> pystray.Icon:
+def show_tray_notification(icon: Optional[pystray.Icon], title: str, message: str) -> None:
+    """Show a balloon notification popup on Windows."""
+    if icon:
+        try:
+            icon.notify(title=title, message=message)
+            return
+        except Exception:
+            pass
+    print(f" [i] {title}: {message}")
+
+
+def init_tray_icon(
+    on_exit_callback: Optional[Callable] = None,
+    get_remaining_minutes_fn: Optional[Callable[[], int]] = None
+) -> pystray.Icon:
     """Initialize system tray icon with ethical menu and action handlers.
 
     Returns:
@@ -102,6 +116,14 @@ def init_tray_icon(on_exit_callback: Optional[Callable] = None) -> pystray.Icon:
             on_exit_callback()
         icon.stop()
 
+    def on_check_time(icon, item):
+        mins = get_remaining_minutes_fn() if get_remaining_minutes_fn else "Đang đồng bộ..."
+        show_tray_notification(
+            icon,
+            "Thời Gian Sử Dụng",
+            f"Thời gian hôm nay còn lại: {mins} phút. Hãy cân đối việc học tập và nghỉ ngơi nhé!"
+        )
+
     creds = load_credentials()
     device_label = creds.get("device_name", DEVICE_NAME) if creds else DEVICE_NAME
 
@@ -110,6 +132,7 @@ def init_tray_icon(on_exit_callback: Optional[Callable] = None) -> pystray.Icon:
         item(f"💻 Máy: {device_label}", None, enabled=False),
         item("🟢 Trạng thái: Đang bảo vệ & đồng hành", None, enabled=False),
         Menu.SEPARATOR,
+        item("⏱️ Xem thời gian còn lại hôm nay", on_check_time),
         item("⏳ Xin thêm giờ... (NT3)", on_request_more_time),
         item("📖 Minh bạch bảo mật... (NT5)", on_transparency_view),
         Menu.SEPARATOR,
