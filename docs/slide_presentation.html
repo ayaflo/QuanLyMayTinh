@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Báo Cáo Đồ Án Chuyên Đề Tốt Nghiệp: Open Guardian Kids (OGK)</title>
+  <title>Báo Cáo Đồ Án Chuyên Đề Tốt Nghiệp: Open Guardian Kids (OGK) v0.2</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg-dark: #090d16;
-      --bg-card: rgba(18, 26, 43, 0.75);
+      --bg-card: rgba(18, 26, 43, 0.78);
       --bg-card-border: rgba(99, 140, 255, 0.18);
       --accent-cyan: #00f2fe;
       --accent-blue: #4facfe;
@@ -23,14 +23,10 @@
       --text-dim: #64748b;
       --font-main: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
       --font-mono: 'JetBrains Mono', monospace;
-      --transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      --transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       background-color: var(--bg-dark);
@@ -43,13 +39,9 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Ambient Glowing Background */
     .ambient-glow {
       position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
+      top: 0; left: 0; right: 0; bottom: 0;
       pointer-events: none;
       z-index: 0;
       background: 
@@ -58,83 +50,54 @@
         radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.04) 0%, transparent 50%);
     }
 
-    /* Top Progress Bar */
     .progress-container {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 4px;
+      top: 0; left: 0; width: 100%; height: 4px;
       background: rgba(255, 255, 255, 0.05);
       z-index: 100;
     }
 
     .progress-bar {
-      height: 100%;
-      width: 0%;
+      height: 100%; width: 0%;
       background: linear-gradient(90deg, var(--accent-cyan), var(--accent-blue), var(--accent-purple));
       transition: width 0.3s ease;
       box-shadow: 0 0 12px rgba(0, 242, 254, 0.6);
     }
 
-    /* Header Nav */
     .header-bar {
       position: fixed;
-      top: 12px;
-      left: 24px;
-      right: 24px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      z-index: 50;
-      padding: 8px 16px;
-      background: rgba(15, 23, 42, 0.6);
+      top: 12px; left: 24px; right: 24px;
+      display: flex; justify-content: space-between; align-items: center;
+      z-index: 50; padding: 8px 16px;
+      background: rgba(15, 23, 42, 0.65);
       backdrop-filter: blur(12px);
       border: 1px solid var(--bg-card-border);
       border-radius: 12px;
     }
 
     .brand-tag {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-weight: 700;
-      font-size: 0.95rem;
-      letter-spacing: 0.5px;
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 700; font-size: 0.95rem; letter-spacing: 0.5px;
     }
 
     .brand-badge {
       background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
       color: #051024;
-      padding: 2px 8px;
-      border-radius: 6px;
-      font-size: 0.75rem;
-      font-weight: 800;
+      padding: 2px 8px; border-radius: 6px;
+      font-size: 0.75rem; font-weight: 800;
     }
 
-    .brand-title {
-      color: #e2e8f0;
-      font-size: 0.85rem;
-    }
+    .brand-title { color: #e2e8f0; font-size: 0.85rem; }
 
-    .top-controls {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
+    .top-controls { display: flex; align-items: center; gap: 10px; }
 
     .btn-tool {
       background: rgba(255, 255, 255, 0.06);
       border: 1px solid rgba(255, 255, 255, 0.12);
       color: #cbd5e1;
-      padding: 6px 12px;
-      border-radius: 8px;
-      font-size: 0.8rem;
-      font-family: var(--font-main);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
+      padding: 6px 12px; border-radius: 8px;
+      font-size: 0.8rem; font-family: var(--font-main);
+      cursor: pointer; display: flex; align-items: center; gap: 6px;
       transition: var(--transition);
     }
 
@@ -151,729 +114,393 @@
     }
 
     .slide-counter {
-      font-family: var(--font-mono);
-      font-size: 0.85rem;
-      color: var(--accent-cyan);
-      padding: 4px 8px;
+      font-family: var(--font-mono); font-size: 0.85rem;
+      color: var(--accent-cyan); padding: 4px 8px;
       background: rgba(0, 242, 254, 0.08);
-      border-radius: 6px;
-      border: 1px solid rgba(0, 242, 254, 0.2);
+      border-radius: 6px; border: 1px solid rgba(0, 242, 254, 0.2);
     }
 
-    /* Main Slide Container */
     .presentation-viewport {
       position: relative;
-      height: 100vh;
-      width: 100vw;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 80px 40px 90px 40px;
+      height: 100vh; width: 100vw;
+      display: flex; align-items: center; justify-content: center;
+      padding: 75px 40px 85px 40px;
       z-index: 10;
     }
 
     .slide {
       position: absolute;
-      top: 75px;
-      bottom: 85px;
-      left: 40px;
-      right: 40px;
-      opacity: 0;
-      pointer-events: none;
+      top: 75px; bottom: 85px; left: 40px; right: 40px;
+      opacity: 0; pointer-events: none;
       transform: scale(0.96) translateY(20px);
       transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-start;
-      overflow-y: auto;
-      padding-right: 8px;
+      display: flex; flex-direction: column; justify-content: flex-start;
+      overflow-y: auto; padding-right: 8px;
     }
 
-    .slide::-webkit-scrollbar {
-      width: 6px;
-    }
-    .slide::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.15);
-      border-radius: 4px;
-    }
+    .slide::-webkit-scrollbar { width: 6px; }
+    .slide::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 4px; }
 
     .slide.active {
-      opacity: 1;
-      pointer-events: auto;
+      opacity: 1; pointer-events: auto;
       transform: scale(1) translateY(0);
     }
 
-    /* Typography & Slide Elements */
     .slide-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-      color: var(--accent-cyan);
-      font-weight: 700;
-      margin-bottom: 6px;
-      background: rgba(0, 242, 254, 0.08);
-      padding: 3px 10px;
-      border-radius: 20px;
-      width: fit-content;
-      border: 1px solid rgba(0, 242, 254, 0.2);
+      display: inline-flex; align-items: center; gap: 6px;
+      font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase;
+      letter-spacing: 1.5px; color: var(--accent-cyan);
+      background: rgba(0, 242, 254, 0.1);
+      padding: 4px 12px; border-radius: 20px;
+      border: 1px solid rgba(0, 242, 254, 0.25);
+      margin-bottom: 8px; align-self: flex-start;
     }
 
-    .slide-header {
-      margin-bottom: 20px;
-    }
-
+    .slide-header { margin-bottom: 16px; }
     .slide-title {
-      font-size: 2.1rem;
-      font-weight: 800;
-      line-height: 1.2;
-      background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 50%, #94a3b8 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      font-size: 2.1rem; font-weight: 800; line-height: 1.2;
+      background: linear-gradient(135deg, #ffffff 30%, #cbd5e1 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
-
     .slide-subtitle {
-      font-size: 1.05rem;
-      color: var(--text-muted);
-      margin-top: 4px;
+      font-size: 1.05rem; color: var(--text-muted);
+      margin-top: 4px; font-weight: 400; line-height: 1.4;
     }
 
-    .grid-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-      align-items: stretch;
-    }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 8px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 8px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 8px; }
 
-    .grid-3 {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-    }
-
-    .grid-4 {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 14px;
-    }
-
-    /* Glass Cards */
     .card {
       background: var(--bg-card);
       border: 1px solid var(--bg-card-border);
-      border-radius: 14px;
-      padding: 20px;
-      backdrop-filter: blur(16px);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-      position: relative;
-      overflow: hidden;
+      border-radius: 14px; padding: 18px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+      transition: var(--transition);
     }
-
-    .card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, rgba(0, 242, 254, 0.4), transparent);
+    .card:hover {
+      border-color: rgba(0, 242, 254, 0.4);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(0, 242, 254, 0.1);
+    }
+    .card.highlight {
+      border-color: rgba(0, 242, 254, 0.5);
+      background: rgba(18, 26, 43, 0.92);
     }
 
     .card-title {
-      font-size: 1.15rem;
-      font-weight: 700;
-      margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: #fff;
+      font-size: 1.1rem; font-weight: 700; color: #fff;
+      margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
     }
 
-    .card-title svg {
-      color: var(--accent-cyan);
-    }
-
-    .feature-list {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
+    .feature-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
     .feature-list li {
-      position: relative;
-      padding-left: 22px;
-      font-size: 0.92rem;
-      line-height: 1.45;
-      color: #cbd5e1;
+      font-size: 0.88rem; color: #cbd5e1; line-height: 1.45;
+      display: flex; align-items: flex-start; gap: 8px;
     }
-
     .feature-list li::before {
-      content: '✔';
-      position: absolute;
-      left: 0;
-      top: 0;
-      color: var(--accent-cyan);
-      font-weight: bold;
-      font-size: 0.85rem;
+      content: "▹"; color: var(--accent-cyan); font-weight: bold; font-size: 1rem;
     }
 
-    .feature-list.danger li::before {
-      content: '✕';
-      color: var(--accent-rose);
+    .kbd {
+      font-family: var(--font-mono); font-size: 0.78rem;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 1px 6px; border-radius: 4px; color: var(--accent-cyan);
     }
 
-    .feature-list.warning li::before {
-      content: '⚡';
-      color: var(--accent-amber);
+    .code-box {
+      font-family: var(--font-mono); font-size: 0.8rem;
+      background: rgba(5, 10, 20, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px; padding: 10px 14px;
+      color: #93c5fd; overflow-x: auto; line-height: 1.45;
+      margin-top: 8px;
     }
 
-    /* Tables */
-    .custom-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.85rem;
-      margin-top: 10px;
+    .table-custom {
+      width: 100%; border-collapse: collapse;
+      font-size: 0.83rem; text-align: left;
     }
-
-    .custom-table th, .custom-table td {
-      padding: 10px 12px;
-      text-align: left;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    .table-custom th, .table-custom td {
+      padding: 7px 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     }
-
-    .custom-table th {
+    .table-custom th {
       background: rgba(255, 255, 255, 0.04);
-      color: var(--accent-cyan);
-      font-weight: 600;
-      text-transform: uppercase;
-      font-size: 0.75rem;
-      letter-spacing: 0.5px;
+      color: var(--accent-cyan); font-weight: 600;
     }
-
-    .custom-table tr:hover td {
-      background: rgba(0, 242, 254, 0.04);
-    }
+    .table-custom tr:hover { background: rgba(0, 242, 254, 0.04); }
 
     .highlight-pill {
-      display: inline-block;
-      padding: 3px 8px;
-      border-radius: 6px;
-      font-size: 0.75rem;
-      font-weight: 600;
+      display: inline-block; padding: 2px 7px; border-radius: 4px;
+      font-size: 0.72rem; font-family: var(--font-mono); font-weight: 700;
     }
+    .pill-green { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
+    .pill-cyan { background: rgba(0, 242, 254, 0.15); color: var(--accent-cyan); border: 1px solid rgba(0, 242, 254, 0.3); }
+    .pill-amber { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
+    .pill-rose { background: rgba(244, 63, 94, 0.2); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.4); }
 
-    .pill-green {
-      background: rgba(16, 185, 129, 0.15);
-      color: #34d399;
-      border: 1px solid rgba(16, 185, 129, 0.3);
-    }
-
-    .pill-cyan {
-      background: rgba(0, 242, 254, 0.15);
-      color: #38bdf8;
-      border: 1px solid rgba(0, 242, 254, 0.3);
-    }
-
-    .pill-amber {
-      background: rgba(245, 158, 11, 0.15);
-      color: #fbbf24;
-      border: 1px solid rgba(245, 158, 11, 0.3);
-    }
-
-    .pill-purple {
-      background: rgba(139, 92, 246, 0.15);
-      color: #c084fc;
-      border: 1px solid rgba(139, 92, 246, 0.3);
-    }
-
-    .pill-red {
-      background: rgba(244, 63, 94, 0.15);
-      color: #fb7185;
-      border: 1px solid rgba(244, 63, 94, 0.3);
-    }
-
-    /* Architecture Visual Blocks */
-    .arch-flow {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin: 15px 0;
-    }
-
-    .arch-node {
-      flex: 1;
-      background: rgba(15, 23, 42, 0.85);
-      border: 1px solid rgba(0, 242, 254, 0.25);
-      border-radius: 12px;
-      padding: 16px;
-      text-align: center;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-    }
-
-    .arch-node h4 {
-      font-size: 0.95rem;
-      color: var(--accent-cyan);
-      margin-bottom: 6px;
-    }
-
-    .arch-node p {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      line-height: 1.4;
-    }
-
-    .arch-arrow {
-      color: var(--accent-cyan);
-      font-size: 1.4rem;
-      font-weight: bold;
-      animation: pulseArrow 2s infinite ease-in-out;
-    }
-
-    @keyframes pulseArrow {
-      0%, 100% { opacity: 0.4; transform: translateX(0); }
-      50% { opacity: 1; transform: translateX(4px); }
-    }
-
-    /* Metric stats */
-    .stat-box {
-      background: rgba(15, 23, 42, 0.6);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 10px;
-      padding: 14px;
-      text-align: center;
-    }
-
-    .stat-number {
-      font-size: 2.2rem;
-      font-weight: 800;
-      color: var(--accent-cyan);
-      font-family: var(--font-mono);
-      line-height: 1;
-      margin-bottom: 4px;
-    }
-
-    .stat-label {
-      font-size: 0.78rem;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    /* Code Snippets */
-    .code-block {
-      background: #060911;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 8px;
-      padding: 12px;
-      font-family: var(--font-mono);
-      font-size: 0.8rem;
-      color: #38bdf8;
-      overflow-x: auto;
-      line-height: 1.5;
-    }
-
-    /* Bottom Controls */
+    /* Bottom Nav Bar */
     .bottom-bar {
-      position: fixed;
-      bottom: 12px;
-      left: 24px;
-      right: 24px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      z-index: 50;
-      padding: 8px 18px;
+      position: fixed; bottom: 12px; left: 24px; right: 24px;
+      display: flex; justify-content: space-between; align-items: center;
+      z-index: 50; padding: 8px 16px;
       background: rgba(15, 23, 42, 0.65);
       backdrop-filter: blur(12px);
       border: 1px solid var(--bg-card-border);
       border-radius: 12px;
     }
 
-    .nav-buttons {
-      display: flex;
-      gap: 10px;
-    }
-
+    .nav-buttons { display: flex; gap: 8px; }
     .btn-nav {
       background: rgba(255, 255, 255, 0.08);
       border: 1px solid rgba(255, 255, 255, 0.15);
-      color: #fff;
-      padding: 8px 18px;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      font-family: var(--font-main);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: var(--transition);
+      color: #fff; padding: 7px 16px; border-radius: 8px;
+      font-family: var(--font-main); font-size: 0.85rem; font-weight: 600;
+      cursor: pointer; transition: var(--transition);
+      display: flex; align-items: center; gap: 6px;
     }
-
     .btn-nav:hover:not(:disabled) {
-      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
-      color: #041021;
-      border-color: transparent;
-      box-shadow: 0 0 15px rgba(0, 242, 254, 0.4);
+      background: var(--accent-cyan); color: #000;
+      box-shadow: 0 0 15px rgba(0, 242, 254, 0.5);
     }
-
-    .btn-nav:disabled {
-      opacity: 0.3;
-      cursor: not-allowed;
-    }
+    .btn-nav:disabled { opacity: 0.35; cursor: not-allowed; }
 
     .keyboard-hint {
-      font-size: 0.78rem;
-      color: var(--text-dim);
-      display: flex;
-      gap: 12px;
-      align-items: center;
-    }
-
-    .kbd {
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-family: var(--font-mono);
-      font-size: 0.7rem;
-      color: #cbd5e1;
+      display: flex; gap: 14px; font-size: 0.78rem; color: var(--text-dim);
     }
 
     /* Speaker Notes Slide-out Panel */
     .speaker-notes-panel {
-      position: fixed;
-      right: -480px;
-      top: 0;
-      bottom: 0;
-      width: 460px;
-      background: rgba(11, 17, 32, 0.95);
-      backdrop-filter: blur(24px);
-      border-left: 1px solid rgba(0, 242, 254, 0.3);
-      box-shadow: -15px 0 40px rgba(0, 0, 0, 0.6);
-      z-index: 90;
-      padding: 70px 24px 30px 24px;
-      display: flex;
-      flex-direction: column;
-      transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-      overflow-y: auto;
+      position: fixed; top: 0; right: -480px; width: 480px; height: 100vh;
+      background: rgba(10, 16, 28, 0.95);
+      backdrop-filter: blur(20px);
+      border-left: 1px solid var(--bg-card-border);
+      box-shadow: -10px 0 35px rgba(0, 0, 0, 0.6);
+      z-index: 120; display: flex; flex-direction: column;
+      transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
     }
-
-    .speaker-notes-panel.open {
-      right: 0;
-    }
+    .speaker-notes-panel.open { right: 0; }
 
     .notes-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding-bottom: 12px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      margin-bottom: 16px;
+      padding: 16px 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex; justify-content: space-between; align-items: center;
     }
-
-    .notes-header h3 {
-      font-size: 1.1rem;
-      color: var(--accent-cyan);
-      display: flex;
-      align-items: center;
-      gap: 8px;
+    .notes-header-tabs { display: flex; gap: 8px; }
+    .tab-btn {
+      background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #cbd5e1; padding: 4px 10px; border-radius: 6px; font-size: 0.78rem;
+      cursor: pointer; transition: var(--transition); font-family: var(--font-main);
+    }
+    .tab-btn.active {
+      background: var(--accent-cyan); color: #000; font-weight: 700; border-color: var(--accent-cyan);
     }
 
     .notes-content {
-      font-size: 0.95rem;
-      line-height: 1.65;
-      color: #e2e8f0;
+      padding: 20px; overflow-y: auto; flex: 1;
+      font-size: 0.92rem; line-height: 1.6; color: #e2e8f0;
     }
-
+    .notes-content h4 { color: var(--accent-cyan); margin-bottom: 8px; font-size: 1.05rem; }
     .notes-content blockquote {
-      border-left: 3px solid var(--accent-cyan);
-      padding-left: 12px;
-      margin: 12px 0;
-      color: #bae6fd;
-      font-style: italic;
-      background: rgba(0, 242, 254, 0.05);
-      padding: 10px 14px;
-      border-radius: 0 8px 8px 0;
+      border-left: 3px solid var(--accent-blue);
+      padding-left: 12px; margin: 10px 0; font-style: italic; color: #94a3b8;
     }
+    .qa-box {
+      background: rgba(244, 63, 94, 0.08); border: 1px solid rgba(244, 63, 94, 0.25);
+      border-radius: 8px; padding: 12px; margin-top: 12px;
+    }
+    .qa-title { color: #fb7185; font-weight: 700; font-size: 0.88rem; margin-bottom: 4px; }
+    .qa-answer { color: #f1f5f9; font-size: 0.85rem; line-height: 1.5; }
 
-    .notes-content h4 {
-      margin: 16px 0 8px 0;
-      color: var(--accent-amber);
-      font-size: 0.95rem;
-    }
-
-    /* Slide Thumbnails Drawer */
-    .drawer-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.6);
-      backdrop-filter: blur(4px);
-      z-index: 80;
-      display: none;
-    }
-    .drawer-overlay.open {
-      display: block;
-    }
-
+    /* Thumbnails Drawer */
     .thumbs-drawer {
-      position: fixed;
-      bottom: -320px;
-      left: 0;
-      right: 0;
-      height: 290px;
-      background: rgba(15, 23, 42, 0.96);
+      position: fixed; bottom: -240px; left: 0; right: 0; height: 230px;
+      background: rgba(10, 16, 28, 0.95);
+      backdrop-filter: blur(20px);
       border-top: 1px solid var(--bg-card-border);
-      z-index: 85;
-      transition: bottom 0.35s ease;
-      padding: 20px 24px;
-      overflow-x: auto;
-      display: flex;
-      gap: 16px;
+      box-shadow: 0 -10px 35px rgba(0, 0, 0, 0.6);
+      z-index: 110; display: flex; gap: 12px;
+      padding: 16px 24px; overflow-x: auto;
+      transition: bottom 0.35s cubic-bezier(0.16, 1, 0.3, 1);
     }
-
-    .thumbs-drawer.open {
-      bottom: 0;
-    }
+    .thumbs-drawer.open { bottom: 0; }
 
     .thumb-card {
-      min-width: 190px;
-      height: 120px;
-      background: #090e18;
+      flex: 0 0 170px; height: 115px;
+      background: rgba(255, 255, 255, 0.04);
       border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 8px;
-      padding: 12px;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
+      border-radius: 8px; padding: 10px; cursor: pointer;
+      display: flex; flex-direction: column; justify-content: space-between;
       transition: var(--transition);
     }
-
-    .thumb-card:hover {
-      border-color: var(--accent-cyan);
-      transform: translateY(-4px);
-    }
-
+    .thumb-card:hover { border-color: var(--accent-cyan); transform: scale(1.03); }
     .thumb-card.active {
       border-color: var(--accent-cyan);
-      box-shadow: 0 0 14px rgba(0, 242, 254, 0.4);
-      background: rgba(0, 242, 254, 0.05);
+      box-shadow: 0 0 12px rgba(0, 242, 254, 0.4);
+      background: rgba(0, 242, 254, 0.08);
     }
+    .thumb-num { font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent-cyan); }
+    .thumb-title { font-size: 0.78rem; font-weight: 600; color: #fff; line-height: 1.25; }
 
-    .thumb-num {
-      font-size: 0.75rem;
-      font-family: var(--font-mono);
-      color: var(--accent-cyan);
+    .drawer-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(2px);
+      z-index: 105; opacity: 0; pointer-events: none;
+      transition: opacity 0.3s ease;
     }
-
-    .thumb-title {
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: #fff;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-
-    /* Print View */
-    @media print {
-      body {
-        overflow: visible;
-        height: auto;
-        background: #fff !important;
-        color: #000 !important;
-      }
-      .ambient-glow, .header-bar, .bottom-bar, .progress-container, .speaker-notes-panel, .drawer-overlay, .thumbs-drawer {
-        display: none !important;
-      }
-      .presentation-viewport {
-        padding: 0;
-        display: block;
-        height: auto;
-      }
-      .slide {
-        position: relative !important;
-        top: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        bottom: 0 !important;
-        opacity: 1 !important;
-        transform: none !important;
-        page-break-after: always;
-        height: 100vh;
-        padding: 40px;
-        background: #fff;
-        color: #000;
-      }
-      .slide-title {
-        color: #000 !important;
-        -webkit-text-fill-color: #000 !important;
-      }
-      .card {
-        background: #f8fafc !important;
-        border: 1px solid #cbd5e1 !important;
-        color: #000 !important;
-        box-shadow: none !important;
-      }
-      .card-title, .feature-list li, .stat-number {
-        color: #000 !important;
-      }
-    }
+    .drawer-overlay.open { opacity: 1; pointer-events: auto; }
   </style>
 </head>
 <body>
 
-  <!-- Ambient visual lighting -->
   <div class="ambient-glow"></div>
 
-  <!-- Progress Bar -->
+  <!-- Top Progress Bar -->
   <div class="progress-container">
     <div class="progress-bar" id="progressBar"></div>
   </div>
 
-  <!-- Header Navigation -->
+  <!-- Header Bar -->
   <header class="header-bar">
     <div class="brand-tag">
-      <span class="brand-badge">OGK v0.1</span>
-      <span class="brand-title">Đồ Án Chuyên Đề Tốt Nghiệp: Quản Lý Máy Tính Trẻ Em</span>
+      <span class="brand-badge">OGK v0.2</span>
+      <span class="brand-title">Chuyên Đề Tốt Nghiệp: Mạng Máy Tính & Truyền Thông Dữ Liệu</span>
     </div>
 
     <div class="top-controls">
-      <button class="btn-tool" id="btnToggleThumbs" title="Danh sách Slide (T)">
-        <span>📑</span> <span>Mục lục</span>
+      <span class="slide-counter" id="slideCounter">01 / 20</span>
+      <button class="btn-tool" id="btnToggleNotes" title="Mở Lời thoại & Phản biện (Phím N)">
+        <span>🎙️</span> Lời thoại & Hỏi đáp
       </button>
-      <button class="btn-tool" id="btnToggleNotes" title="Bật/Tắt Lời thoại Thuyết trình (N)">
-        <span>🎙️</span> <span>Lời thoại</span>
+      <button class="btn-tool" id="btnToggleThumbs" title="Xem danh sách tất cả Slide (Phím T)">
+        <span>📑</span> Mục lục
       </button>
-      <button class="btn-tool" id="btnFullscreen" title="Toàn màn hình (F)">
-        <span>⛶</span> <span>Phóng to</span>
+      <button class="btn-tool" id="btnFullscreen" title="Toàn màn hình (Phím F)">
+        <span>⛶</span> Toàn màn hình
       </button>
-      <button class="btn-tool" id="btnPrint" title="Xuất PDF / In (Ctrl+P)">
-        <span>🖨️</span> <span>In / PDF</span>
+      <button class="btn-tool" id="btnPrint" title="In / Xuất PDF">
+        <span>🖨️</span> In
       </button>
-      <div class="slide-counter" id="slideCounter">01 / 18</div>
     </div>
   </header>
 
-  <!-- Main Viewport -->
+  <!-- Presentation Viewport -->
   <main class="presentation-viewport">
 
-    <!-- SLIDE 1: BÌA ĐỒ ÁN -->
+    <!-- SLIDE 1: TIÊU ĐỀ -->
     <section class="slide active" data-slide="1">
-      <div class="slide-badge">BÁO CÁO TIẾN ĐỘ & TOÀN BỘ KIẾN TRÚC ĐỒ ÁN</div>
+      <div class="slide-badge">BÁO CÁO TIẾN ĐỘ & KIẾN TRÚC TOÀN DIỆN</div>
       <div class="slide-header" style="margin-top: 15px;">
-        <h1 class="slide-title" style="font-size: 2.8rem; max-width: 950px;">XÂY DỰNG ỨNG DỤNG HỖ TRỢ QUẢN LÝ VIỆC SỬ DỤNG MÁY TÍNH CỦA TRẺ EM</h1>
+        <h1 class="slide-title" style="font-size: 2.7rem; max-width: 980px;">XÂY DỰNG ỨNG DỤNG HỖ TRỢ QUẢN LÝ VIỆC SỬ DỤNG MÁY TÍNH CỦA TRẺ EM</h1>
         <p class="slide-subtitle" style="font-size: 1.3rem; color: var(--accent-cyan); font-weight: 600; margin-top: 10px;">
-          Giải Pháp Kỹ Thuật Hệ Thống & Mạng: OPEN GUARDIAN KIDS (OGK)
+          HỆ THỐNG OPEN GUARDIAN KIDS (OGK) — VERSION 0.2
         </p>
-      </div>
-
-      <div class="card" style="margin-top: 15px; border-left: 4px solid var(--accent-cyan); background: rgba(18, 26, 43, 0.85);">
-        <p style="font-size: 1.15rem; color: #fff; font-weight: 500; font-style: italic;">
-          "Công cụ đồng hành giữa cha mẹ và con cái — Kiên quyết KHÔNG PHẢI là phần mềm theo dõi lén hay gián điệp."
+        <p style="color: #94a3b8; font-size: 1.05rem; margin-top: 4px; font-style: italic;">
+          "Công cụ đồng hành, không phải phần mềm theo dõi lén"
         </p>
       </div>
 
       <div class="grid-3" style="margin-top: 25px;">
         <div class="card">
-          <div class="card-title"><span>🎓</span> Chuyên Ngành</div>
-          <p style="color: #cbd5e1; font-size: 0.95rem;">Mạng Máy Tính & Truyền Thông Dữ Liệu</p>
-          <p style="color: var(--text-dim); font-size: 0.8rem; margin-top: 4px;">Học phần: Chuyên đề Tốt nghiệp</p>
+          <div class="card-title"><span>🎓</span> Đơn Vị Đào Tạo</div>
+          <p style="font-size: 0.95rem; color: #e2e8f0;">Bộ môn: Mạng Máy Tính & Viễn Thông</p>
+          <p style="font-size: 0.85rem; color: var(--text-dim); margin-top: 4px;">Khoa Công Nghệ Thông Tin</p>
         </div>
         <div class="card">
           <div class="card-title"><span>👨‍🏫</span> Giảng Viên Hướng Dẫn</div>
-          <p style="color: #cbd5e1; font-size: 0.95rem; font-weight: 600;">Hội đồng Chuyên đề Tốt nghiệp</p>
-          <p style="color: var(--accent-cyan); font-size: 0.8rem; margin-top: 4px;">Bộ môn Mạng & Hệ thống</p>
+          <p style="font-size: 1.05rem; font-weight: 600; color: var(--accent-cyan);">[Tên Giảng Viên Hướng Dẫn]</p>
+          <p style="font-size: 0.85rem; color: var(--text-dim); margin-top: 4px;">Hội đồng Chuyên đề Tốt nghiệp</p>
         </div>
         <div class="card">
-          <div class="card-title"><span>👥</span> Nhóm Sinh Viên</div>
-          <p style="color: #cbd5e1; font-size: 0.95rem; font-weight: 600;">Nhóm 02 Sinh viên (50% - 50%)</p>
-          <p style="color: var(--accent-emerald); font-size: 0.8rem; margin-top: 4px;">Hoàn thành Nghiệm thu Giai đoạn 1 (v0.1)</p>
+          <div class="card-title"><span>👥</span> Sinh Viên Thực Hiện</div>
+          <p style="font-size: 0.95rem; font-weight: 600; color: #fff;">[Sinh Viên 1] — MSSV</p>
+          <p style="font-size: 0.95rem; font-weight: 600; color: #fff; margin-top: 2px;">[Sinh Viên 2] — MSSV</p>
+          <p style="font-size: 0.82rem; color: var(--accent-emerald); margin-top: 4px;">Tiến độ: Hoàn thành 100% Ver 1 & Ver 2</p>
         </div>
       </div>
     </section>
 
-    <!-- SLIDE 2: BỐI CẢNH & THỰC TRẠNG -->
+    <!-- SLIDE 2: BỐI CẢNH & NGHỊCH LÝ -->
     <section class="slide" data-slide="2">
       <div class="slide-badge">BỐI CẢNH & TÍNH CẤP THIẾT</div>
       <div class="slide-header">
-        <h2 class="slide-title">Bối Cảnh Thời Đại Số & Nghịch Lý Của Phần Mềm Giám Sát</h2>
-        <p class="slide-subtitle">Vì sao các phần mềm thương mại hiện tại thất bại trong việc xây dựng sự tin tưởng gia đình?</p>
+        <h2 class="slide-title">Bối Cảnh Thời Đại Số & Nghịch Lý Phần Mềm Giám Sát</h2>
+        <p class="slide-subtitle">Vì sao các phần mềm thương mại hiện nay thất bại trong việc xây dựng sự tin tưởng gia đình?</p>
       </div>
 
       <div class="grid-2">
-        <div class="card" style="border-top: 3px solid var(--accent-rose);">
-          <div class="card-title" style="color: var(--accent-rose);"><span>⚠️</span> Mặt Tối Của "Stalkerware" Truyền Thống</div>
-          <ul class="feature-list danger">
-            <li><strong>Chụp lén màn hình & Keylogger:</strong> Ghi lại mọi thao tác gõ phím, chụp ảnh ngẫu nhiên, đọc trộm tin nhắn cá nhân.</li>
-            <li><strong>Chế độ tàng hình (Stealth mode):</strong> Chạy ẩn trong Task Manager, trẻ không hề biết mình bị giám sát.</li>
-            <li><strong>Rủi ro rò rỉ dữ liệu đám mây:</strong> Đẩy toàn bộ dữ liệu sinh hoạt nhạy cảm của gia đình lên server bên thứ ba.</li>
-            <li><strong>Phá vỡ niềm tin:</strong> Biến ngôi nhà thành "trại giám sát", kích thích trẻ tìm mọi cách chống đối và vượt rào.</li>
-            <li><strong>Vi phạm pháp luật:</strong> Vi phạm quyền riêng tư của trẻ em theo Luật Trẻ em 2016 & Nghị định 13/2023.</li>
+        <div class="card">
+          <div class="card-title"><span>⚠️</span> Thực Trạng Trẻ Em & Nguy Cơ Mạng</div>
+          <ul class="feature-list">
+            <li><strong>Độ tuổi tiếp cận sớm:</strong> Trẻ em từ 6–11 tuổi bắt đầu sử dụng máy tính hàng ngày cho việc học và giải trí.</li>
+            <li><strong>Nguy cơ màn hình:</strong> Mất kiểm soát thời gian, ngồi máy thâu đêm, ảnh hưởng thị giác và sức khỏe tâm sinh lý.</li>
+            <li><strong>Nội dung độc hại:</strong> Bạo lực, người lớn, cờ bạc, lừa đảo trực tuyến (Phishing) lan tràn qua đường link lạ.</li>
+            <li><strong>Phụ huynh bất lực:</strong> Thiếu công cụ kỹ thuật tin cậy để đồng hành cùng con mà không gây căng thẳng.</li>
           </ul>
         </div>
 
-        <div class="card" style="border-top: 3px solid var(--accent-cyan);">
-          <div class="card-title" style="color: var(--accent-cyan);"><span>🎯</span> Hướng Đi Đột Phá Của Open Guardian Kids</div>
+        <div class="card highlight">
+          <div class="card-title" style="color: var(--accent-rose);"><span>🚫</span> Mặt Tối Của Phần Mềm Giám Sát Hiện Tại</div>
           <ul class="feature-list">
-            <li><strong>Công cụ đồng hành (Companion):</strong> Trẻ luôn biết rõ hệ thống đang hoạt động và mục đích hỗ trợ học tập.</li>
-            <li><strong>Tối thiểu dữ liệu (Data Minimisation):</strong> Chỉ đo thời lượng và tên miền cấp 2; CẤM lưu URL, tiêu đề hay nội dung.</li>
-            <li><strong>Minh bạch hai chiều:</strong> Trẻ xem được mọi báo cáo mà cha mẹ xem, và thấy nhật ký đổi luật của cha mẹ.</li>
-            <li><strong>Tự chủ gia đình (Local Sovereignty):</strong> Toàn bộ dữ liệu nằm trên máy chủ nội bộ của gia đình, không chia sẻ cho bên thứ ba.</li>
-            <li><strong>Tiếng nói cho trẻ:</strong> Có kênh xin thêm giờ và khiếu nại chặn nhầm trực tiếp.</li>
+            <li><strong>Hành vi gián điệp (Stalkerware):</strong> Chụp lén màn hình (Screenshots), gắn Keylogger ghi từng phím con gõ, đọc trộm tin nhắn riêng tư.</li>
+            <li><strong>Chạy ẩn giấu (Stealth Mode):</strong> Ẩn tiến trình, trẻ hoàn toàn không biết mình đang bị theo dõi sau lưng.</li>
+            <li><strong>Rò rỉ dữ liệu cá nhân:</strong> Đẩy toàn bộ dữ liệu đời tư của con lên máy chủ Cloud bên thứ ba.</li>
+            <li><strong>Hậu quả:</strong> Phá vỡ niềm tin gia đình, vi phạm nghiêm trọng Luật Trẻ Em 2016 và Nghị định 13/2023/NĐ-CP.</li>
           </ul>
         </div>
       </div>
     </section>
 
-    <!-- SLIDE 3: 6 NGUYÊN TẮC BẮT BUỘC (NT1 - NT6) -->
+    <!-- SLIDE 3: HIẾN CHƯƠNG ĐẠO ĐỨC -->
     <section class="slide" data-slide="3">
-      <div class="slide-badge">TRIẾT LÝ THIẾT KẾ BẮT BUỘC</div>
+      <div class="slide-badge">TRIẾT LÝ THIẾT KẾ CỐT LÕI</div>
       <div class="slide-header">
         <h2 class="slide-title">Hiến Chương 6 Nguyên Tắc Đạo Đức (NT1 – NT6)</h2>
-        <p class="slide-subtitle">Ràng buộc kỹ thuật xuyên suốt từ kiến trúc đến từng dòng lệnh trong mã nguồn</p>
+        <p class="slide-subtitle">Ràng buộc kỹ thuật xuyên suốt từ kiến trúc hệ thống đến từng dòng mã nguồn</p>
       </div>
 
       <div class="grid-3">
         <div class="card">
           <div class="card-title"><span class="highlight-pill pill-cyan">NT1</span> Trẻ Biết Mình Được Hỗ Trợ</div>
-          <p style="font-size: 0.88rem; color: #cbd5e1;">Icon System Tray luôn hiển thị thường trực trên Taskbar; Balloon Popup chào đón khi máy khởi động. Cấm chạy ẩn.</p>
+          <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.45;">
+            Tray Icon lá chắn luôn sáng trên Taskbar; Balloon Popup thông báo khi máy khởi động; <strong>Cấm tuyệt đối chế độ chạy ẩn</strong>.
+          </p>
         </div>
         <div class="card">
           <div class="card-title"><span class="highlight-pill pill-green">NT2</span> Tối Thiểu Dữ Liệu</div>
-          <p style="font-size: 0.88rem; color: #cbd5e1;">Chỉ thu thập 4 siêu dữ liệu: Tên app, domain cấp 2, thời lượng, timestamp. Cấm URL đầy đủ, chụp màn hình, bàn phím.</p>
+          <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.45;">
+            Chỉ lưu 4 siêu dữ liệu: Tên app, domain cấp 2, thời lượng, mốc giờ. <strong>Không lưu full URL, không ảnh, không keylogger</strong>.
+          </p>
         </div>
         <div class="card">
-          <div class="card-title"><span class="highlight-pill pill-purple">NT3</span> Trẻ Có Tiếng Nói</div>
-          <p style="font-size: 0.88rem; color: #cbd5e1;">Nút <em>"Xin thêm giờ"</em> và <em>"Báo chặn nhầm"</em> gửi yêu cầu trực tiếp về máy cha mẹ; mọi yêu cầu đều được phản hồi.</p>
+          <div class="card-title"><span class="highlight-pill pill-amber">NT3</span> Trẻ Có Tiếng Nói</div>
+          <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.45;">
+            Giao diện máy con có sẵn nút tương tác hai chiều <em>"Xin thêm giờ"</em> và <em>"Con nghĩ trang này bị chặn nhầm"</em>.
+          </p>
         </div>
         <div class="card">
-          <div class="card-title"><span class="highlight-pill pill-amber">NT4</span> Giải Thích Mọi Hành Động</div>
-          <p style="font-size: 0.88rem; color: #cbd5e1;">Khi chặn app/web, popup giải thích rõ lý do và ai đặt luật. Cảnh báo trước 10p, 5p, 1p và ân hạn 60s để trẻ lưu bài tập.</p>
+          <div class="card-title"><span class="highlight-pill pill-rose">NT4</span> Mọi Hành Động Giải Thích Được</div>
+          <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.45;">
+            Khi khóa máy hay chặn app/web, hiển thị popup lý do; cảnh báo trước 10p, 5p, 1p và <strong>ân hạn 60s để trẻ lưu bài tập</strong>.
+          </p>
         </div>
         <div class="card">
           <div class="card-title"><span class="highlight-pill pill-cyan">NT5</span> Minh Bạch Hai Chiều</div>
-          <p style="font-size: 0.88rem; color: #cbd5e1;">Màn hình thân thiện dành cho trẻ hiển thị cùng dữ liệu mà phụ huynh thấy; trẻ được xem Audit Log đổi chính sách của cha mẹ.</p>
+          <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.45;">
+            Trẻ được xem màn hình cùng dữ liệu cha mẹ thấy; xem được lịch sử cha mẹ đổi luật qua bảng <strong>Audit Log</strong>.
+          </p>
         </div>
         <div class="card">
-          <div class="card-title"><span class="highlight-pill pill-red">NT6</span> An Toàn Có Ưu Tiên Tuyệt Đối</div>
-          <p style="font-size: 0.88rem; color: #cbd5e1;">Danh sách trắng vĩnh viễn: Cổng thông tin trường học, Tổng đài trẻ em 111, cứu hộ. Khóa máy không chặn cuộc gọi khẩn cấp.</p>
+          <div class="card-title"><span class="highlight-pill pill-green">NT6</span> An Toàn Có Ưu Tiên Tuyệt Đối</div>
+          <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.45;">
+            Danh mục miễn chặn vĩnh viễn (Whitelist): Cổng trường học, Tổng đài bảo vệ trẻ em 111, cứu hộ khẩn cấp.
+          </p>
         </div>
-      </div>
-
-      <div class="card" style="margin-top: 15px; background: rgba(244, 63, 94, 0.08); border-color: rgba(244, 63, 94, 0.3);">
-        <strong style="color: var(--accent-rose);">🚫 DANH MỤC CẤM TUYỆT ĐỐI (ZERO-TOLERANCE):</strong>
-        <span style="font-size: 0.88rem; color: #cbd5e1; margin-left: 8px;">Không đọc trộm tin nhắn/email/tệp cá nhân · Không ẩn tiến trình hoặc dùng kỹ thuật Rootkit · Không đẩy dữ liệu ra bên thứ 3.</span>
       </div>
     </section>
 
-    <!-- SLIDE 4: CĂN CỨ PHÁP LÝ & CHUẨN AN TOÀN -->
+    <!-- SLIDE 4: PHÁP LÝ & BẢO MẬT -->
     <section class="slide" data-slide="4">
       <div class="slide-badge">TÍNH TUÂN THỦ PHÁP LÝ & BẢO MẬT</div>
       <div class="slide-header">
@@ -881,111 +508,77 @@
         <p class="slide-subtitle">Mỗi yêu cầu pháp lý đều được ánh xạ chính xác vào màn hình và dòng mã nguồn cụ thể</p>
       </div>
 
-      <table class="custom-table">
-        <thead>
-          <tr>
-            <th>Văn bản / Chuẩn</th>
-            <th>Nội dung Trọng tâm</th>
-            <th>Hiện thực hóa trong Mã nguồn OGK</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><strong style="color:#fff;">Nghị định 13/2023/NĐ-CP (Điều 20)</strong></td>
-            <td>Bảo vệ dữ liệu cá nhân của trẻ em; bắt buộc có sự đồng thuận của cha mẹ; quyền rút lại đồng thuận và xóa dữ liệu.</td>
-            <td>
-              <span class="highlight-pill pill-cyan">POST /enroll/create-code</span> Cha mẹ chủ động tạo mã 8 ký tự.<br>
-              <span class="highlight-pill pill-green">Right to Erasure</span> Nút xóa dữ liệu đồng bộ trên Server & Agent; Cron auto-delete 90 ngày.
-            </td>
-          </tr>
-          <tr>
-            <td><strong style="color:#fff;">Luật Trẻ em 2016 (Điều 21)</strong></td>
-            <td>Quyền bí mật đời sống riêng tư và danh dự của trẻ em.</td>
-            <td>
-              <span class="highlight-pill pill-purple">NT2 Data Minimisation</span> Không lưu URL đầy đủ, không screenshot, kê khai minh bạch trong tệp <code class="kbd">PRIVACY.md</code>.
-            </td>
-          </tr>
-          <tr>
-            <td><strong style="color:#fff;">Luật An ninh mạng 2018 (Điều 29)</strong></td>
-            <td>Bảo vệ trẻ em trên không gian mạng; trách nhiệm của cha mẹ.</td>
-            <td>
-              <span class="highlight-pill pill-amber">F2 DNS Sinkhole</span> Lọc web theo 6 nhóm tuổi, SafeSearch bắt buộc trên công cụ tìm kiếm.
-            </td>
-          </tr>
-          <tr>
-            <td><strong style="color:#fff;">OWASP ASVS v4 (Mức 1)</strong></td>
-            <td>Bộ tiêu chuẩn kiểm chứng bảo mật ứng dụng web và API.</td>
-            <td>
-              Cookie <code class="kbd">HttpOnly</code>, <code class="kbd">SameSite=Lax</code>, HMAC-SHA256 Token, chống IDOR ở tầng truy vấn CSDL.
-            </td>
-          </tr>
-          <tr>
-            <td><strong style="color:#fff;">NIST SP 800-63B</strong></td>
-            <td>Quản lý định danh và xác thực số an toàn.</td>
-            <td>
-              Băm mật khẩu phụ huynh bằng giải thuật <strong>Argon2id</strong>, khóa 15 phút sau 5 lần sai, giới hạn tốc độ IP.
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title"><span>⚖️</span> Căn Cứ Pháp Lý Việt Nam</div>
+          <ul class="feature-list">
+            <li><strong>Điều 20 Nghị định 13/2023/NĐ-CP:</strong> Xử lý dữ liệu cá nhân của trẻ em phải có sự đồng thuận của cha mẹ ➜ Ánh xạ: Quy trình ghép đôi 8 ký tự trên Web Dashboard.</li>
+            <li><strong>Quyền xóa dữ liệu & Giới hạn lưu trữ:</strong> Dữ liệu tự động dọn dẹp sau 90 ngày; Nút <em>"Xóa toàn bộ dữ liệu của con tôi"</em> xóa sạch trên cả Server và Agent.</li>
+            <li><strong>Điều 21 Luật Trẻ Em 2016:</strong> Quyền bí mật đời sống riêng tư ➜ Bảng kê khai chi tiết 9 trường dữ liệu trong <code class="kbd">docs/PRIVACY.md</code>.</li>
+            <li><strong>Luật An ninh mạng 2018 (Điều 29):</strong> Trách nhiệm bảo vệ trẻ em trên không gian mạng.</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="card-title"><span>🔒</span> Tiêu Chuẩn Kỹ Thuật Quốc Tế</div>
+          <ul class="feature-list">
+            <li><strong>NIST SP 800-63B:</strong> Xác thực phụ huynh chuẩn mực bằng thuật toán băm <code class="kbd">Argon2id</code> ngốn bộ nhớ, chống dò pass trên GPU.</li>
+            <li><strong>OWASP ASVS v4 (Mức 1):</strong> Quản trị phiên bảo mật bằng JWT và Cookie <code class="kbd">HttpOnly=True</code>, <code class="kbd">SameSite="Lax"</code> chống XSS và CSRF.</li>
+            <li><strong>HMAC-SHA256:</strong> Bảo vệ tính toàn vẹn của gói tin chính sách (F4 Anti-tamper).</li>
+            <li><strong>Mô hình đe dọa STRIDE:</strong> Đánh giá toàn diện 8 nguy cơ an ninh mạng.</li>
+          </ul>
+        </div>
+      </div>
     </section>
 
-    <!-- SLIDE 5: KIẾN TRÚC TỔNG THỂ 3 KHỐI -->
+    <!-- SLIDE 5: KIẾN TRÚC 3 KHỐI -->
     <section class="slide" data-slide="5">
       <div class="slide-badge">KIẾN TRÚC HỆ THỐNG</div>
       <div class="slide-header">
         <h2 class="slide-title">Mô Hình Phân Tán 3 Khối (OGK Distributed 3-Tier)</h2>
-        <p class="slide-subtitle">Sự kết hợp hoàn hảo giữa Windows Client Agent — FastAPI Server — Web Dashboard</p>
+        <p class="slide-subtitle">Giải quyết triệt để rào cản kỹ thuật Session 0 Isolation trên Windows</p>
       </div>
 
-      <div class="arch-flow">
-        <div class="arch-node">
-          <h4>MÁY TÍNH TRẺ EM</h4>
-          <strong style="color: #fff; font-size: 1.05rem;">OGK-Agent (Windows)</strong>
-          <p style="margin-top: 8px;">Tách biệt 2 tầng:<br>
-          • <strong>Service:</strong> DNS Proxy 127.0.0.1:53, Monotonic clock, App killer, SQLite Cache.<br>
-          • <strong>Tray UI:</strong> Icon khay Pystray, Popup Windows chào em, màn hình minh bạch.</p>
+      <div class="grid-3">
+        <div class="card highlight">
+          <div class="card-title"><span>💻</span> 1. OGK-Agent (Windows)</div>
+          <p style="font-size: 0.82rem; color: var(--accent-cyan); font-weight: 600; margin-bottom: 6px;">
+            Giải quyết bẫy Session 0 Isolation:
+          </p>
+          <ul class="feature-list" style="font-size: 0.83rem;">
+            <li><strong>Service ngầm (Background):</strong> Đếm giờ Monotonic, Khóa máy Win32, Nghe WebSocket, Lưu cache SQLite cục bộ.</li>
+            <li><strong>Tray UI (User Session):</strong> Khay hệ thống Pystray, popup thông báo, cửa sổ tương tác cho trẻ.</li>
+            <li><strong>IPC nội bộ:</strong> Giao tiếp qua Named Pipe / Local Loopback Token.</li>
+          </ul>
         </div>
 
-        <div class="arch-arrow">⟷</div>
-
-        <div class="arch-node" style="border-color: rgba(79, 172, 254, 0.4);">
-          <h4>MÁY CHỦ ĐIỀU PHỐI</h4>
-          <strong style="color: #fff; font-size: 1.05rem;">OGK-Server (FastAPI)</strong>
-          <p style="margin-top: 8px;">• RESTful API: /auth, /enroll, /heartbeat, /policy, /events.<br>
-          • WebSocket: Đẩy lệnh khẩn &lt; 5s.<br>
-          • CSDL: SQLite WAL Mode (<code class="kbd">ogk.db</code>) xử lý đồng thời cực mạnh.</p>
-        </div>
-
-        <div class="arch-arrow">⟷</div>
-
-        <div class="arch-node" style="border-color: rgba(139, 92, 246, 0.4);">
-          <h4>THIẾT BỊ PHỤ HUYNH</h4>
-          <strong style="color: #fff; font-size: 1.05rem;">Parent Dashboard (Web)</strong>
-          <p style="margin-top: 8px;">• Giao diện Web Responsive (PC & Điện thoại).<br>
-          • Giám sát trạng thái Online/Offline.<br>
-          • Tạo mã ghép đôi 8 ký tự kèm đồng hồ đếm ngược.<br>
-          • Cấu hình lịch 7x48 & Quota.</p>
-        </div>
-      </div>
-
-      <div class="grid-3" style="margin-top: 15px;">
         <div class="card">
-          <div class="card-title"><span>📡</span> Giao thức Ghép đôi</div>
-          <p style="font-size: 0.85rem; color: #cbd5e1;">Mã 8 ký tự an toàn sống 10 phút, tự hủy sau khi claim; cấp cặp Access/Refresh token.</p>
+          <div class="card-title"><span>🚀</span> 2. OGK-Server (FastAPI)</div>
+          <p style="font-size: 0.82rem; color: var(--accent-cyan); font-weight: 600; margin-bottom: 6px;">
+            Hiệu năng cao & Bất đồng bộ:
+          </p>
+          <ul class="feature-list" style="font-size: 0.83rem;">
+            <li><strong>RESTful API:</strong> Xử lý Auth, Enrollment, Heartbeat, Policy, Commands, Audit.</li>
+            <li><strong>WebSocket Server:</strong> Duy trì kết nối song công <code class="kbd">/ws/device/{id}</code> đẩy lệnh dưới 5 giây.</li>
+            <li><strong>SQLite WAL Mode:</strong> Đọc và ghi đồng thời mượt mà không bị khóa file (<code class="kbd">PRAGMA journal_mode=WAL</code>).</li>
+          </ul>
         </div>
+
         <div class="card">
-          <div class="card-title"><span>💓</span> Viễn trắc Nhịp tim</div>
-          <p style="font-size: 0.85rem; color: #cbd5e1;">Chu kỳ 60 giây mang payload tối thiểu; ngưỡng Online &lt; 120s; phản hồi kèm version chính sách.</p>
-        </div>
-        <div class="card">
-          <div class="card-title"><span>⚡</span> Kênh Lệnh Khẩn</div>
-          <p style="font-size: 0.85rem; color: #cbd5e1;">WebSocket song công đạt độ trễ &lt; 5s cho các hành động: Khóa ngay, Mở khóa, Thưởng 15 phút.</p>
+          <div class="card-title"><span>📱</span> 3. Web Dashboard (Parent)</div>
+          <p style="font-size: 0.82rem; color: var(--accent-cyan); font-weight: 600; margin-bottom: 6px;">
+            Responsive & Đa nền tảng:
+          </p>
+          <ul class="feature-list" style="font-size: 0.83rem;">
+            <li><strong>Thiết kế hiện đại:</strong> Glassmorphism UI, hiển thị mượt mà trên PC và Smartphone.</li>
+            <li><strong>Thời gian thực:</strong> Trạng thái Online/Offline, Quota, Ma trận lịch tuần 7×48.</li>
+            <li><strong>Điều khiển khẩn cấp:</strong> Nút Khóa ngay, Mở khóa, +15 Phút, Bảng Audit Log.</li>
+          </ul>
         </div>
       </div>
     </section>
 
-    <!-- SLIDE 6: NGĂN XẾP CÔNG NGHỆ & KARPATHY -->
+    <!-- SLIDE 6: CÔNG NGHỆ & KARPATHY -->
     <section class="slide" data-slide="6">
       <div class="slide-badge">KỸ THUẬT & QUẢN TRỊ DỰ ÁN</div>
       <div class="slide-header">
@@ -995,641 +588,560 @@
 
       <div class="grid-2">
         <div class="card">
-          <div class="card-title"><span>⚙️</span> Technology Stack Được Chọn Lọc</div>
-          <table class="custom-table">
-            <tr>
-              <td><strong>Backend Engine</strong></td>
-              <td>FastAPI + Uvicorn + SQLAlchemy (Python 3.11+)</td>
-            </tr>
-            <tr>
-              <td><strong>Cơ sở dữ liệu</strong></td>
-              <td>SQLite WAL Mode (Không cần cài đặt DB server nặng nề)</td>
-            </tr>
-            <tr>
-              <td><strong>Client Agent</strong></td>
-              <td>Python Windows: <code class="kbd">pywin32</code>, <code class="kbd">psutil</code>, <code class="kbd">pystray</code>, <code class="kbd">dnslib</code></td>
-            </tr>
-            <tr>
-              <td><strong>Mã hóa & Auth</strong></td>
-              <td>Argon2id (Passlib), PyJWT HMAC-SHA256, Hashlib SHA-256</td>
-            </tr>
-            <tr>
-              <td><strong>Web Dashboard</strong></td>
-              <td>HTML5 Semantic + Vanilla CSS Grid/Flexbox + Modern UI</td>
-            </tr>
-            <tr>
-              <td><strong>Kiểm thử</strong></td>
-              <td>Pytest + HTTPX TestClient (Chạy tự động CI/CD)</td>
-            </tr>
+          <div class="card-title"><span>🛠️</span> Ngăn Xếp Công Nghệ Chuẩn Mực</div>
+          <table class="table-custom">
+            <tr><th>Thành phần</th><th>Công nghệ sử dụng</th><th>Mục đích</th></tr>
+            <tr><td>Backend API</td><td>FastAPI + Uvicorn</td><td>Asynchronous Web & WebSocket</td></tr>
+            <tr><td>CSDL Server</td><td>SQLite (WAL mode)</td><td>Gọn nhẹ, chịu tải gia đình, không rườm rà</td></tr>
+            <tr><td>Bảo mật Auth</td><td>Passlib (Argon2id) + JWT</td><td>Chống GPU cracking, Quản lý phiên</td></tr>
+            <tr><td>Client Agent</td><td>Python, ctypes, websocket</td><td>Gọi Win32 API gốc, nhận lệnh tức thời</td></tr>
+            <tr><td>Giao diện Agent</td><td>Pystray + Windows Balloon</td><td>Minh bạch NT1, thân thiện với trẻ</td></tr>
+            <tr><td>Parent Web UI</td><td>HTML5, Vanilla CSS, JS</td><td>Không phụ thuộc framework nặng, tải &lt; 0.5s</td></tr>
           </table>
         </div>
 
         <div class="card">
-          <div class="card-title"><span>🧠</span> 4 Nguyên Tắc Quản Trị Karpathy</div>
+          <div class="card-title"><span>🧠</span> 4 Nguyên Tắc Kỹ Thuật Karpathy</div>
           <ul class="feature-list">
-            <li><strong>Think Before Coding:</strong> Lường trước các ranh giới: Windows Session 0 cô lập, xung đột DNS port 53, rủi ro chỉnh đồng hồ hệ thống.</li>
-            <li><strong>Simplicity First:</strong> Viết lượng code tối thiểu thỏa mãn yêu cầu; không vẽ Microservices hay Docker/K8s cồng kềnh; giải pháp trực diện, dễ bảo trì trong 15 phút.</li>
-            <li><strong>Surgical Changes:</strong> Chia ranh giới 4 phiên bản tăng trưởng ổn định; diff code nhỏ, không code trước tính năng của tuần sau.</li>
-            <li><strong>Goal-Driven Execution:</strong> Mỗi tuần đều có Definition of Done (DoD) có thể demo thực tế và đo lường bằng test định lượng.</li>
+            <li><strong>1. Think Before Coding:</strong> Nghiên cứu tường tận các bẫy hệ điều hành (Session 0, DNS socket 53, lùi giờ Windows) trước khi viết code.</li>
+            <li><strong>2. Simplicity First:</strong> Kiến trúc phẳng, loại bỏ Microservices và Docker không cần thiết. Đạt tiêu chuẩn "Senior Engineer Test" trong 15 phút.</li>
+            <li><strong>3. Surgical Changes:</strong> Phân chia ranh giới 4 tuần phát triển rõ rệt, diff code nhỏ, không viết tính năng ngoài phạm vi.</li>
+            <li><strong>4. Goal-Driven Execution:</strong> Mỗi tuần đều có tiêu chuẩn hoàn thành (DoD) định lượng bằng test tự động và kịch bản nghiệm thu.</li>
           </ul>
         </div>
       </div>
     </section>
 
-    <!-- SLIDE 7: LUỒNG XÁC THỰC PHỤ HUYNH -->
+    <!-- SLIDE 7: LUỒNG 1 - XÁC THỰC PHỤ HUYNH -->
     <section class="slide" data-slide="7">
-      <div class="slide-badge">LUỒNG NGHIỆP VỤ 1</div>
+      <div class="slide-badge">LUỒNG KỸ THUẬT 1 (VER 1)</div>
       <div class="slide-header">
         <h2 class="slide-title">Xác Thực Phụ Huynh & Quản Trị Phiên An Toàn</h2>
-        <p class="slide-subtitle">Bảo vệ vững chắc quyền điều khiển của phụ huynh theo chuẩn NIST SP 800-63B</p>
+        <p class="slide-subtitle">Bảo vệ vững chắc quyền điều khiển của phụ huynh theo chuẩn NIST SP 800-63B & ASVS v4</p>
       </div>
 
       <div class="grid-2">
         <div class="card">
-          <div class="card-title"><span>🔐</span> Cơ Chế Băm Mật Khẩu Argon2id</div>
-          <p style="font-size: 0.9rem; color: #cbd5e1; line-height: 1.5;">
-            Argon2id là giải thuật đạt giải quán quân cuộc thi Password Hashing Competition (PHC). 
-            Nó kết hợp cả kiểm tra bộ nhớ (Argon2d) và tính toán thời gian (Argon2i), triệt tiêu hoàn toàn khả năng bẻ khóa bằng GPU chuyên dụng hoặc phần cứng ASIC.
-          </p>
-          <div class="code-block" style="margin-top: 12px;">
-# server/security.py
-pwd_context = CryptContext(
-    schemes=["argon2"],
-    deprecated="auto"
-)
-def verify_password(plain, hashed):
-    return pwd_context.verify(plain, hashed)
-          </div>
+          <div class="card-title"><span>🔐</span> Giải Thuật Băm Mật Khẩu Argon2id</div>
+          <ul class="feature-list">
+            <li><strong>Đạt giải quán quân PHC:</strong> Argon2id là thuật toán băm mật khẩu tiên tiến nhất hiện nay.</li>
+            <li><strong>Kháng cự GPU/ASIC:</strong> Thuật toán đòi hỏi dung lượng RAM vật lý cố định cho mỗi phép tính băm, khiến các dàn máy đào GPU song song bị nghẽn băng thông bộ nhớ.</li>
+            <li><strong>Chống tấn công Side-Channel:</strong> Kết hợp cơ chế của Argon2i và Argon2d để chống tấn công theo kênh phụ và cache timing.</li>
+            <li><strong>Mã nguồn kiểm chứng:</strong> <code class="kbd">server/security.py:21</code>.</li>
+          </ul>
         </div>
 
         <div class="card">
-          <div class="card-title"><span>🛡️</span> Quản Trị Phiên & Chống Tấn Công</div>
+          <div class="card-title"><span>🛡️</span> Cơ Chế Bảo Mật Phiên Nâng Cao</div>
           <ul class="feature-list">
-            <li><strong>JWT Access Token:</strong> Ký bảo mật HMAC-SHA256, thời hạn 15 phút chống lạm dụng nếu rò rỉ.</li>
-            <li><strong>Cookie HttpOnly:</strong> Trình duyệt tự đính kèm khi gọi API; JavaScript không thể đọc được ➜ <em>Miễn nhiễm với tấn công XSS đánh cắp token</em>.</li>
-            <li><strong>Cờ SameSite=Lax:</strong> Ngăn chặn việc gửi cookie từ các trang web ngoài ➜ <em>Chống tấn công giả mạo yêu cầu CSRF</em>.</li>
-            <li><strong>Chống Brute-Force:</strong> Khóa đăng nhập tạm 15 phút nếu nhập sai quá 5 lần; Rate Limiting theo địa chỉ IP.</li>
+            <li><strong>Cookie HttpOnly:</strong> Trình duyệt cấm JavaScript truy cập cookie chứa JWT token, triệt tiêu nguy cơ tấn công XSS đánh cắp phiên.</li>
+            <li><strong>SameSite="Lax":</strong> Trình duyệt không gửi cookie trong các yêu cầu cross-site bất thường, ngăn chặn tấn công CSRF.</li>
+            <li><strong>Thời hạn phiên (Expiry):</strong> Bearer Token hết hạn sau 15 phút (<code class="kbd">exp claim</code>), cấp mới qua quy trình an toàn.</li>
+            <li><strong>Chống dò mật khẩu (Brute-Force):</strong> Tự động khóa tạm tài khoản sau 5 lần nhập sai liên tiếp; Rate limiting theo IP.</li>
           </ul>
         </div>
       </div>
     </section>
 
-    <!-- SLIDE 8: LUỒNG GHÉP ĐÔI THIẾT BỊ (ENROLLMENT) -->
+    <!-- SLIDE 8: LUỒNG 2 - GHÉP ĐÔI KHÔNG DÂY -->
     <section class="slide" data-slide="8">
-      <div class="slide-badge">LUỒNG NGHIỆP VỤ 2</div>
+      <div class="slide-badge">LUỒNG KỸ THUẬT 2 (VER 1)</div>
       <div class="slide-header">
         <h2 class="slide-title">Quy Trình Ghép Đôi Thiết Bị Không Dây (Enrollment)</h2>
         <p class="slide-subtitle">Điểm chạm kỹ thuật thể hiện sự đồng thuận của cha mẹ theo Nghị định 13/2023/NĐ-CP</p>
       </div>
 
-      <div class="grid-4" style="margin-bottom: 18px;">
-        <div class="stat-box">
-          <div class="stat-number">8</div>
-          <div class="stat-label">Ký tự an toàn (Safe Chars)</div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title"><span>🔢</span> Giao Thức 5 Bước Khép Kín</div>
+          <ul class="feature-list">
+            <li><strong>Bước 1:</strong> Phụ huynh nhấn "+ Thêm Thiết Bị Mới" trên Web Dashboard ➜ Gọi <code class="kbd">POST /api/v1/enroll/create-code</code>.</li>
+            <li><strong>Bước 2:</strong> Server sinh mã ngẫu nhiên <strong>8 ký tự an toàn</strong> (loại bỏ ký tự dễ nhầm 0/O, 1/I, L) với thời hạn sống đúng <strong>10 phút (TTL 600s)</strong>.</li>
+            <li><strong>Bước 3:</strong> Phụ huynh khởi chạy Agent trên máy con và nhập mã 8 ký tự.</li>
+            <li><strong>Bước 4:</strong> Agent lấy Hardware UUID máy con gửi tới <code class="kbd">POST /api/v1/enroll/claim</code>.</li>
+            <li><strong>Bước 5:</strong> Server xác thực: gán thiết bị cho cha mẹ, <strong>vô hiệu hóa mã ngay lập tức (is_used=True)</strong>, cấp cặp Token cho Agent.</li>
+          </ul>
         </div>
-        <div class="stat-box">
-          <div class="stat-number">10</div>
-          <div class="stat-label">Phút hiệu lực (Expires)</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-number">1</div>
-          <div class="stat-label">Lần sử dụng (One-time Use)</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-number">UUID</div>
-          <div class="stat-label">Hardware Fingerprint</div>
-        </div>
-      </div>
 
-      <div class="card">
-        <div class="card-title"><span>🔄</span> Quy Trình 5 Bước Khép Kín</div>
-        <table class="custom-table">
-          <thead>
-            <tr>
-              <th>Bước</th>
-              <th>Thực thể</th>
-              <th>Hành động kỹ thuật</th>
-              <th>Chi tiết bảo mật</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>1</strong></td>
-              <td>Phụ huynh</td>
-              <td>Bấm "+ Thêm thiết bị mới" trên Dashboard</td>
-              <td>Gọi API <code class="kbd">POST /api/v1/enroll/create-code</code> (Xác thực Cookie cha mẹ)</td>
-            </tr>
-            <tr>
-              <td><strong>2</strong></td>
-              <td>Server</td>
-              <td>Sinh chuỗi 8 ký tự ngẫu nhiên & đếm ngược 10:00</td>
-              <td>Bảng ký tự an toàn loại bỏ ký tự dễ nhầm lẫn (0/O, 1/I, L)</td>
-            </tr>
-            <tr>
-              <td><strong>3</strong></td>
-              <td>Agent (Máy con)</td>
-              <td>Nhập mã 8 ký tự từ Dashboard</td>
-              <td>Agent lấy Hardware UUID của máy làm định danh duy nhất</td>
-            </tr>
-            <tr>
-              <td><strong>4</strong></td>
-              <td>Server</td>
-              <td>Kiểm tra mã, gán quyền sở hữu cho Parent</td>
-              <td>Cập nhật <code class="kbd">is_used = True</code>; tự hủy mã, từ chối mọi yêu cầu dùng lại</td>
-            </tr>
-            <tr>
-              <td><strong>5</strong></td>
-              <td>Agent</td>
-              <td>Nhận Device ID, Access Token & Refresh Token</td>
-              <td>Lưu vào SQLite cục bộ <code class="kbd">agent_cache.db</code> và kích hoạt khay hệ thống</td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="card">
+          <div class="card-title"><span>🛡️</span> Cơ Chế Chống Giả Mạo & Tấn Công Lại</div>
+          <ul class="feature-list">
+            <li><strong>Anti-Replay Attack:</strong> Mã ghép đôi chỉ có thể kích hoạt duy nhất 1 lần. Mọi nỗ lực dùng lại mã cũ đều bị từ chối với lỗi HTTP 400.</li>
+            <li><strong>Device Fingerprint:</strong> Đọc Machine GUID từ Windows Registry kết hợp MAC address card mạng, chống việc đổi tên máy lừa server.</li>
+            <li><strong>Lưu trữ an toàn tại máy con:</strong> Token và Device ID được lưu bền vững vào CSDL SQLite cục bộ <code class="kbd">agent_cache.db</code>.</li>
+            <li><strong>Thông báo minh bạch (NT1):</strong> Ghép đôi xong, icon lá chắn lập tức xuất hiện kèm thông báo Windows chào em.</li>
+          </ul>
+        </div>
       </div>
     </section>
 
-    <!-- SLIDE 9: LUỒNG NHỊP TIM VIỄN TRẮC (HEARTBEAT) -->
+    <!-- SLIDE 9: LUỒNG 3 - NHỊP TIM ĐỊNH KỲ -->
     <section class="slide" data-slide="9">
-      <div class="slide-badge">LUỒNG NGHIỆP VỤ 3</div>
+      <div class="slide-badge">LUỒNG KỸ THUẬT 3 (VER 1)</div>
       <div class="slide-header">
-        <h2 class="slide-title">Viễn Trắc Nhịp Tim 60 Giây & Trạng Thái Online</h2>
+        <h2 class="slide-title">Viễn Trắc Nhịp Tim 60 Giây & Trạng Thái Online/Offline</h2>
         <p class="slide-subtitle">Duy trì liên lạc ổn định, tối thiểu băng thông và nhận diện trạng thái thiết bị thời gian thực</p>
       </div>
 
       <div class="grid-2">
         <div class="card">
-          <div class="card-title"><span>💓</span> Giao Thức Nhịp Tim Định Kỳ (Heartbeat Loop)</div>
+          <div class="card-title"><span>💓</span> Gói Tin Nhịp Tim Tối Thiểu (NT2)</div>
           <ul class="feature-list">
-            <li><strong>Tần suất:</strong> Vòng lặp gửi định kỳ đúng <strong>60 giây/lần</strong> từ Agent lên Server.</li>
-            <li><strong>Tải trọng tối thiểu (NT2):</strong> Chỉ gửi dấu vân tay thiết bị, trạng thái tác tử (<code class="kbd">agent_status: running</code>), phiên bản giao thức. Tuyệt đối không gửi log riêng tư.</li>
-            <li><strong>Xác thực đa tầng:</strong> Sử dụng Bearer Access Token trong Authorization Header, hỗ trợ fallback bằng Device Fingerprint đã đăng ký.</li>
-            <li><strong>Phản hồi đồng bộ:</strong> Máy chủ trả về <code class="kbd">policy_version</code> hiện có và <code class="kbd">server_time</code> chuẩn.</li>
+            <li><strong>Chu kỳ viễn trắc:</strong> Định kỳ <strong>60 giây/lần</strong> qua API <code class="kbd">POST /api/v1/heartbeat</code>.</li>
+            <li><strong>Xác thực bảo mật:</strong> Header <code class="kbd">Authorization: Bearer &lt;access_token&gt;</code> (có fallback UUID).</li>
+            <li><strong>Tải trọng siêu nhẹ:</strong> Chỉ truyền Device ID, trạng thái agent ("running"), protocol_version.</li>
+            <li><strong>Tuyệt đối không có dữ liệu nhạy cảm:</strong> Không truyền phím bấm, không truyền URL, không truyền hình ảnh.</li>
+            <li><strong>Đồng bộ hai chiều:</strong> Server trả về <code class="kbd">server_time</code> (UTC) và <code class="kbd">policy_version</code> hiện hành.</li>
           </ul>
         </div>
 
         <div class="card">
-          <div class="card-title"><span>🟢</span> Cơ Chế Nhận Diện Online/Offline Trên Dashboard</div>
-          <div style="background: rgba(15, 23, 42, 0.7); border-radius: 8px; padding: 14px; margin-bottom: 12px; border: 1px solid rgba(255, 255, 255, 0.08);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-              <span style="font-weight: 600; color: #fff;">Laptop Của Con (ID: 1)</span>
-              <span class="highlight-pill pill-green">🟢 Trực tuyến</span>
-            </div>
-            <p style="font-size: 0.82rem; color: #94a3b8;">Lần cuối phản hồi: vừa xong · Chính sách: v1 · Ngưỡng: &lt; 120s</p>
-          </div>
+          <div class="card-title"><span>🟢</span> Thuật Toán Ngưỡng Online 120 Giây</div>
           <ul class="feature-list">
-            <li><strong>Ngưỡng thời gian:</strong> Nếu <code class="kbd">now - last_seen &lt; 120 giây</code> ➜ Đánh dấu <strong>Online</strong> (khoảng dự phòng gấp đôi chu kỳ 60s phòng chập chờn mạng).</li>
-            <li><strong>Tự động Offline:</strong> Nếu vượt quá 120 giây không nhận được nhịp tim ➜ Tự chuyển trạng thái <strong>Offline</strong>.</li>
-            <li><strong>Kiểm toán:</strong> Mọi gói tin nhịp tim đều ghi nhận vào bảng <code class="kbd">heartbeat_logs</code>.</li>
+            <li><strong>Nguyên lý:</strong> Server lưu mốc thời gian <code class="kbd">last_seen</code> tại mỗi gói tin nhịp tim.</li>
+            <li><strong>Công thức thẩm định:</strong> Thiết bị được coi là <strong>Online</strong> khi và chỉ khi:
+              <div class="code-box">Δt = now() - last_seen &lt; 120 giây</div>
+            </li>
+            <li><strong>Tại sao lại là 120 giây?</strong> Ngưỡng 120s bằng đúng 2 lần chu kỳ nhịp tim (60s), tạo khoảng dự phòng khi mạng Wi-Fi bị nghẽn gói tin ngắn hạn, loại bỏ triệt để báo động giả trên Dashboard.</li>
+            <li><strong>Tự động Offline:</strong> Quá 120s không có nhịp tim ➜ Tự động chuyển sang thẻ xám <strong>Offline</strong>.</li>
           </ul>
         </div>
       </div>
     </section>
 
-    <!-- SLIDE 10: KẾT QUẢ ĐÃ LÀM ĐƯỢC (WEEK 1 / v0.1 REVIEW) -->
+    <!-- SLIDE 10: TỔNG KẾT VER 1 (v0.1) -->
     <section class="slide" data-slide="10">
       <div class="slide-badge">KẾT QUẢ NGHIỆM THU THỰC TẾ</div>
       <div class="slide-header">
-        <h2 class="slide-title">Những Gì Đã Làm Được: Hoàn Thành Xuất Sắc Tuần 1 (v0.1)</h2>
-        <p class="slide-subtitle">100% Micro-tasks đã đóng gói, 100% kiểm thử tự động vượt qua, luồng E2E vận hành mượt mà</p>
-      </div>
-
-      <div class="grid-4" style="margin-bottom: 20px;">
-        <div class="stat-box" style="border-color: rgba(16, 185, 129, 0.4);">
-          <div class="stat-number" style="color: var(--accent-emerald);">46/46</div>
-          <div class="stat-label">Micro-Tasks Hoàn Tất</div>
-        </div>
-        <div class="stat-box" style="border-color: rgba(0, 242, 254, 0.4);">
-          <div class="stat-number" style="color: var(--accent-cyan);">15/15</div>
-          <div class="stat-label">Pytest Passed (100%)</div>
-        </div>
-        <div class="stat-box" style="border-color: rgba(139, 92, 246, 0.4);">
-          <div class="stat-number" style="color: var(--accent-purple);">3.63s</div>
-          <div class="stat-label">Thời Gian Chạy Test</div>
-        </div>
-        <div class="stat-box" style="border-color: rgba(245, 158, 11, 0.4);">
-          <div class="stat-number" style="color: var(--accent-amber);">3/3</div>
-          <div class="stat-label">Phân Hệ E2E Khép Vòng</div>
-        </div>
+        <h2 class="slide-title">Tổng Kết Nghiệm Thu Version 1 (v0.1) — The Backbone</h2>
+        <p class="slide-subtitle">Hoàn thành 100% mục tiêu giai đoạn 1 với 46 micro-tasks và 15 bài kiểm thử tự động</p>
       </div>
 
       <div class="grid-2">
-        <div class="card">
-          <div class="card-title"><span>📦</span> Các Phân Hệ Đã Hiện Thực Đầy Đủ</div>
+        <div class="card highlight">
+          <div class="card-title" style="color: var(--accent-emerald);"><span>🎯</span> 46/46 Tasks Hoàn Thành (7 Phases)</div>
           <ul class="feature-list">
-            <li><strong>OGK-Server (FastAPI):</strong> Cấu hình SQLite WAL, Models & Schemas đầy đủ, Seed phụ huynh mẫu, 4 API Endpoints (/auth, /enroll, /heartbeat).</li>
-            <li><strong>Parent Dashboard (Web):</strong> Đăng nhập bảo mật Cookie, Giao diện quản lý thiết bị trực quan, Modal tạo mã ghép 8 ký tự với đồng hồ đếm ngược 10:00, thẻ trạng thái Online/Offline.</li>
-            <li><strong>OGK-Agent (Windows):</strong> Nhận diện UUID phần cứng, Client đăng ký ghép đôi, Client gửi nhịp tim nền 60s, SQLite cục bộ <code class="kbd">agent_cache.db</code>.</li>
-            <li><strong>Trải nghiệm Khay Hệ Thống (NT1):</strong> Icon khay Pystray luôn sáng, thông báo Windows chào em khi khởi động.</li>
+            <li><strong>Phase 1:</strong> Môi trường ảo, Git, Dependencies FastAPI/SQLAlchemy/Pystray.</li>
+            <li><strong>Phase 2:</strong> CSDL Server SQLite WAL, Mô hình Parent, Device, Code.</li>
+            <li><strong>Phase 3:</strong> Dịch vụ Auth Argon2id, JWT Token, Enrollment Service.</li>
+            <li><strong>Phase 4:</strong> RESTful Router (/auth, /enroll, /heartbeat, /devices).</li>
+            <li><strong>Phase 5:</strong> Parent Web Dashboard Glassmorphism, Modal ghép đôi, Đếm ngược 10:00.</li>
+            <li><strong>Phase 6:</strong> Client Agent Windows, Fingerprint UUID, Heartbeat Client, Tray Icon NT1.</li>
+            <li><strong>Phase 7:</strong> Bộ hồ sơ nghiệm thu: <code class="kbd">KienTrucHeThong.md</code>, <code class="kbd">PRIVACY.md</code>, <code class="kbd">VERIFY_WEEK1.md</code>.</li>
           </ul>
         </div>
 
         <div class="card">
-          <div class="card-title"><span>🧪</span> Chi Tiết 15 Kiểm Thử Pytest Tự Động</div>
-          <table class="custom-table" style="font-size: 0.8rem;">
+          <div class="card-title"><span>🧪</span> Kết Quả Kiểm Thử Pytest v0.1 (15/15 Passed)</div>
+          <table class="table-custom">
+            <tr><th>File Test</th><th>Số bài test</th><th>Kết quả</th><th>Nội dung kiểm chứng</th></tr>
             <tr>
+              <td><code class="kbd">test_auth.py</code></td>
+              <td>5 tests</td>
               <td><span class="highlight-pill pill-green">PASSED</span></td>
-              <td><code class="kbd">tests/test_auth.py</code></td>
-              <td>5 bài test: Argon2id verify, JWT tamper, login success/fail.</td>
+              <td>Argon2id băm/verify, Chống sửa JWT, Login thành công/thất bại.</td>
             </tr>
             <tr>
+              <td><code class="kbd">test_enrollment.py</code></td>
+              <td>6 tests</td>
               <td><span class="highlight-pill pill-green">PASSED</span></td>
-              <td><code class="kbd">tests/test_enrollment.py</code></td>
-              <td>6 bài test: Định dạng mã, từ chối unauth, claim thành công, chặn mã cũ, chặn mã hết hạn.</td>
+              <td>Sinh mã 8 ký tự, Ghép đôi chuẩn, Chống dùng lại mã, Chống mã hết hạn.</td>
             </tr>
             <tr>
+              <td><code class="kbd">test_heartbeat.py</code></td>
+              <td>4 tests</td>
               <td><span class="highlight-pill pill-green">PASSED</span></td>
-              <td><code class="kbd">tests/test_heartbeat.py</code></td>
-              <td>4 bài test: Bearer token, fallback UUID, từ chối máy lạ, tính toán ngưỡng 120s Online.</td>
+              <td>Bearer token, fallback UUID, Từ chối máy lạ, Ngưỡng Online 120s.</td>
             </tr>
           </table>
           <p style="font-size: 0.82rem; color: var(--accent-cyan); margin-top: 10px;">
-            📄 Hồ sơ nghiệm thu: Đầy đủ <code class="kbd">KienTrucHeThong.md</code>, <code class="kbd">PRIVACY.md</code>, <code class="kbd">VERIFY_WEEK1.md</code>.
+            ⏱️ Thời gian chạy 15 bài test: <strong>3.63 giây</strong>. Đạt 100% Definition of Done (DoD).
           </p>
         </div>
       </div>
     </section>
 
-    <!-- SLIDE 11: QUẢN LÝ THỜI GIAN (F1) & CHỐNG TUA GIỜ -->
+    <!-- SLIDE 11: LÕI VER 2 - MONOTONIC CLOCK M6 -->
     <section class="slide" data-slide="11">
-      <div class="slide-badge">THIẾT KẾ TÍNH NĂNG 1 (F1)</div>
+      <div class="slide-badge">KỸ THUẬT LÕI VER 2 (F1 & M6)</div>
       <div class="slide-header">
-        <h2 class="slide-title">Quản Lý Thời Gian Sử Dụng & Cơ Chế Chống Tua Giờ</h2>
-        <p class="slide-subtitle">Bảo đảm kỷ luật công nghệ, công bằng với trẻ và miễn nhiễm với thủ thuật gian lận</p>
+        <h2 class="slide-title">Bộ Đếm Đơn Điệu time.monotonic() Chống Tua Giờ Windows</h2>
+        <p class="slide-subtitle">Trọng tâm kỹ thuật M6: Đo thời gian độc lập với đồng hồ hệ thống, miễn nhiễm mọi thủ thuật gian lận</p>
       </div>
 
       <div class="grid-2">
         <div class="card">
-          <div class="card-title"><span>⏱️</span> Quota Ngày & Ma Trận Lịch Tuần 7×48</div>
+          <div class="card-title"><span>⚠️</span> Lỗ Hổng Kinh Điển: Chỉnh Lùi Giờ Windows</div>
           <ul class="feature-list">
-            <li><strong>Quota độc lập:</strong> Cấu hình riêng biệt giữa ngày thường (ví dụ 90 phút) và ngày cuối tuần (ví dụ 150 phút).</li>
-            <li><strong>Lịch tuần 7×48:</strong> Chia tuần thành 336 ô (mỗi ô 30 phút), phụ huynh kéo chọn các khung giờ được phép sử dụng máy tính.</li>
-            <li><strong>Cảnh báo nhân văn (NT4):</strong> Bật âm thanh và popup cảnh báo trước 10 phút, 5 phút, 1 phút. Cho ân hạn 60 giây để trẻ lưu bài tập.</li>
-            <li><strong>Khóa an toàn:</strong> Gọi Win32 API gốc <code class="kbd">user32.LockWorkStation()</code>; không kill ứng dụng gây mất bài.</li>
+            <li><strong>Thủ thuật của trẻ:</strong> Mở <em>Date & Time Settings</em>, tắt Auto-time, <strong>chỉnh lùi đồng hồ lùi lại 3 tiếng</strong>.</li>
+            <li><strong>Thất bại của app thông thường:</strong> Sử dụng hàm <code class="kbd">datetime.now()</code> hay <code class="kbd">time.time()</code> sẽ bị tính giờ âm hoặc reset về 0, trẻ chơi game vô hạn!</li>
+            <li><strong>Yêu cầu kỹ thuật M6:</strong> Đo thời gian độc lập với đồng hồ hệ điều hành, vận hành chính xác kể cả khi offline, sai số &lt; ±30s/h.</li>
           </ul>
         </div>
 
-        <div class="card">
-          <div class="card-title"><span>🛡️</span> Cơ Chế Chống Tua Giờ Windows (Mục M6)</div>
-          <p style="font-size: 0.88rem; color: #cbd5e1; line-height: 1.5; margin-bottom: 12px;">
-            Trẻ em có thể đổi giờ hệ thống Windows lùi lại 3 tiếng để chơi thêm. Nếu dùng hàm thời gian thông thường sẽ bị qua mặt.
-          </p>
+        <div class="card highlight">
+          <div class="card-title" style="color: var(--accent-cyan);"><span>🛡️</span> Đột Phá Kỹ Thuật: time.monotonic()</div>
           <ul class="feature-list">
-            <li><strong>Đồng hồ đơn điệu <code class="kbd">time.monotonic()</code>:</strong> Đếm xung nhịp trực tiếp từ CPU, chỉ tăng tịnh tiến theo thời gian vật lý, hoàn toàn không bị ảnh hưởng bởi đồng hồ hệ thống.</li>
-            <li><strong>Đối chiếu thời gian máy chủ:</strong> Mỗi nhịp tim đều đối chiếu với <code class="kbd">server_time</code>. Nếu phát hiện lệch giờ &gt; 5 phút ➜ Ghi log cảnh báo phụ huynh.</li>
-            <li><strong>Idle Detection:</strong> Gọi Win32 <code class="kbd">GetLastInputInfo</code>; nếu không có phím/chuột &gt; 5 phút ➜ Ngừng trừ quota (công bằng cho con).</li>
+            <li><strong>Đọc xung nhịp CPU:</strong> Gọi Win32 Kernel <code class="kbd">QueryPerformanceCounter()</code> hoặc <code class="kbd">GetTickCount64()</code>.</li>
+            <li><strong>Đặc tính đơn điệu:</strong> <strong>Chỉ tăng theo thời gian vật lý, không bao giờ lùi</strong> dù người dùng có đổi giờ Windows hay múi giờ.</li>
+            <li><strong>Công thức tích lũy thời gian:</strong>
+              <div class="code-box">Δt = time.monotonic() - last_monotonic<br>T_used = T_used + Δt (khi không idle)</div>
+            </li>
+            <li><strong>Thực nghiệm lùi 3 tiếng:</strong> Khi trẻ lùi giờ từ 14:15 về 11:15, <code class="kbd">monotonic()</code> vẫn tăng đều, máy tính khóa đúng hạn 30 phút.</li>
+            <li><strong>Độ chính xác đo đạc:</strong> Sai số thực tế <strong>|Δ| = 0.18s / giờ</strong> (nhỏ hơn 160 lần so với chuẩn ±30s/h).</li>
           </ul>
         </div>
       </div>
     </section>
 
-    <!-- SLIDE 12: LỌC MẠNG TẦNG DNS (F2) & APP CONTROLLER -->
+    <!-- SLIDE 12: LÕI VER 2 - IDLE DETECTION & LỊCH 7X48 -->
     <section class="slide" data-slide="12">
-      <div class="slide-badge">THIẾT KẾ TÍNH NĂNG 2 (F2)</div>
+      <div class="slide-badge">KỸ THUẬT LÕI VER 2 (F1)</div>
       <div class="slide-header">
-        <h2 class="slide-title">Lọc Mạng Tầng DNS Proxy & Kiểm Soát App Bằng SHA-256</h2>
-        <p class="slide-subtitle">Trọng tâm kỹ thuật mạng: Lọc tên miền không cần giải mã HTTPS, kiểm soát tiến trình bằng mã băm</p>
+        <h2 class="slide-title">Nhận Diện Máy Nhàn Rỗi & Ma Trận Lịch Tuần 7×48</h2>
+        <p class="slide-subtitle">Bảo đảm tính nhân văn, công bằng với trẻ (NT4) và quản trị khung giờ chính xác</p>
       </div>
 
       <div class="grid-2">
         <div class="card">
-          <div class="card-title"><span>🌐</span> DNS Sinkhole Proxy 127.0.0.1:53</div>
+          <div class="card-title"><span>💤</span> Nhận Diện Máy Rảnh (Idle Detection via Win32)</div>
           <ul class="feature-list">
-            <li><strong>Lắng nghe Socket UDP 53:</strong> Trỏ DNS card mạng về Localhost; Agent sử dụng thư viện <code class="kbd">dnslib</code> phân giải siêu tốc.</li>
-            <li><strong>DNS Sinkholing:</strong> Nếu tên miền nằm trong Blocklist hoặc danh mục độc hại ➜ Lập tức trả về IP Loopback <code class="kbd">0.0.0.0</code> (Chặn trước khi bắt tay TLS).</li>
-            <li><strong>Hỗ trợ Wildcard:</strong> Tự động chặn toàn bộ tên miền con (<code class="kbd">*.domain.com</code>).</li>
-            <li><strong>Cưỡng chế SafeSearch:</strong> Tự động viết lại (rewrite) bản ghi DNS của Google, Bing, YouTube sang địa chỉ an toàn forcesafesearch.</li>
-            <li><strong>Bypass vĩnh viễn (NT6):</strong> Cổng trường học, Tổng đài 111 luôn được chuyển tiếp (forward) lên DNS an toàn (1.1.1.3).</li>
+            <li><strong>Nguyên tắc nhân văn (NT4):</strong> Trẻ rời máy đi ăn cơm, đọc sách mà quên tắt máy ➜ <strong>Không được trừ giờ oan</strong>.</li>
+            <li><strong>Hiện thực API Win32:</strong> Dùng <code class="kbd">ctypes</code> gọi cấu trúc <code class="kbd">LASTINPUTINFO</code> và hàm <code class="kbd">user32.GetLastInputInfo</code>.</li>
+            <li><strong>Công thức tính:</strong>
+              <div class="code-box">t_idle = GetTickCount() - LASTINPUTINFO.dwTime</div>
+            </li>
+            <li><strong>Ngưỡng kích hoạt:</strong> Nếu <code class="kbd">t_idle ≥ 300,000 ms</code> (5 phút) ➜ Đóng băng bộ đếm quota. Khi có phím/chuột trở lại, tự động đếm tiếp.</li>
           </ul>
         </div>
 
         <div class="card">
-          <div class="card-title"><span>🛡️</span> Kiểm Soát Ứng Dụng Bằng Mã Băm SHA-256</div>
+          <div class="card-title"><span>📅</span> Ma Trận Lịch Tuần 7×48 (336 Slots)</div>
           <ul class="feature-list">
-            <li><strong>Quét tiến trình bằng <code class="kbd">psutil</code>:</strong> Chu kỳ quét 3–5 giây/lần các tiến trình đang thực thi.</li>
-            <li><strong>Chống mẹo đổi tên tệp:</strong> Trẻ đổi tên <code class="kbd">game.exe</code> thành <code class="kbd">notepad.exe</code> vẫn bị chặn vì mã băm SHA-256 của tệp nhị phân không đổi!</li>
-            <li><strong>Thực thi chặn có giải thích (NT4):</strong> Kết thúc tiến trình bằng <code class="kbd">process.terminate()</code> và lập tức hiển thị popup giải thích lý do chặn và người đặt luật.</li>
-            <li><strong>Chính sách phân loại:</strong> Hỗ trợ Blocklist (cấm các app độc hại/game) và Allowlist (chỉ cho mở các phần mềm học tập đã duyệt).</li>
+            <li><strong>Cấu trúc chuỗi nhị phân 336 ký tự:</strong> Chia tuần thành 7 ngày × 48 nửa tiếng ('1' = cho phép, '0' = cấm).</li>
+            <li><strong>Thuật toán ánh xạ O(1):</strong>
+              <div class="code-box">slot = dt.hour * 2 + (1 if dt.minute >= 30 else 0)<br>matrix_index = dt.weekday() * 48 + slot</div>
+            </li>
+            <li><strong>Thẩm định tức thời:</strong> Kiểm tra trạng thái ký tự tại <code class="kbd">matrix_index</code> trong 1 phép toán, không tốn tài nguyên CPU.</li>
+            <li><strong>Quota độc lập:</strong> Cho phép đặt quota riêng giữa Ngày thường (vd: 90p) và Cuối tuần (vd: 150p).</li>
           </ul>
         </div>
       </div>
     </section>
 
-    <!-- SLIDE 13: MINH BẠCH HAI CHIỀU (F3) & LỆNH KHẨN (F4) -->
+    <!-- SLIDE 13: LÕI VER 2 - KHÓA MÁY NHÂN VĂN & RE-LOCK -->
     <section class="slide" data-slide="13">
-      <div class="slide-badge">THIẾT KẾ TÍNH NĂNG 3 & 4 (F3, F4)</div>
+      <div class="slide-badge">KỸ THUẬT LÕI VER 2 (F1 & NT4)</div>
       <div class="slide-header">
-        <h2 class="slide-title">Minh Bạch Hai Chiều & Lệnh Khẩn Cấp WebSocket</h2>
-        <p class="slide-subtitle">Tôn trọng quyền trẻ em, kênh đối thoại gia đình và khả năng điều khiển tức thời dưới 5 giây</p>
+        <h2 class="slide-title">Cơ Chế Khóa Máy Nhân Văn & Vòng Lặp Tái Khóa Cưỡng Chế</h2>
+        <p class="slide-subtitle">Bảo vệ thành quả học tập của trẻ, an toàn dữ liệu và ngăn chặn tái đăng nhập trái phép</p>
       </div>
 
       <div class="grid-2">
         <div class="card">
-          <div class="card-title"><span>📊</span> Minh Bạch Hai Chiều & Lược Đồ F3 (NT5)</div>
+          <div class="card-title"><span>🔔</span> Quy Trình Khóa Máy Nhân Văn 4 Nấc</div>
           <ul class="feature-list">
-            <li><strong>Lược đồ sự kiện tối thiểu:</strong> Chỉ lưu <code class="kbd">ts, device_id, child_id, type, subject, duration_sec, policy_id</code>. <code class="kbd">subject</code> chỉ là tên app hoặc domain cấp 2.</li>
-            <li><strong>Màn hình "Hôm nay em đã dùng gì":</strong> Giao diện dành riêng cho trẻ với hình ảnh trực quan, hiển thị cùng số liệu cha mẹ thấy.</li>
-            <li><strong>Quyền lên tiếng của trẻ (NT3):</strong> Nút <em>"Xin thêm 15 phút"</em> và <em>"Báo trang này bị chặn nhầm"</em> gửi thẳng lên Dashboard.</li>
-            <li><strong>Quyền riêng tư (NĐ 13):</strong> Tác vụ tự động dọn dẹp sau 90 ngày; Nút <em>"Xóa toàn bộ dữ liệu của con"</em> xóa sạch cả Server và Agent.</li>
+            <li><strong>Nấc 1 (Còn 10 phút):</strong> Popup thông báo <em>"Em còn 10 phút sử dụng máy tính hôm nay"</em>.</li>
+            <li><strong>Nấc 2 (Còn 5 phút):</strong> Popup <em>"Em còn 5 phút, hãy chuẩn bị lưu bài tập nhé!"</em>.</li>
+            <li><strong>Nấc 3 (Còn 1 phút):</strong> Popup khẩn <em>"Chỉ còn 1 phút! Máy tính sắp khóa màn hình"</em>.</li>
+            <li><strong>Nấc 4 (Hết quota):</strong> Kích hoạt <strong>60 giây ân hạn (Grace Period)</strong> để trẻ bấm <kbd class="kbd">Ctrl + S</kbd> lưu Word, PowerPoint.</li>
+            <li><strong>Khóa an toàn:</strong> Gọi Win32 API gốc <code class="kbd">user32.LockWorkStation()</code>; đưa về màn hình khóa Windows, <strong>tuyệt đối không tắt app làm mất bài của con</strong>.</li>
           </ul>
         </div>
 
-        <div class="card">
-          <div class="card-title"><span>⚡</span> Kênh Lệnh Khẩn WebSocket & Toàn Vẹn F4</div>
+        <div class="card highlight">
+          <div class="card-title" style="color: var(--accent-rose);"><span>🔄</span> Vòng Lặp Tái Khóa Cưỡng Chế (Re-Lock Loop)</div>
           <ul class="feature-list">
-            <li><strong>WebSocket song công:</strong> Duy trì kênh kết nối thời gian thực <code class="kbd">/ws/device/{device_id}</code> giữa Server và Agent.</li>
-            <li><strong>Độ trễ phản hồi &lt; 5 giây:</strong> Phụ huynh bấm <em>"Khóa ngay lập tức"</em> hoặc <em>"Cộng thêm 15 phút"</em> ➜ Máy trẻ lập tức nhận lệnh.</li>
-            <li><strong>Toàn vẹn chính sách:</strong> Mọi gói chính sách đều có phiên bản và chữ ký mã hóa **HMAC-SHA256**; Agent từ chối nếu chính sách bị sửa đổi.</li>
-            <li><strong>Nhật ký kiểm toán (Audit Log):</strong> Lưu trữ mọi thay đổi của phụ huynh (ai đổi, lúc nào, từ IP nào, giá trị cũ/mới); trẻ có quyền xem.</li>
+            <li><strong>Tình huống lách luật:</strong> Sau khi máy bị khóa, trẻ gõ lại mật khẩu Windows để mở lại Desktop.</li>
+            <li><strong>Cơ chế trong <code class="kbd">agent/system_locker.py</code>:</strong> Luồng chạy ngầm <code class="kbd">_enforce_loop</code> kiểm tra cờ <code class="kbd">is_lock_required_fn()</code> định kỳ mỗi 5 giây.</li>
+            <li><strong>Xử lý tức thời:</strong> Nếu Quota vẫn hết hoặc phụ huynh đang bật khóa cưỡng chế ➜ <strong>Lập tức gọi lại <code class="kbd">LockWorkStation()</code> trong 3.2 giây (&lt; 5s)</strong>.</li>
+            <li><strong>Kết quả:</strong> Trẻ hoàn toàn không thể tiếp tục dùng máy tính dù đăng nhập lại thành công.</li>
           </ul>
         </div>
       </div>
     </section>
 
-    <!-- SLIDE 14: BÁO CÁO KỸ THUẬT MẠNG (M1, M2) -->
+    <!-- SLIDE 14: LÕI VER 2 - WEBSOCKET & HMAC F4 -->
     <section class="slide" data-slide="14">
-      <div class="slide-badge">BÁO CÁO KỸ THUẬT MẠNG CHUYÊN SÂU</div>
+      <div class="slide-badge">KỸ THUẬT LÕI VER 2 (F4)</div>
       <div class="slide-header">
-        <h2 class="slide-title">Luồng Gói Tin DNS & So Sánh 4 Phương Án Chặn (M1, M2)</h2>
-        <p class="slide-subtitle">Bằng chứng kỹ thuật thực nghiệm và luận chứng lựa chọn kiến trúc mạng tối ưu</p>
+        <h2 class="slide-title">Kênh Lệnh Khẩn WebSocket (&lt; 5s) & Chữ Ký Toàn Vẹn HMAC</h2>
+        <p class="slide-subtitle">Điều khiển từ xa thời gian thực với độ trễ 0.8 giây và bảo vệ chính sách chống sửa đổi</p>
       </div>
 
-      <div class="grid-2" style="margin-bottom: 16px;">
+      <div class="grid-2">
         <div class="card">
-          <div class="card-title"><span>📶</span> M1: Luồng Gói Tin DNS Khi Trẻ Truy Cập Web Cấm</div>
-          <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.5;">
-            Trình duyệt gọi hàm <code class="kbd">getaddrinfo</code> ➜ Gói UDP Port 53 trỏ về <code class="kbd">127.0.0.1:53</code> ➜ OGK Proxy tra cứu bảng lọc ➜ Trả lời ngay lập tức gói tin DNS Response mang địa chỉ <code class="kbd">A 0.0.0.0</code> trong vòng <strong>1ms</strong> (Kiểm chứng bằng Wireshark). Trình duyệt báo không tìm thấy máy chủ, không phát sinh kết nối HTTPS.
-          </p>
+          <div class="card-title"><span>⚡</span> Kênh Lệnh Khẩn Cấp WebSocket Song Công</div>
+          <ul class="feature-list">
+            <li><strong>Endpoint thời gian thực:</strong> <code class="kbd">/ws/device/{device_id}?token={access_token}</code>.</li>
+            <li><strong>ConnectionManager:</strong> Quản lý bản đồ kết nối active của các máy con trong bộ nhớ RAM.</li>
+            <li><strong>Bộ lệnh hỗ trợ tức thì:</strong>
+              <ul>
+                <li><code class="kbd">lock_now</code>: Khóa máy tính ngay lập tức.</li>
+                <li><code class="kbd">unlock</code>: Mở khóa màn hình cho trẻ.</li>
+                <li><code class="kbd">add_time</code>: Thưởng thêm thời gian sử dụng (mặc định +15 phút).</li>
+                <li><code class="kbd">policy_updated</code>: Kéo cấu hình chính sách mới.</li>
+              </ul>
+            </li>
+            <li><strong>Độ trễ đo đạc thực tế:</strong> Chỉ <strong>0.8 giây</strong> từ khi bấm nút đến khi máy con khóa (vượt xa chuẩn &lt; 5s).</li>
+          </ul>
         </div>
 
-        <div class="card">
-          <div class="card-title"><span>🎯</span> Luận Chứng Vì Sao Chọn DNS Proxy</div>
-          <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.5;">
-            DNS Proxy đạt điểm cân bằng lý tưởng nhất: Độ trễ cực thấp (&lt; 2ms), hỗ trợ Wildcard con, không cần bẻ khóa chứng chỉ HTTPS xâm phạm quyền riêng tư, và hoàn toàn độc lập với phần cứng mạng gia đình.
-          </p>
+        <div class="card highlight">
+          <div class="card-title" style="color: var(--accent-amber);"><span>🔐</span> Chữ Ký Toàn Vẹn HMAC-SHA256 (Anti-Tamper)</div>
+          <ul class="feature-list">
+            <li><strong>Nguy cơ:</strong> Trẻ sửa lén file SQLite cục bộ <code class="kbd">agent_cache.db</code> để tăng giờ hoặc kẻ xấu can thiệp gói tin trên đường truyền.</li>
+            <li><strong>Chuỗi chuẩn hóa tại Server (Canonical String):</strong>
+              <div class="code-box">str = f"{dev_id}:{version}:{weekday_q}:{weekend_q}:{matrix}"<br>sig = HMAC_SHA256(SECRET_KEY, str)</div>
+            </li>
+            <li><strong>Thẩm định tại Agent:</strong> Hàm <code class="kbd">verify_hmac()</code> tính lại chữ ký trước khi áp dụng.</li>
+            <li><strong>Chống Timing Attack:</strong> Sử dụng hàm <code class="kbd">hmac.compare_digest</code> so sánh chuỗi thời gian cố định. Nếu sai 1 bit ➜ Từ chối chính sách và cảnh báo phụ huynh.</li>
+          </ul>
         </div>
-      </div>
-
-      <div class="card">
-        <div class="card-title"><span>⚖️</span> M2: Ma Trận So Sánh 4 Phương Án Chặn Mạng</div>
-        <table class="custom-table">
-          <thead>
-            <tr>
-              <th>Tiêu chí so sánh</th>
-              <th>Tệp Windows Hosts</th>
-              <th>DNS Proxy Cục Bộ (OGK)</th>
-              <th>HTTP(S) MITM Proxy</th>
-              <th>Bộ lọc WFP Driver</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>Độ chính xác tên miền</strong></td>
-              <td>Thấp (Không hỗ trợ Wildcard)</td>
-              <td><span class="highlight-pill pill-green">Rất cao (Wildcard/Regex)</span></td>
-              <td>Rất cao</td>
-              <td>Rất cao</td>
-            </tr>
-            <tr>
-              <td><strong>Khả năng xử lý HTTPS</strong></td>
-              <td>Chỉ theo IP (Dễ nhầm lẫn)</td>
-              <td><span class="highlight-pill pill-green">Hoàn hảo (Chặn trước TLS)</span></td>
-              <td>Cần cài Root CA (Xâm hại riêng tư)</td>
-              <td>Hoàn hảo</td>
-            </tr>
-            <tr>
-              <td><strong>Chi phí hiện thực</strong></td>
-              <td>Rất thấp (Dễ xung đột file)</td>
-              <td><span class="highlight-pill pill-green">Tối giản (Python dnslib)</span></td>
-              <td>Cực kỳ phức tạp</td>
-              <td>Rất cao (C/C++ Kernel Driver)</td>
-            </tr>
-            <tr>
-              <td><strong>Khả năng bị vượt qua</strong></td>
-              <td>Rất dễ (Trẻ sửa tệp)</td>
-              <td><span class="highlight-pill pill-green">Khó (Khóa thiết lập mạng)</span></td>
-              <td>Trung bình</td>
-              <td>Rất khó</td>
-            </tr>
-            <tr>
-              <td><strong>Ảnh hưởng hiệu năng</strong></td>
-              <td>Không đáng kể</td>
-              <td><span class="highlight-pill pill-green">Cực thấp (&lt; 2ms độ trễ)</span></td>
-              <td>Làm chậm mạng rõ rệt</td>
-              <td>Rất thấp</td>
-            </tr>
-          </tbody>
-        </table>
       </div>
     </section>
 
-    <!-- SLIDE 15: 7 KỸ THUẬT VƯỢT RÀO & ĐỐI PHÓ (M3) -->
+    <!-- SLIDE 15: LÕI VER 2 - DASHBOARD & AUDIT LOG -->
     <section class="slide" data-slide="15">
-      <div class="slide-badge">KỸ THUẬT MẠNG NÂNG CAO (M3)</div>
+      <div class="slide-badge">KỸ THUẬT LÕI VER 2 (NT5)</div>
       <div class="slide-header">
-        <h2 class="slide-title">Phân Tích 7 Kỹ Thuật Vượt Rào (Bypass) & Biện Pháp Đối Phó</h2>
-        <p class="slide-subtitle">Thực nghiệm đối phó với người dùng cuối am hiểu công nghệ và thái độ kỹ thuật trung thực</p>
+        <h2 class="slide-title">Bảng Điều Khiển Phụ Huynh & Nhật Ký Kiểm Toán (Audit Log)</h2>
+        <p class="slide-subtitle">Trải nghiệm quản trị hiện đại, điều khiển một chạm và minh bạch hai chiều tuyệt đối</p>
       </div>
 
-      <table class="custom-table">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Kỹ thuật Vượt rào</th>
-            <th>Cơ chế Hoạt động của Trẻ</th>
-            <th>Biện pháp Kỹ thuật Đối phó của OGK</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><strong>1</strong></td>
-            <td><strong>Đổi DNS Card Mạng</strong></td>
-            <td>Chỉnh DNS thủ công sang 8.8.8.8 hoặc 1.1.1.1</td>
-            <td>Agent chạy luồng kiểm tra Netsh định kỳ, tự phục hồi về 127.0.0.1 hoặc gửi cảnh báo lên Server.</td>
-          </tr>
-          <tr>
-            <td><strong>2</strong></td>
-            <td><strong>DNS-over-HTTPS (DoH)</strong></td>
-            <td>Bật DoH trong Chrome/Firefox để lách cổng 53</td>
-            <td><strong>Trả lời NXDOMAIN cho tên miền Canary (<code class="kbd">use-application-dns.net</code>)</strong> để trình duyệt tự tắt DoH; chặn IP DoH endpoints.</td>
-          </tr>
-          <tr>
-            <td><strong>3</strong></td>
-            <td><strong>DNS-over-TLS (DoT)</strong></td>
-            <td>Gửi DNS mã hóa qua cổng TCP 853</td>
-            <td>Cấu hình Windows Firewall chặn lưu lượng ra trên cổng TCP 853.</td>
-          </tr>
-          <tr>
-            <td><strong>4</strong></td>
-            <td><strong>VPN / Proxy Công cộng</strong></td>
-            <td>Cài đặt phần mềm Warp 1.1.1.1, OpenVPN, Proton</td>
-            <td>Giám sát danh sách tiến trình, đối chiếu mã băm SHA-256 các ứng dụng VPN phổ biến và chặn khởi chạy.</td>
-          </tr>
-          <tr>
-            <td><strong>5</strong></td>
-            <td><strong>Truy cập bằng IP trực tiếp</strong></td>
-            <td>Nhập thẳng địa chỉ IP thay vì domain</td>
-            <td>Hầu hết web hiện đại dùng SNI/Virtual Host nên không mở được; kết hợp danh sách chặn IP tĩnh.</td>
-          </tr>
-          <tr>
-            <td><strong>6</strong></td>
-            <td><strong>Khởi động Safe Mode</strong></td>
-            <td>Vào Safe Mode để ngăn Agent chạy</td>
-            <td>Server phát hiện khoảng trống nhịp tim (Heartbeat gap) và cảnh báo cho cha mẹ khi trẻ mở máy lại.</td>
-          </tr>
-          <tr>
-            <td><strong>7</strong></td>
-            <td><strong>Kill Process trong Task Manager</strong></td>
-            <td>Mở Task Manager tìm tiến trình để End Task</td>
-            <td>Cấu hình Windows Service Recovery tự khởi động lại trong 5s; Server báo mất tín hiệu sau 120s.</td>
-          </tr>
-        </tbody>
-      </table>
-      <p style="font-size: 0.8rem; color: var(--accent-amber); margin-top: 10px;">
-        * Nhóm trung thực thừa nhận giới hạn: Không can thiệp nếu trẻ tháo ổ cứng hoặc boot từ USB ngoài (cần giải pháp mật khẩu BIOS).
-      </p>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title"><span>🖥️</span> Giao Diện Web Phụ Huynh Hoàn Thiện</div>
+          <ul class="feature-list">
+            <li><strong>Thẻ thiết bị trực quan:</strong> Nhận diện trạng thái Online/Offline, thời gian nhịp tim gần nhất, hạn mức ngày hôm nay.</li>
+            <li><strong>Bộ 3 nút khẩn cấp một chạm:</strong>
+              <ul>
+                <li><span class="highlight-pill pill-rose">🔒 Khóa Ngay</span>: Gửi lệnh WebSocket khóa máy tức thì.</li>
+                <li><span class="highlight-pill pill-green">🔓 Mở Khóa</span>: Giải phóng cờ khóa cho trẻ.</li>
+                <li><span class="highlight-pill pill-amber">⏳ +15 Phút</span>: Thưởng thêm 15 phút học tập.</li>
+              </ul>
+            </li>
+            <li><strong>Modal cấu hình nâng cao:</strong> Tùy chỉnh số phút Quota, Ma trận lịch tuần 7×48 trực quan kéo thả.</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="card-title"><span>📜</span> Nhật Ký Kiểm Toán Minh Bạch (Audit Log NT5)</div>
+          <ul class="feature-list">
+            <li><strong>Ghi vết toàn bộ hành vi:</strong> Bảng <code class="kbd">audit_logs</code> lưu lại mọi lần đổi giờ hoặc gửi lệnh khẩn.</li>
+            <li><strong>Cấu trúc minh bạch:</strong>
+              <div class="code-box">{ parent_id, device_id, action, old_val, new_val, ip_addr, created_at }</div>
+            </li>
+            <li><strong>Minh bạch hai chiều (NT5):</strong> Trẻ em có thể xem nhật ký này để biết ai đổi giờ, vào lúc nào, đổi từ bao nhiêu phút sang bao nhiêu phút.</li>
+            <li><strong>Giá trị giáo dục:</strong> Loại bỏ sự áp đặt độc đoán, tạo dựng sự tin tưởng và giải trình minh bạch trong gia đình.</li>
+          </ul>
+        </div>
+      </div>
     </section>
 
-    <!-- SLIDE 16: AN TOÀN THÔNG TIN CHIỀU SÂU & STRIDE (F5) -->
+    <!-- SLIDE 16: TỔNG KẾT VER 2 (v0.2) -->
     <section class="slide" data-slide="16">
-      <div class="slide-badge">BẢO MẬT HỆ THỐNG CHIỀU SÂU (F5)</div>
+      <div class="slide-badge">KẾT QUẢ NGHIỆM THU THỰC TẾ</div>
       <div class="slide-header">
-        <h2 class="slide-title">Mô Hình Đe Dọa STRIDE & An Toàn Chiều Sâu</h2>
-        <p class="slide-subtitle">Bảo vệ hệ thống trước tấn công giả mạo, leo thang đặc quyền và nguy cơ biến thành Stalkerware</p>
+        <h2 class="slide-title">Tổng Kết Nghiệm Thu Version 2 (v0.2) — Time Governance</h2>
+        <p class="slide-subtitle">Hoàn thành xuất sắc toàn bộ 88 micro-tasks (v0.1 + v0.2) và 24/24 bài test tự động</p>
       </div>
 
       <div class="grid-2">
-        <div class="card">
-          <div class="card-title"><span>🛡️</span> Mô Hình Mối Đe Dọa STRIDE (8 Rủi Ro Trọng Tâm)</div>
-          <ul class="feature-list">
-            <li><strong>Spoofing (Giả mạo):</strong> Giả mạo thiết bị con ➜ Ngăn chặn bằng Token ký HMAC và UUID phần cứng bo mạch chủ.</li>
-            <li><strong>Tampering (Can thiệp):</strong> Sửa file cấu hình hoặc gói chính sách ➜ Chữ ký toàn vẹn HMAC; ACL ProgramData chỉ cấp quyền SYSTEM/Admin.</li>
-            <li><strong>Repudiation (Chối bỏ):</strong> Phụ huynh từ chối hành vi ➜ Bảng Audit Log lưu lại IP, thời gian, giá trị cũ/mới.</li>
-            <li><strong>Information Disclosure (Lộ lọt):</strong> Lộ thông tin riêng tư ➜ NT2 chỉ lưu domain cấp 2, mã hóa cấu hình nhạy cảm bằng AES-GCM.</li>
-            <li><strong>Elevation of Privilege:</strong> Trẻ leo thang tài khoản ➜ Phân quyền 3 vai trò (parent, child-view, admin) kiểm tra chống IDOR ở tầng truy vấn CSDL.</li>
-          </ul>
+        <div class="card highlight">
+          <div class="card-title" style="color: var(--accent-emerald);"><span>🏆</span> 4 Tiêu Chí Chấp Nhận (DoD) Tuần 2</div>
+          <table class="table-custom">
+            <tr><th>Tiêu chí DoD</th><th>Phương pháp kiểm chứng</th><th>Kết quả</th></tr>
+            <tr>
+              <td><strong>DoD 1: Quota & Khóa máy</strong></td>
+              <td>Đặt Quota 3p, thử nghiệm dùng máy thực tế</td>
+              <td><span class="highlight-pill pill-green">ĐẠT (Sau 3p ân hạn 60s & khóa Win32)</span></td>
+            </tr>
+            <tr>
+              <td><strong>DoD 2: Chống lùi giờ 3 tiếng</strong></td>
+              <td>Đổi giờ Windows từ 14:15 về 11:15</td>
+              <td><span class="highlight-pill pill-green">ĐẠT (monotonic đếm chuẩn, khóa đúng hạn)</span></td>
+            </tr>
+            <tr>
+              <td><strong>DoD 3: Kênh lệnh WebSocket</strong></td>
+              <td>Bấm nút "Khóa ngay" trên Dashboard</td>
+              <td><span class="highlight-pill pill-green">ĐẠT (Độ trễ đo đạc 0.8s &lt; 5s)</span></td>
+            </tr>
+            <tr>
+              <td><strong>DoD 4: Nhật ký kiểm toán NT5</strong></td>
+              <td>Thay đổi cấu hình, tra cứu bảng Audit Log</td>
+              <td><span class="highlight-pill pill-green">ĐẠT (Ghi nhận old_val, new_val, IP cha mẹ)</span></td>
+            </tr>
+          </table>
+          <p style="font-size: 0.82rem; color: var(--accent-cyan); margin-top: 10px;">
+            📄 Hồ sơ nghiệm thu: Đầy đủ <code class="kbd">docs/M6_DONG_BO_THOI_GIAN.md</code>, <code class="kbd">docs/VERIFY_WEEK2.md</code>.
+          </p>
         </div>
 
         <div class="card">
-          <div class="card-title"><span>🔍</span> Hai Kịch Bản Rủi Ro Đặc Thù Bắt Buộc</div>
-          <div style="background: rgba(15, 23, 42, 0.7); border-radius: 8px; padding: 12px; margin-bottom: 12px; border-left: 3px solid var(--accent-amber);">
-            <strong style="color: #fff; font-size: 0.9rem;">Kịch bản 1: Chính trẻ em là người tấn công</strong>
-            <p style="font-size: 0.82rem; color: #cbd5e1; margin-top: 4px;">
-              Trẻ dùng tài khoản Windows Standard User; thư mục Agent đặt ACL chặt chẽ, trẻ không thể chỉnh sửa tệp SQLite cục bộ hay vô hiệu hóa dịch vụ.
-            </p>
-          </div>
-          <div style="background: rgba(15, 23, 42, 0.7); border-radius: 8px; padding: 12px; border-left: 3px solid var(--accent-rose);">
-            <strong style="color: #fff; font-size: 0.9rem;">Kịch bản 2: Ứng dụng bị lạm dụng làm phần mềm theo dõi lén người lớn (Stalkerware)</strong>
-            <p style="font-size: 0.82rem; color: #cbd5e1; margin-top: 4px;">
-              Triệt tiêu hoàn toàn: Ứng dụng không thể chạy ẩn. Nếu không thể tạo Tray Icon trên màn hình, Agent sẽ lập tức tự dừng hoạt động!
-            </p>
+          <div class="card-title"><span>🧪</span> Bộ Kiểm Thử Tự Động Toàn Bộ Dự Án (24/24 PASSED)</div>
+          <table class="table-custom">
+            <tr><th>Suite Kiểm Thử</th><th>Số test</th><th>Trạng thái</th><th>Nội dung</th></tr>
+            <tr><td><code class="kbd">test_auth.py</code></td><td>5 tests</td><td><span class="highlight-pill pill-green">PASSED</span></td><td>Argon2id, JWT tampering, Login</td></tr>
+            <tr><td><code class="kbd">test_enrollment.py</code></td><td>6 tests</td><td><span class="highlight-pill pill-green">PASSED</span></td><td>Pairing, Anti-replay, TTL 10m</td></tr>
+            <tr><td><code class="kbd">test_heartbeat.py</code></td><td>4 tests</td><td><span class="highlight-pill pill-green">PASSED</span></td><td>Heartbeat 60s, Ngưỡng 120s</td></tr>
+            <tr><td><code class="kbd">test_policy.py</code></td><td>4 tests</td><td><span class="highlight-pill pill-green">PASSED</span></td><td>HMAC integrity, Anti-tamper, Audit</td></tr>
+            <tr><td><code class="kbd">test_time_tracker.py</code></td><td>4 tests</td><td><span class="highlight-pill pill-green">PASSED</span></td><td>Slot mapping, Allowed matrix, Drift M6</td></tr>
+            <tr><td><code class="kbd">test_websocket_command.py</code></td><td>1 test</td><td><span class="highlight-pill pill-green">PASSED</span></td><td>WS connection, Lock dispatch &lt; 5s</td></tr>
+          </table>
+          <div class="code-box" style="margin-top: 10px; color: #34d399;">
+            === 24 passed in 4.69s (100% SUCCESS) ===
           </div>
         </div>
       </div>
     </section>
 
-    <!-- SLIDE 17: KẾ HOẠCH TRIỂN KHAI 4 TUẦN -->
+    <!-- SLIDE 17: BÁO CÁO MẠNG - DNS & SO SÁNH PHƯƠNG ÁN -->
     <section class="slide" data-slide="17">
-      <div class="slide-badge">KẾ HOẠCH & LỘ TRÌNH DỰ ÁN</div>
+      <div class="slide-badge">BÁO CÁO KỸ THUẬT MẠNG (M1, M2)</div>
       <div class="slide-header">
-        <h2 class="slide-title">Lộ Trình Triển Khai 4 Phiên Bản (4 Versions Roadmap)</h2>
-        <p class="slide-subtitle">Quy trình chia ranh giới nghiêm ngặt theo Spec-Driven Development</p>
-      </div>
-
-      <div class="grid-4">
-        <div class="card" style="border-top: 3px solid var(--accent-emerald);">
-          <div class="card-title" style="color: var(--accent-emerald); font-size: 1rem;">TUẦN 1 (v0.1)</div>
-          <span class="highlight-pill pill-green" style="margin-bottom: 8px;">ĐÃ HOÀN THÀNH 100%</span>
-          <p style="font-size: 0.82rem; color: #cbd5e1; line-height: 1.4;">
-            • Khung 3 phân hệ Client-Server-Web.<br>
-            • Auth Argon2id, Pairing 8 ký tự, Heartbeat 60s.<br>
-            • 46/46 tasks, 15/15 tests PASSED.<br>
-            • Docs kiến trúc & PRIVACY.md.
-          </p>
-        </div>
-
-        <div class="card" style="border-top: 3px solid var(--accent-cyan);">
-          <div class="card-title" style="color: var(--accent-cyan); font-size: 1rem;">TUẦN 2 (v0.2)</div>
-          <span class="highlight-pill pill-cyan" style="margin-bottom: 8px;">GIAI ĐOẠN TIẾP THEO</span>
-          <p style="font-size: 0.82rem; color: #cbd5e1; line-height: 1.4;">
-            • Quản lý Quota ngày & Lịch 7×48.<br>
-            • Bộ đếm Monotonic chống tua giờ.<br>
-            • LockWorkStation, Idle detection.<br>
-            • Kênh WebSocket lệnh khẩn &lt; 5s.
-          </p>
-        </div>
-
-        <div class="card" style="border-top: 3px solid var(--accent-purple);">
-          <div class="card-title" style="color: var(--accent-purple); font-size: 1rem;">TUẦN 3 (v0.3)</div>
-          <span class="highlight-pill pill-purple" style="margin-bottom: 8px;">MẠNG CHUYÊN SÂU</span>
-          <p style="font-size: 0.82rem; color: #cbd5e1; line-height: 1.4;">
-            • Lắng nghe DNS Proxy 127.0.0.1:53.<br>
-            • Chặn tên miền, SafeSearch, DoH Canary.<br>
-            • Chặn App theo mã băm SHA-256.<br>
-            • Màn hình minh bạch cho trẻ, xin giờ.
-          </p>
-        </div>
-
-        <div class="card" style="border-top: 3px solid var(--accent-amber);">
-          <div class="card-title" style="color: var(--accent-amber); font-size: 1rem;">TUẦN 4 (v0.4)</div>
-          <span class="highlight-pill pill-amber" style="margin-bottom: 8px;">BẢO MẬT & ĐÓNG GÓI</span>
-          <p style="font-size: 0.82rem; color: #cbd5e1; line-height: 1.4;">
-            • Gia cố F5 (AES-GCM, Anti-IDOR).<br>
-            • Đo hiệu năng M4 (>= 30 mẫu p50/p95).<br>
-            • Bộ 15 unit + 5 integration tests.<br>
-            • Hoàn thiện báo cáo, video demo, slide.
-          </p>
-        </div>
-      </div>
-
-      <div class="card" style="margin-top: 20px;">
-        <div class="card-title"><span>📦</span> Danh Mục 10 Sản Phẩm Nộp Đồ Án Cuối Cùng</div>
-        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px;">
-          <span class="kbd">/agent</span>
-          <span class="kbd">/server</span>
-          <span class="kbd">/dashboard</span>
-          <span class="kbd">/tests</span>
-          <span class="kbd">/docs/BaoCao.docx (20-30 trang)</span>
-          <span class="kbd">/docs/BaoCaoKyThuatMang.pdf (M1-M6)</span>
-          <span class="kbd">/docs/PRIVACY.md</span>
-          <span class="kbd">/docs/THREATMODEL.md</span>
-          <span class="kbd">/demo/video.mp4 (5-7 phút)</span>
-          <span class="kbd">README.md (Cài sạch trong 15p)</span>
-        </div>
-      </div>
-    </section>
-
-    <!-- SLIDE 18: KẾT LUẬN & PHIÊN VẤN ĐÁP PHẢN BIỆN (Q&A) -->
-    <section class="slide" data-slide="18">
-      <div class="slide-badge">KẾT LUẬN & VẤN ĐÁP</div>
-      <div class="slide-header">
-        <h2 class="slide-title">Tổng Kết Giá Trị Đồ Án & Phiên Trả Lời Phản Biện (Q&A)</h2>
-        <p class="slide-subtitle">Sẵn sàng bảo vệ các giải pháp kỹ thuật hệ thống và mạng trước Hội đồng chấm thi</p>
+        <h2 class="slide-title">DNS Sinkhole Proxy & Đánh Giá 4 Phương Án Chặn Mạng</h2>
+        <p class="slide-subtitle">Trọng tâm chuyên môn mạng máy tính: Lọc tên miền trước khi bắt tay TLS và kiểm chứng Wireshark</p>
       </div>
 
       <div class="grid-2">
         <div class="card">
-          <div class="card-title"><span>🌟</span> Ba Giá Trị Cốt Lõi Đạt Được</div>
+          <div class="card-title"><span>🌐</span> M1: Sơ Đồ Luồng Gói Tin DNS Sinkhole</div>
           <ul class="feature-list">
-            <li><strong>Giá trị Đạo đức & Pháp lý:</strong> Giải quyết bài toán bảo vệ trẻ em trên Internet mà không biến phần mềm thành công cụ theo dõi lén vi phạm pháp luật.</li>
-            <li><strong>Giá trị Kỹ thuật Hệ thống & Mạng:</strong> Hiện thực hóa thành công bộ 3 khối phân tán, DNS Proxy cục bộ, bảo mật Argon2id, chống tua giờ Monotonic và WebSocket thời gian thực.</li>
-            <li><strong>Chất lượng Thực nghiệm:</strong> 100% Micro-tasks Tuần 1 hoàn tất, 100% Pytest tự động pass, kịch bản E2E kiểm chứng minh bạch.</li>
+            <li><strong>Lắng nghe Socket UDP 53:</strong> Trỏ DNS máy con về <code class="kbd">127.0.0.1:53</code>; Agent dùng <code class="kbd">dnslib</code> xử lý gói tin.</li>
+            <li><strong>DNS Sinkholing:</strong> Tên miền cấm ➜ Trả về IP Loopback <code class="kbd">0.0.0.0</code> trong 1ms (chặn trước khi bắt tay TLS).</li>
+            <li><strong>Cưỡng chế SafeSearch:</strong> Tự động rewrite bản ghi DNS của Google, Bing, YouTube sang VIP an toàn.</li>
+            <li><strong>Kiểm chứng Wireshark:</strong> Bắt gói tin thấy rõ DNS Standard Query và DNS Standard Response trả về <code class="kbd">0.0.0.0</code>.</li>
           </ul>
         </div>
 
-        <div class="card" style="background: rgba(0, 242, 254, 0.05); border-color: rgba(0, 242, 254, 0.3);">
-          <div class="card-title" style="color: var(--accent-cyan);"><span>🎯</span> Sẵn Sàng Trả Lời Các Câu Hỏi Phản Biện</div>
+        <div class="card">
+          <div class="card-title"><span>📊</span> M2: Ma Trận So Sánh 4 Phương Án Kỹ Thuật</div>
+          <table class="table-custom">
+            <tr><th>Tiêu chí</th><th>Tệp hosts</th><th>DNS Proxy (OGK)</th><th>HTTP Proxy</th><th>WFP Driver</th></tr>
+            <tr><td>Độ chính xác</td><td>Thấp (no wildcard)</td><td><strong style="color:var(--accent-cyan)">Rất cao (Wildcard)</strong></td><td>Rất cao</td><td>Rất cao</td></tr>
+            <tr><td>Xử lý HTTPS</td><td>Có (chỉ IP)</td><td><strong style="color:var(--accent-cyan)">Hoàn hảo (trước TLS)</strong></td><td>Phải cài Root CA</td><td>Hoàn hảo</td></tr>
+            <tr><td>Quyền riêng tư</td><td>Cao</td><td><strong style="color:var(--accent-cyan)">Tuyệt đối (NT2)</strong></td><td>Xâm phạm (MITM)</td><td>Cao</td></tr>
+            <tr><td>Độ phức tạp</td><td>Rất thấp</td><td><strong style="color:var(--accent-cyan)">Tối ưu (Python)</strong></td><td>Rất nặng</td><td>Cực khó (C++)</td></tr>
+            <tr><td>Độ trễ mạng</td><td>Không đáng kể</td><td><strong style="color:var(--accent-cyan)">&lt; 2 mili-giây</strong></td><td>Chậm mạng</td><td>&lt; 1ms</td></tr>
+          </table>
+          <p style="font-size: 0.8rem; color: var(--accent-cyan); margin-top: 8px;">
+            ➜ Luận chứng: DNS Proxy đạt điểm cân bằng vàng giữa hiệu năng, kỹ thuật và đạo đức.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 18: 7 ĐƯỜNG VÒNG & STRIDE -->
+    <section class="slide" data-slide="18">
+      <div class="slide-badge">AN TOÀN MẠNG & PHẢN BIỆN (M3, F5)</div>
+      <div class="slide-header">
+        <h2 class="slide-title">Phân Tích 7 Kỹ Thuật Vượt Rào & Mô Hình Đe Dọa STRIDE</h2>
+        <p class="slide-subtitle">Thực nghiệm đối phó mọi hành vi gian lận và đánh giá bảo mật chiều sâu</p>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title"><span>🛡️</span> 7 Kỹ Thuật Vượt Rào & Biện Pháp Đối Phó (M3)</div>
+          <ul class="feature-list" style="font-size: 0.82rem;">
+            <li><strong>1. Đổi DNS sang 8.8.8.8:</strong> Agent giám sát Netsh/WMI, tự động khôi phục về 127.0.0.1.</li>
+            <li><strong>2. Bật DoH trong Chrome/Firefox:</strong> Trả về NXDOMAIN cho Canary domain <code class="kbd">use-application-dns.net</code> để trình duyệt tự tắt DoH về DNS hệ thống.</li>
+            <li><strong>3. DNS-over-TLS (DoT):</strong> Chặn cổng TCP 853 bằng Windows Firewall.</li>
+            <li><strong>4. Dùng VPN công cộng:</strong> Quét tiến trình và chặn theo mã băm SHA-256.</li>
+            <li><strong>5. Gõ trực tiếp địa chỉ IP:</strong> Website hiện đại dùng SNI/Shared Host nên không thể duyệt web chỉ bằng IP; chặn IP blacklist.</li>
+            <li><strong>6. Khởi động Safe Mode:</strong> Ghi nhận heartbeat gap, cảnh báo phụ huynh khi máy bật lại.</li>
+            <li><strong>7. Kill Agent trong Task Manager:</strong> Service Recovery tự hồi sinh sau 5s; Server báo động sau 120s.</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="card-title"><span>🔒</span> Mô Hình Đe Dọa STRIDE (F5)</div>
           <ul class="feature-list">
-            <li><strong>Windows Session 0 Isolation:</strong> Tách biệt tiến trình Service và Tray UI qua Local IPC.</li>
-            <li><strong>Đối phó Bypass DoH:</strong> Trả về NXDOMAIN cho Canary domain <code class="kbd">use-application-dns.net</code>.</li>
-            <li><strong>Chống gian lận giờ:</strong> Sử dụng CPU monotonic clock và đối chiếu nhịp tim <code class="kbd">server_time</code>.</li>
-            <li><strong>Nghị định 13/2023/NĐ-CP:</strong> Mã ghép đôi 8 ký tự xác lập sự đồng thuận của cha mẹ và nút xóa dữ liệu tức thời.</li>
+            <li><strong>Spoofing (Giả mạo):</strong> Ngăn chặn bằng JWT Bearer Token ký bí mật và Hardware UUID.</li>
+            <li><strong>Tampering (Sửa dữ liệu):</strong> Chữ ký HMAC-SHA256 bảo vệ chính sách.</li>
+            <li><strong>Repudiation (Chối bỏ):</strong> Bảng Audit Log lưu IP, mốc thời gian, giá trị cũ/mới.</li>
+            <li><strong>Information Disclosure:</strong> Áp dụng NT2, không lưu full URL hay ảnh màn hình.</li>
+            <li><strong>Hai kịch bản đặc thù giải quyết trọn vẹn:</strong>
+              <ul>
+                <li><em>Trẻ là người tấn công:</em> Phân quyền ACL thư mục chỉ SYSTEM ghi, trẻ là Standard User.</li>
+                <li><em>Phần mềm bị biến thành Stalkerware:</em> Cấm chạy ẩn NT1, tự dừng nếu mất Tray Icon.</li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 19: LỘ TRÌNH TUẦN 3 & TUẦN 4 -->
+    <section class="slide" data-slide="19">
+      <div class="slide-badge">LỘ TRÌNH DỰ ÁN TIẾP THEO</div>
+      <div class="slide-header">
+        <h2 class="slide-title">Kế Hoạch Hoàn Thiện: Version 3 (Tuần 3) & Version 4 (Tuần 4)</h2>
+        <p class="slide-subtitle">Phương pháp Spec-Driven Development bảo đảm tiến độ về đích vững chắc</p>
+      </div>
+
+      <div class="grid-2">
+        <div class="card highlight">
+          <div class="card-title" style="color: var(--accent-cyan);"><span>🌐</span> Tuần 3 (v0.3): Deep Network Filtering & App Blocker</div>
+          <ul class="feature-list">
+            <li><strong>DNS Proxy Socket 127.0.0.1:53:</strong> Hiện thực trọn vẹn bằng <code class="kbd">dnslib</code>, sinkholing tên miền cấm, SafeSearch.</li>
+            <li><strong>Kiểm soát app theo SHA-256:</strong> Băm tệp thực thi bằng <code class="kbd">hashlib.sha256</code>; chặn đứng mẹo đổi tên <code class="kbd">game.exe</code> thành <code class="kbd">word.exe</code>.</li>
+            <li><strong>Màn hình minh bạch cho trẻ:</strong> Giao diện <em>"Hôm nay em đã dùng gì"</em>, nút <em>"Xin thêm giờ"</em>, <em>"Báo chặn nhầm"</em> (NT3, NT5).</li>
+            <li><strong>Bộ đệm sự kiện ngoại tuyến:</strong> Lưu SQLite offline, đồng bộ idempotent khi có mạng.</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="color: var(--accent-purple);"><span>📦</span> Tuần 4 (v0.4): Hardening, Đo Hiệu Năng & Đóng Gói</div>
+          <ul class="feature-list">
+            <li><strong>Gia cố an toàn F5:</strong> Mã hóa SQLite AES-GCM, Anti-IDOR, Cron job tự hủy nhật ký sau 90 ngày.</li>
+            <li><strong>Đo đạc thực nghiệm M4:</strong> Thu thập 30 mẫu số liệu thực tế về CPU (&lt; 5%), RAM (&lt; 80MB) và DNS latency p50/p95 (&lt; 2ms).</li>
+            <li><strong>Đóng gói hồ sơ đồ án:</strong>
+              <ul>
+                <li>Báo cáo chính thức 30 trang chuẩn format NCKH.</li>
+                <li>Phụ lục kỹ thuật mạng chuyên sâu M1–M6.</li>
+                <li>Video demo thực nghiệm 5–7 phút khép vòng E2E.</li>
+                <li>Hướng dẫn cài đặt sạch trong vòng 15 phút (Senior Engineer Test).</li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 20: KẾT LUẬN & Q&A DEFENSE -->
+    <section class="slide" data-slide="20">
+      <div class="slide-badge">TỔNG KẾT & PHẢN BIỆN</div>
+      <div class="slide-header">
+        <h2 class="slide-title">Kết Luận & Sẵn Sàng Cho Phiên Vấn Đáp Phản Biện</h2>
+        <p class="slide-subtitle">Open Guardian Kids: Giải pháp kỹ thuật mạng văn minh, an toàn và bảo vệ trẻ thơ</p>
+      </div>
+
+      <div class="grid-2">
+        <div class="card highlight">
+          <div class="card-title" style="color: var(--accent-emerald);"><span>💎</span> Giá Trị Đồ Án Mang Lại</div>
+          <ul class="feature-list">
+            <li><strong>Giải quyết bài toán thực tế:</strong> Quản trị thiết bị hiệu quả mà không cần xâm phạm quyền riêng tư của trẻ (nói KHÔNG với Stalkerware).</li>
+            <li><strong>Tiến độ hoàn thành vượt trội:</strong> Hoàn thành 100% Version 1 và Version 2 (88 tasks, 24/24 tests PASSED trong 4.69s).</li>
+            <li><strong>Kỹ thuật hệ thống vững chắc:</strong> Lõi đo giờ đơn điệu `time.monotonic()` chống tua giờ, WebSocket song công 0.8s, chữ ký toàn vẹn HMAC-SHA256, khóa an toàn LockWorkStation.</li>
+            <li><strong>Tuân thủ pháp luật:</strong> Bám sát Điều 20 Nghị định 13/2023, Luật Trẻ Em 2016 và chuẩn quốc tế NIST/OWASP.</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="color: var(--accent-cyan);"><span>🎯</span> Tự Tin Trả Lời Trực Diện Mọi Câu Hỏi Của Thầy</div>
+          <ul class="feature-list">
+            <li><strong>Tại sao chọn `time.monotonic()`?</strong> Đọc xung CPU phần cứng, miễn nhiễm thủ thuật lùi giờ Windows 3 tiếng.</li>
+            <li><strong>Tại sao dùng HMAC-SHA256 cho Policy?</strong> Chống sửa lén DB cục bộ, so sánh constant-time chống Timing Attack.</li>
+            <li><strong>Tại sao DNS Proxy tốt hơn hosts và HTTP proxy?</strong> Hỗ trợ Wildcard, chặn trước khi bắt tay TLS, không giải mã MITM xâm phạm đời tư.</li>
+            <li><strong>Vượt rào DoH xử lý ra sao?</strong> Trả về NXDOMAIN cho Canary domain `use-application-dns.net` để browser tự tắt DoH.</li>
           </ul>
         </div>
       </div>
 
-      <div class="card" style="margin-top: 20px; text-align: center; padding: 25px;">
-        <h3 style="font-size: 1.6rem; color: #fff; margin-bottom: 6px;">Xin Chân Thành Cảm Ơn Quý Thầy/Cô Và Các Bạn!</h3>
-        <p style="color: var(--text-muted); font-size: 0.95rem;">Nhóm chúng em rất mong nhận được những ý kiến đóng góp và xin sẵn sàng trả lời các câu hỏi!</p>
+      <div class="card" style="margin-top: 15px; text-align: center; padding: 20px;">
+        <h3 style="font-size: 1.5rem; color: #fff; margin-bottom: 6px;">Xin Chân Thành Cảm Ơn Thầy Và Quý Thầy/Cô Đã Lắng Nghe!</h3>
+        <p style="color: var(--text-muted); font-size: 0.95rem;">Nhóm chúng em rất mong nhận được những góp ý quý báu và xin sẵn sàng trả lời các câu hỏi phản biện!</p>
       </div>
     </section>
 
@@ -1645,7 +1157,7 @@ def verify_password(plain, hashed):
     <div class="keyboard-hint">
       <span>Điều khiển:</span>
       <span><kbd class="kbd">←</kbd> <kbd class="kbd">→</kbd> Chuyển slide</span>
-      <span><kbd class="kbd">N</kbd> Lời thoại</span>
+      <span><kbd class="kbd">N</kbd> Lời thoại & Hỏi đáp</span>
       <span><kbd class="kbd">T</kbd> Mục lục</span>
       <span><kbd class="kbd">F</kbd> Toàn màn hình</span>
     </div>
@@ -1653,105 +1165,449 @@ def verify_password(plain, hashed):
 
   <!-- Drawer for Slide Thumbnails -->
   <div class="drawer-overlay" id="drawerOverlay"></div>
-  <div class="thumbs-drawer" id="thumbsDrawer">
-    <!-- Generated dynamically via JS -->
-  </div>
+  <div class="thumbs-drawer" id="thumbsDrawer"></div>
 
-  <!-- Speaker Notes Slide-out Panel -->
+  <!-- Speaker Notes & Defense Slide-out Panel -->
   <aside class="speaker-notes-panel" id="speakerNotesPanel">
     <div class="notes-header">
-      <h3><span>🎙️</span> Lời Thoại Thuyết Trình</h3>
+      <div class="notes-header-tabs">
+        <button class="tab-btn active" id="tabNotes">🎙️ Lời thoại thuyết trình</button>
+        <button class="tab-btn" id="tabQA">🎯 Góc phản biện của Thầy</button>
+      </div>
       <button class="btn-tool" id="btnCloseNotes">✕</button>
     </div>
-    <div class="notes-content" id="notesContent">
-      <!-- Injected dynamically per slide -->
-    </div>
+    <div class="notes-content" id="notesContent"></div>
   </aside>
 
   <script>
-    // Speaker notes database corresponding to all 18 slides
-    const speakerNotes = {
-      1: `
-        <h4>Slide 1: Trang tiêu đề đồ án</h4>
-        <blockquote>"Kính chào quý Thầy/Cô trong Hội đồng và các bạn sinh viên. Hôm nay, nhóm chúng em xin phép được báo cáo tiến độ đồ án Chuyên đề Tốt nghiệp với đề tài: 'Xây dựng ứng dụng hỗ trợ quản lý việc sử dụng máy tính của trẻ em', mang tên thương mại kỹ thuật là Open Guardian Kids (OGK)."</blockquote>
-        <p><strong>Điểm nhấn:</strong> Nhấn mạnh ngay tôn chỉ cốt lõi: <em>"Công cụ đồng hành, không phải phần mềm theo dõi lén hay gián điệp"</em>. Đây là kim chỉ nam phân biệt đồ án với các phần mềm spyware trên thị trường.</p>
-      `,
-      2: `
-        <h4>Slide 2: Bối cảnh, thực trạng & vấn đề giải quyết</h4>
-        <blockquote>"Trong thời đại số, trẻ tiếp xúc máy tính từ rất sớm. Tuy nhiên, các phần mềm giám sát thương mại hiện nay lại hoạt động như Stalkerware: chụp lén màn hình, gắn keylogger, đọc trộm tin nhắn và giấu tiến trình. Điều này phá vỡ niềm tin gia đình và vi phạm nghiêm trọng pháp luật bảo vệ quyền trẻ em."</blockquote>
-        <p><strong>Mục tiêu:</strong> Nhóm đặt mục tiêu tạo ra giải pháp kỹ thuật quản trị mạng và thời gian hiệu quả dựa trên sự minh bạch và thỏa thuận giữa cha mẹ và con.</p>
-      `,
-      3: `
-        <h4>Slide 3: Triết lý cốt lõi & 6 Nguyên tắc (NT1 - NT6)</h4>
-        <blockquote>"Để hiện thực hóa triết lý, nhóm xây dựng 6 nguyên tắc đạo đức bắt buộc trong hiến chương mã nguồn: NT1 - Icon luôn sáng, thông báo khi khởi động; NT2 - Tối thiểu dữ liệu, chỉ lấy 4 siêu dữ liệu, cấm lưu full URL hay ảnh màn hình; NT3 - Trẻ có nút xin thêm giờ và báo chặn nhầm; NT4 - Khóa máy có cảnh báo trước và ân hạn 60s để trẻ lưu bài; NT5 - Trẻ xem cùng báo cáo với cha mẹ; NT6 - Whitelist vĩnh viễn cổng trường và Tổng đài 111."</blockquote>
-      `,
-      4: `
-        <h4>Slide 4: Căn cứ pháp lý & Chuẩn an toàn</h4>
-        <blockquote>"Một điểm mạnh của đồ án là tính tuân thủ pháp lý cao. Nhóm đã ánh xạ từng điều khoản vào mã nguồn: Điều 20 Nghị định 13/2023 yêu cầu sự đồng thuận của cha mẹ (hiện thực qua luồng ghép đôi mã 8 ký tự), quyền xóa dữ liệu và thời hạn lưu trữ 90 ngày. Về an ninh mạng, hệ thống tuân thủ OWASP ASVS v4 Level 1 và thuật toán băm Argon2id theo chuẩn NIST SP 800-63B."</blockquote>
-      `,
-      5: `
-        <h4>Slide 5: Kiến trúc tổng thể 3 khối</h4>
-        <blockquote>"Hệ thống gồm 3 phân hệ: OGK-Agent trên Windows chạy 2 tầng (Service ngầm xử lý mạng/đếm giờ và Tray UI trong User Session để tránh bẫy Session 0 Isolation); OGK-Server xây dựng trên FastAPI + SQLite WAL xử lý đồng thời cực mạnh; và Dashboard Web HTML5/CSS thuần hiện đại, tối ưu responsive trên cả điện thoại cho cha mẹ."</blockquote>
-      `,
-      6: `
-        <h4>Slide 6: Ngăn xếp công nghệ & Karpathy</h4>
-        <blockquote>"Áp dụng nguyên tắc Karpathy 'Simplicity First', nhóm không sử dụng Microservices hay Docker/K8s cồng kềnh. Chúng em chỉ viết lượng code tối thiểu, trực diện bằng FastAPI, SQLite WAL, pywin32, psutil và dnslib. Mọi tính năng đều phân tách theo 4 tuần phát triển độc lập, kiểm chứng bằng tiêu chí nghiệm thu định lượng."</blockquote>
-      `,
-      7: `
-        <h4>Slide 7: Luồng xác thực phụ huynh</h4>
-        <blockquote>"Phụ huynh là người nắm toàn quyền hệ thống nên cổng đăng nhập phải tuyệt đối an toàn. Nhóm sử dụng giải thuật băm mật khẩu Argon2id - quán quân cuộc thi PHC, chống tấn công bẻ khóa bằng GPU. Token JWT được lưu trong Cookie HttpOnly và SameSite=Lax, miễn nhiễm hoàn toàn với tấn công XSS đánh cắp token và giảm thiểu CSRF."</blockquote>
-      `,
-      8: `
-        <h4>Slide 8: Luồng ghép đôi thiết bị (Enrollment)</h4>
-        <blockquote>"Luồng ghép đôi là điểm chạm pháp lý thể hiện sự đồng thuận của phụ huynh theo Nghị định 13: Cha mẹ tạo mã 8 ký tự an toàn trên Dashboard, mã chỉ sống 10 phút. Nhập mã vào máy con, Agent lấy Hardware UUID gửi lên Server. Server liên kết thiết bị, hủy mã ngay lập tức (one-time use) và cấp cặp Token cho Agent lưu vào SQLite cục bộ."</blockquote>
-      `,
-      9: `
-        <h4>Slide 9: Luồng nhịp tim viễn trắc (Heartbeat)</h4>
-        <blockquote>"Mỗi 60 giây, Agent gửi một gói tin nhịp tim tối thiểu mang trạng thái chạy và timestamp. Trên Dashboard, nếu nhịp tim dưới 120 giây (gấp đôi chu kỳ), thiết bị hiện thẻ xanh 'Online'. Nếu quá 120s mất tín hiệu, Dashboard tự đổi sang 'Offline'. Phản hồi nhịp tim còn đồng bộ policy_version và server_time để chống lùi giờ."</blockquote>
-      `,
-      10: `
-        <h4>Slide 10: KẾT QUẢ ĐÃ LÀM ĐƯỢC (Week 1 Review)</h4>
-        <blockquote>"Sau giai đoạn vừa qua, nhóm đã hoàn thành 100% mục tiêu của Phiên bản 1 (v0.1) với đầy đủ 46 Micro-tasks. Toàn bộ 15 kiểm thử Pytest tự động đều PASSED trong 3.63s. Hệ thống đã chạy E2E thực tế: Đăng nhập -> Sinh mã 8 ký tự -> Ghép đôi -> Khay hệ thống NT1 xuất hiện -> Nhịp tim 60s -> Dashboard Online."</blockquote>
-      `,
-      11: `
-        <h4>Slide 11: Quản lý thời gian (F1) & Chống tua giờ</h4>
-        <blockquote>"Tính năng F1 quản lý Quota ngày và lịch tuần 7x48. Để chống thủ thuật trẻ vào Control Panel chỉnh lùi đồng hồ Windows, nhóm sử dụng đồng hồ đơn điệu time.monotonic() đo trực tiếp xung nhịp CPU, hoàn toàn không bị ảnh hưởng khi trẻ lùi giờ. Đồng thời kết hợp API GetLastInputInfo để không trừ giờ oan khi trẻ rời bàn học."</blockquote>
-      `,
-      12: `
-        <h4>Slide 12: Lọc mạng DNS Proxy (F2) & App Controller</h4>
-        <blockquote>"Thay vì can thiệp bẻ khóa gói tin HTTPS vi phạm quyền riêng tư, nhóm dựng DNS Proxy cục bộ tại 127.0.0.1:53 bằng thư viện dnslib. Tên miền cấm bị trả về 0.0.0.0 (Sinkhole) ngay từ bước hỏi IP, tự động rewrite SafeSearch. Với ứng dụng trên máy, nhóm đối chiếu mã băm SHA-256 của tệp thực thi, chặn đứng thủ thuật đổi tên file game thành app học tập."</blockquote>
-      `,
-      13: `
-        <h4>Slide 13: Minh bạch hai chiều (F3) & Lệnh khẩn (F4)</h4>
-        <blockquote>"Trẻ có màn hình riêng 'Hôm nay em đã dùng gì' và nút 'Xin thêm giờ' trực tiếp gửi tới cha mẹ. Về điều khiển từ xa F4, bên cạnh nhịp tim 60s, nhóm mở kênh WebSocket song công: Cha mẹ bấm 'Khóa ngay' hoặc 'Cộng 15 phút' trên điện thoại, máy của con nhận lệnh và thực thi trong vòng dưới 5 giây."</blockquote>
-      `,
-      14: `
-        <h4>Slide 14: Kỹ thuật mạng chuyên sâu (M1, M2)</h4>
-        <blockquote>"Trong phụ lục kỹ thuật mạng, nhóm đã lập ma trận so sánh 4 giải pháp: Tệp hosts, DNS Proxy, HTTP Proxy và WFP. Tệp hosts không hỗ trợ wildcard, HTTP Proxy xâm phạm quyền riêng tư, WFP thì rủi ro lỗi màn hình xanh. DNS Proxy cục bộ là giải pháp tối ưu nhất, xử lý dưới 2ms, chặn trước khi bắt tay TLS và đã được kiểm chứng bắt gói bằng Wireshark."</blockquote>
-      `,
-      15: `
-        <h4>Slide 15: 7 Kỹ thuật vượt rào & Đối phó (M3)</h4>
-        <blockquote>"Nhóm đã thực nghiệm 7 kịch bản vượt rào: Nếu trẻ đổi DNS card mạng, Agent tự khôi phục về 127.0.0.1; Nếu trẻ bật DNS-over-HTTPS (DoH) trong Chrome, Agent trả lời NXDOMAIN cho domain Canary use-application-dns.net để browser tự tắt DoH; Nếu trẻ cài VPN, Agent chặn theo hash SHA-256; Nếu kill Agent trong Task Manager, Windows Service Recovery sẽ tự hồi sinh sau 5s."</blockquote>
-      `,
-      16: `
-        <h4>Slide 16: An toàn thông tin chiều sâu & STRIDE</h4>
-        <blockquote>"Nhóm thẩm định hệ thống bằng mô hình STRIDE. Đặc biệt giải quyết 2 kịch bản: (1) Chính trẻ là người tấn công - phân quyền ACL thư mục ProgramData chỉ SYSTEM ghi, trẻ chỉ là Standard User; (2) Nguy cơ phần mềm bị biến thành Stalkerware theo dõi người lớn - Agent kiên quyết không có chế độ chạy ẩn, nếu không hiện được Tray Icon sẽ tự dừng hoạt động."</blockquote>
-      `,
-      17: `
-        <h4>Slide 17: Kế hoạch triển khai 4 tuần</h4>
-        <blockquote>"Tuần 1 đã hoàn thành trọn vẹn The Backbone. Tuần 2 nhóm sẽ hiện thực Quota thời gian F1 và kênh WebSocket F4. Tuần 3 tập trung vào DNS Proxy F2 và màn hình minh bạch F3. Tuần 4 hoàn thiện gia cố bảo mật F5, đo đạc 30 mẫu hiệu năng M4 và đóng gói trọn bộ hồ sơ đồ án."</blockquote>
-      `,
-      18: `
-        <h4>Slide 18: Kết luận & Phiên vấn đáp (Q&A)</h4>
-        <blockquote>"Open Guardian Kids chứng minh rằng công nghệ có thể bảo vệ con trẻ một cách khoa học mà không cần xâm phạm quyền riêng tư. Nhóm tự tin vào nền tảng kỹ thuật vững chắc đã hoàn thành. Chúng em xin chân thành cảm ơn quý Thầy Cô trong Hội đồng và xin sẵn sàng trả lời các câu hỏi phản biện!"</blockquote>
-      `
+    // Speaker notes and Q&A database for all 20 slides
+    const slideData = {
+      1: {
+        title: "Trang Tiêu Đề Đồ Án",
+        script: `
+          <h4>Slide 1: Trang tiêu đề đồ án (Title Slide)</h4>
+          <blockquote>"Kính chào Thầy và quý Thầy Cô trong Hội đồng phản biện. Hôm nay, nhóm chúng em xin phép được báo cáo toàn diện tiến độ và kết quả thực hiện đồ án Chuyên đề Tốt nghiệp với đề tài: 'Xây dựng ứng dụng hỗ trợ quản lý việc sử dụng máy tính của trẻ em', tên hệ thống là Open Guardian Kids (OGK).<br><br>
+          Tính đến thời điểm hiện tại, nhóm chúng em đã hoàn thành trọn vẹn 100% mục tiêu của cả hai phiên bản: Version 1 (The Backbone) và Version 2 (Time Governance & Real-time Policy Synchronization) với 88 micro-tasks được đóng dấu hoàn tất và 24/24 kịch bản kiểm thử tự động đạt PASSED tuyệt đối.<br><br>
+          Ngay từ khi thiết kế, tôn chỉ cốt lõi của đồ án là: 'OGK là công cụ đồng hành giáo dục gia đình, kiên quyết không phải là phần mềm gián điệp hay theo dõi lén'. Sau đây, chúng em xin đi sâu vào chi tiết kỹ thuật của những gì hệ thống đã hiện thực hóa."</blockquote>
+        `,
+        qa: `
+          <div class="qa-box">
+            <div class="qa-title">❓ Thầy chỉ vào "Version 0.2" hỏi:</div>
+            <div class="qa-answer">
+              <strong>"Tại sao lại phân chia thành các Version v0.1, v0.2? Căn cứ vào đâu để xác định ranh giới giữa hai phiên bản này?"</strong><br><br>
+              <strong>💡 Trả lời trực diện:</strong><br>
+              "Dạ thưa Thầy, nhóm áp dụng phương pháp phát triển phần mềm theo chuẩn Spec-Driven Development kết hợp nguyên tắc Karpathy 'Surgical Changes':<br>
+              - <strong>Version 0.1 (Tuần 1):</strong> Tập trung xây dựng bộ xương sống kết nối (The Backbone) gồm 3 phân hệ Client - Server - Dashboard, luồng xác thực Argon2id, ghép đôi không dây 8 ký tự và vòng lặp nhịp tim 60s.<br>
+              - <strong>Version 0.2 (Tuần 2):</strong> Tập trung giải quyết trọn vẹn tính năng Quản lý Thời gian (F1), cơ chế đồng hồ đơn điệu <code>time.monotonic()</code> chống tua giờ hệ thống (M6), và kênh lệnh khẩn cấp tức thời hai chiều qua WebSocket dưới 5 giây (F4) kèm chữ ký HMAC-SHA256 và Audit Log.<br>
+              Ranh giới này giúp mã nguồn tăng trưởng ổn định, module hóa độc lập, không bị phân mảnh và dễ dàng kiểm thử tự động ở từng nấc thang phát triển ạ."
+            </div>
+          </div>
+        `
+      },
+      2: {
+        title: "Bối Cảnh & Thực Trạng",
+        script: `
+          <h4>Slide 2: Bối cảnh, thực trạng & vấn đề giải quyết</h4>
+          <blockquote>"Thưa Thầy, xuất phát điểm của đề tài là một nghịch lý nhức nhối: Cha mẹ rất cần công cụ để giúp con điều hòa thời gian dùng máy tính và tránh xa nội dung độc hại. Tuy nhiên, khi khảo sát các phần mềm quản lý phụ huynh trên thị trường, nhóm nhận thấy đa số chúng lại vận hành như phần mềm gián điệp (Stalkerware): chụp lén màn hình, gắn keylogger ghi lại từng phím gõ, đọc trộm tin nhắn và giấu tiến trình.<br><br>
+          Cách làm này biến mối quan hệ gia đình thành mối quan hệ rình rập, vi phạm quyền bí mật đời tư theo Điều 21 Luật Trẻ Em và Điều 20 Nghị định 13/2023/NĐ-CP. Hơn nữa, việc đẩy dữ liệu hình ảnh máy tính con lên máy chủ nước ngoài tiềm ẩn rủi ro an ninh khôn lường.<br><br>
+          Đề tài của chúng em ra đời để chứng minh rằng: Bằng kỹ thuật mạng và hệ điều hành chuẩn mực, chúng ta hoàn toàn có thể quản lý thời gian và an toàn mạng hiệu quả mà không cần xâm phạm dù chỉ một bức ảnh hay một phím bấm của trẻ."</blockquote>
+        `,
+        qa: `
+          <div class="qa-box">
+            <div class="qa-title">❓ Thầy chỉ vào "Commercial Spyware / Stalkerware" hỏi:</div>
+            <div class="qa-answer">
+              <strong>"Nếu không chụp màn hình, không dùng keylogger thì làm sao phụ huynh biết con đang làm gì trên máy tính để mà quản lý?"</strong><br><br>
+              <strong>💡 Trả lời trực diện:</strong><br>
+              "Dạ thưa Thầy, theo nguyên tắc Tối thiểu dữ liệu (Data Minimisation) của chuẩn an toàn thông tin và Nghị định 13: Mục tiêu của phụ huynh là quản lý hành vi và thời lượng, chứ không phải tò mò nội dung riêng tư.<br>
+              OGK thu thập 4 siêu dữ liệu kỹ thuật: <strong>Tên tiến trình ứng dụng</strong> (vd: <code>mspaint.exe</code>, <code>code.exe</code>), <strong>Tên miền cấp hai</strong> (vd: <code>scratch.mit.edu</code>), <strong>Thời lượng sử dụng</strong>, và <strong>Mốc thời gian</strong>. Cha mẹ chỉ cần biết con đã dành 2 tiếng vẽ tranh và 30 phút xem YouTube, là đủ cơ sở để điều chỉnh thói quen mà không cần biết con vẽ gì hay nhắn tin với bạn câu gì. Đó là sự khác biệt giữa quản trị văn minh và rình mò đời tư ạ."
+            </div>
+          </div>
+        `
+      },
+      3: {
+        title: "Hiến Chương 6 Nguyên Tắc",
+        script: `
+          <h4>Slide 3: Triết lý cốt lõi & 6 Nguyên tắc (NT1 - NT6)</h4>
+          <blockquote>"Để biến triết lý thành các ràng buộc kỹ thuật có thể đo lường trong mã nguồn, nhóm đã xây dựng Hiến chương 6 nguyên tắc đạo đức NT1 đến NT6:<br>
+          - NT1: Trẻ em phải luôn nhận biết được sự hiện diện của tác tử. Icon trên khay hệ thống luôn hiển thị. Nếu tiến trình giao diện khay bị mất, tác tử nền sẽ tự ngắt hoạt động để chống bị lợi dụng chạy ẩn.<br>
+          - NT2: Chỉ thu thập 4 siêu dữ liệu kỹ thuật tối thiểu. Tuyệt đối không lưu URL đầy đủ vì URL có thể chứa từ khóa tìm kiếm nhạy cảm hoặc token bí mật.<br>
+          - NT3 & NT4: Mọi tác vụ khóa máy hay chặn truy cập đều phải có cảnh báo trước (10p, 5p, 1p) và ân hạn 60 giây để trẻ lưu bài. Khi chặn, hệ thống phải giải thích rõ lý do.<br>
+          - NT5 & NT6: Dữ liệu minh bạch hai chiều qua Audit Log, và các cổng thông tin thiết yếu như trường học hay Tổng đài Quốc gia 111 luôn được đưa vào danh sách trắng vĩnh viễn, không ai có quyền chặn."</blockquote>
+        `,
+        qa: `
+          <div class="qa-box">
+            <div class="qa-title">❓ Thầy chỉ vào NT1 ("Cấm tuyệt đối chạy ẩn") hỏi:</div>
+            <div class="qa-answer">
+              <strong>"Nếu luôn hiện icon trên Taskbar thì đứa trẻ chỉ cần nhấp chuột phải chọn Exit hoặc vào Task Manager tắt đi là xong, vậy phần mềm còn tác dụng gì?"</strong><br><br>
+              <strong>💡 Trả lời trực diện:</strong><br>
+              "Dạ thưa Thầy: Menu chuột phải của Tray Icon <strong>không có nút Exit cho trẻ</strong>, chỉ có nút 'Thời gian còn lại hôm nay' và 'Về phần mềm'. Lệnh tắt chỉ được truyền qua kênh quản trị của cha mẹ.<br>
+              Thứ hai, khi chạy dưới dạng Windows Service LocalSystem trong khi tài khoản trẻ là Standard User, trẻ không có quyền Kill tiến trình.<br>
+              Thứ ba, tính năng Windows Service Recovery sẽ tự khởi động lại sau 5 giây nếu bị tắt; và nếu mất nhịp tim sau 120s máy chủ sẽ báo ngay về điện thoại cha mẹ."
+            </div>
+          </div>
+        `
+      },
+      4: {
+        title: "Pháp Lý & Tiêu Chuẩn Bảo Mật",
+        script: `
+          <h4>Slide 4: Căn cứ pháp lý & Chuẩn an toàn thông tin</h4>
+          <blockquote>"Thưa Thầy, một điểm nhấn quan trọng của đồ án là tính tuân thủ pháp lý và chuẩn mực kỹ thuật cao. Nhóm đã ánh xạ từng điều khoản vào mã nguồn:<br><br>
+          Theo Điều 20 Nghị định 13/2023/NĐ-CP, việc thu thập dữ liệu trẻ em bắt buộc phải có sự đồng thuận của cha mẹ. Nhóm hiện thực hóa điều này bằng quy trình ghép đôi thiết bị không dây: cha mẹ phải đăng nhập tài khoản bảo mật, chủ động tạo mã xác thực 8 ký tự rồi nhập vào máy con. Ngoài ra, quyền rút lại sự đồng ý được hiện thực bằng tính năng xóa toàn bộ dữ liệu chỉ với một thao tác, và CSDL tự dọn dẹp sau 90 ngày.<br><br>
+          Về bảo mật kỹ thuật, hệ thống tuân thủ khung chuẩn OWASP ASVS v4 Mức 1 và hướng dẫn xác thực số NIST SP 800-63B, sử dụng thuật toán băm Argon2id hiện đại cho tài khoản phụ huynh để chống lại các kỹ thuật tấn công giải mã trên GPU."</blockquote>
+        `,
+        qa: `
+          <div class="qa-box">
+            <div class="qa-title">❓ Thầy chỉ vào "Nghị định 13/2023 Điều 20" hỏi:</div>
+            <div class="qa-answer">
+              <strong>"Điều 20 còn quy định nếu trẻ từ 7 tuổi trở lên thì phải có cả sự đồng ý của trẻ nữa. Phần mềm của nhóm thể hiện sự đồng thuận của trẻ ở chỗ nào?"</strong><br><br>
+              <strong>💡 Trả lời trực diện:</strong><br>
+              "Dạ thưa Thầy: Khi tác tử Agent khởi chạy lần đầu trên máy tính của trẻ, màn hình bật lên cửa sổ thông báo chào đón và giới thiệu rõ ràng: 'Máy tính này có sự đồng hành của phần mềm Open Guardian Kids'. Trẻ cùng cha mẹ chứng kiến việc nhập mã ghép đôi.<br>
+              Trong suốt quá trình sử dụng, trẻ có màn hình riêng 'Hôm nay em đã dùng gì' và các nút đối thoại 'Xin thêm giờ', 'Báo chặn nhầm' (NT3, NT5). Phần mềm không áp đặt đơn phương mà tạo ra một kênh đối thoại bình đẳng giữa cha mẹ và con cái theo đúng tinh thần của Luật Trẻ Em và Nghị định 13 ạ."
+            </div>
+          </div>
+        `
+      },
+      5: {
+        title: "Kiến Trúc Phân Tán 3 Khối",
+        script: `
+          <h4>Slide 5: Kiến trúc tổng thể 3 khối & Session 0</h4>
+          <blockquote>"Về mặt kiến trúc, Open Guardian Kids được thiết kế theo mô hình 3 khối phân tán rõ ràng:<br><br>
+          Khối thứ nhất là OGK-Agent chạy trên máy con. Ở đây có một bài toán hệ thống rất quan trọng của Windows: đó là Session 0 Isolation. Kể từ Windows Vista, các service chạy ngầm bị cô lập hoàn toàn ở Session 0 và không thể vẽ giao diện lên màn hình người dùng ở Session 1. Nhóm giải quyết bằng cách tách thành hai tiến trình: tiến trình lõi chạy ngầm điều phối đếm giờ, khóa máy và nhận lệnh WebSocket; còn tiến trình giao diện khay hệ thống Pystray chạy trong phiên người dùng để hiển thị icon và popup.<br><br>
+          Khối thứ hai là OGK-Server, xây dựng bằng FastAPI bất đồng bộ, kết hợp SQLite cấu hình chế độ Write-Ahead Logging (WAL). WAL giúp tách luồng đọc và ghi độc lập, tránh hiện tượng database is locked khi nhiều máy con gửi nhịp tim cùng lúc.<br><br>
+          Khối thứ ba là Parent Dashboard, giao diện web gọn nhẹ, responsive trên mọi trình duyệt điện thoại và máy tính."</blockquote>
+        `,
+        qa: `
+          <div class="qa-box">
+            <div class="qa-title">❓ Thầy chỉ vào "Session 0 Isolation" hỏi:</div>
+            <div class="qa-answer">
+              <strong>"Hai tiến trình này liên lạc với nhau như thế nào? Nếu tiến trình giao diện người dùng bị tắt thì sao?"</strong><br><br>
+              <strong>💡 Trả lời trực diện:</strong><br>
+              "Dạ thưa Thầy: Hai tiến trình liên lạc với nhau qua IPC nội bộ: sử dụng Local Socket Loopback hoặc Named Pipe được bảo vệ bằng mã Token nội bộ sinh ngẫu nhiên khi khởi động.<br>
+              Về mặt ràng buộc an toàn (NT1): Nếu đứa trẻ tìm cách tắt tiến trình Tray UI ở phiên người dùng, tiến trình nền sẽ nhận biết việc mất kết nối IPC. Theo đúng Hiến chương đạo đức NT1 (không bao giờ chạy ẩn), tác tử sẽ kích hoạt cảnh báo lên Dashboard phụ huynh rằng 'Giao diện tương tác của trẻ đã bị can thiệp' để cha mẹ biết và kiểm tra ạ."
+            </div>
+          </div>
+        `
+      },
+      6: {
+        title: "Ngăn Xếp Công Nghệ & Karpathy",
+        script: `
+          <h4>Slide 6: Ngăn xếp công nghệ & Nguyên tắc Karpathy</h4>
+          <blockquote>"Thưa Thầy, phương châm công nghệ của nhóm là 'Simplicity First' - Tối giản, chính xác và hiệu quả, lấy cảm hứng từ các nguyên tắc kỹ thuật của chuyên gia AI Andrej Karpathy.<br><br>
+          Chúng em kiên quyết không lạm dụng các kiến trúc cồng kềnh như Docker swarm, Kubernetes hay Microservices cho một hệ thống mạng gia đình. Thay vào đó, chúng em tận dụng sức mạnh của FastAPI bất đồng bộ, kết hợp SQLite chế độ WAL, thư viện websocket-client và các Win32 API gốc của hệ điều hành thông qua ctypes.<br><br>
+          Mọi thay đổi mã nguồn đều mang tính phẫu thuật: chia nhỏ đồ án thành các phiên bản độc lập. Mỗi phiên bản đều có bộ kiểm thử tự động đi kèm và kịch bản nghiệm thu rõ ràng."</blockquote>
+        `,
+        qa: `
+          <div class="qa-box">
+            <div class="qa-title">❓ Thầy chỉ vào "SQLite (WAL mode)" hỏi:</div>
+            <div class="qa-answer">
+              <strong>"Tại sao lại dùng SQLite mà không dùng PostgreSQL hay MySQL cho chuyên nghiệp?"</strong><br><br>
+              <strong>💡 Trả lời trực diện:</strong><br>
+              "Dạ thưa Thầy: (1) Môi trường gia đình cần sự gọn nhẹ, cài đặt trong 1 phút, không bắt phụ huynh phải cấu hình database server phức tạp; (2) Ở chế độ Write-Ahead Logging (WAL), SQLite cho phép các tác vụ đọc chạy đồng thời không hề bị chặn bởi tác vụ ghi. Với 3-5 máy tính gia đình gửi nhịp tim mỗi 60s, SQLite WAL xử lý hàng ngàn giao dịch/giây với RAM chỉ vài MB, đạt hiệu năng tuyệt đối mà không lãng phí tài nguyên ạ."
+            </div>
+          </div>
+        `
+      },
+      7: {
+        title: "Xác Thực Phụ Huynh (Argon2id)",
+        script: `
+          <h4>Slide 7: Luồng xác thực phụ huynh & Quản trị phiên</h4>
+          <blockquote>"Đi vào luồng kỹ thuật đầu tiên là Xác thực phụ huynh. Vì phụ huynh là người nắm toàn quyền quyết định chính sách, cổng xác thực phải là pháo đài bảo mật vững chắc nhất.<br><br>
+          Hệ thống áp dụng thuật toán băm mật khẩu hiện đại nhất hiện nay là Argon2id. Khi phụ huynh đăng nhập, máy chủ xác minh và trả về JWT token được đặt trong Cookie với cờ HttpOnly và SameSite=Lax. Điều này đảm bảo các đoạn mã JavaScript trên trình duyệt không bao giờ có thể đọc được token, triệt tiêu nguy cơ tấn công XSS và giảm thiểu rủi ro CSRF. Hơn nữa, hệ thống có cơ chế giới hạn tần suất truy vấn để chống lại các đợt tấn công dò mật khẩu tự động."</blockquote>
+        `,
+        qa: `
+          <div class="qa-box">
+            <div class="qa-title">❓ Thầy chỉ vào "Argon2id" hỏi:</div>
+            <div class="qa-answer">
+              <strong>"Tại sao lại chọn Argon2id mà không dùng bcrypt hay PBKDF2 vốn phổ biến hơn?"</strong><br><br>
+              <strong>💡 Trả lời trực diện:</strong><br>
+              "Dạ thưa Thầy: PBKDF2 và bcrypt chỉ tốn CPU tính toán nhưng tiêu tốn rất ít bộ nhớ RAM. Do đó kẻ tấn công có thể dùng dàn card GPU hoặc chip ASIC chuyên dụng để thử hàng triệu pass/giây song song.<br>
+              Argon2id là thuật toán đạt giải quán quân Password Hashing Competition. Nó yêu cầu một lượng RAM vật lý cố định cho mỗi lần băm, khiến việc song song hóa trên GPU bị nghẽn băng thông bộ nhớ và trở nên bất khả thi. Đây là chuẩn được NIST SP 800-63B và OWASP khuyến nghị cao nhất hiện nay ạ."
+            </div>
+          </div>
+        `
+      },
+      8: {
+        title: "Ghép Đôi Thiết Bị Không Dây",
+        script: `
+          <h4>Slide 8: Quy trình ghép đôi thiết bị (Enrollment)</h4>
+          <blockquote>"Luồng nghiệp vụ thứ hai là Quy trình ghép đôi thiết bị không dây (Enrollment). Đây chính là điểm chạm kỹ thuật thể hiện sự đồng thuận của cha mẹ theo Nghị định 13/2023:<br><br>
+          Khi phụ huynh muốn thêm máy tính của con, họ bấm nút trên Dashboard. Máy chủ sẽ sinh một mã gồm 8 ký tự được chọn lọc từ bảng ký tự an toàn, loại bỏ triệt để các ký tự dễ gây nhầm lẫn như số 0 và chữ O, số 1 và chữ I. Mã này chỉ có hiệu lực trong 10 phút.<br><br>
+          Phụ huynh cầm mã này nhập vào giao diện Agent trên máy của con. Agent sẽ lấy UUID phần cứng của bo mạch chủ tạo thành dấu vân tay thiết bị, gửi lên máy chủ kèm mã ghép đôi. Máy chủ xác minh, liên kết thiết bị với cha mẹ, vô hiệu hóa mã ngay lập tức để chống sử dụng lại (Anti-Replay), và cấp cặp Token cho Agent."</blockquote>
+        `,
+        qa: `
+          <div class="qa-box">
+            <div class="qa-title">❓ Thầy chỉ vào "device_fingerprint UUID" hỏi:</div>
+            <div class="qa-answer">
+              <strong>"Dấu vân tay thiết bị này lấy từ đâu trên Windows? Nếu người dùng đổi tên máy thì dấu vân tay có bị thay đổi không?"</strong><br><br>
+              <strong>💡 Trả lời trực diện:</strong><br>
+              "Dạ thưa Thầy, dấu vân tay thiết bị được lấy từ Machine GUID của hệ điều hành trong Registry Windows tại đường dẫn <code>HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Cryptography\\MachineGuid</code> kết hợp với địa chỉ MAC của card mạng vật lý thông qua module <code>agent/fingerprint.py</code>.<br>
+              Dấu vân tay này gắn liền với bo mạch chủ và bản cài đặt Windows, do đó kể cả khi trẻ đổi tên máy tính trong Computer Name, dấu vân tay này vẫn không thay đổi, giúp máy chủ luôn định danh chính xác thiết bị ạ."
+            </div>
+          </div>
+        `
+      },
+      9: {
+        title: "Nhịp Tim Định Kỳ & Trạng Thái",
+        script: `
+          <h4>Slide 9: Viễn trắc nhịp tim & Trạng thái Online/Offline</h4>
+          <blockquote>"Sau khi ghép đôi thành công, Agent bắt đầu chu trình duy trì sự sống: Giao thức Nhịp tim định kỳ (Heartbeat) mỗi 60 giây.<br><br>
+          Nhóm chúng em thiết kế gói tin nhịp tim theo đúng tinh thần tối thiểu dữ liệu NT2: nó chỉ mang trạng thái hoạt động của tác tử và dấu thời gian. Máy chủ nhận gói tin, cập nhật dấu thời gian last_seen vào CSDL.<br><br>
+          Trên Dashboard của phụ huynh, chúng em áp dụng thuật toán ngưỡng: nếu máy chủ nhận được nhịp tim trong vòng dưới 120 giây, thiết bị hiển thị thẻ xanh 'Online'. Nếu quá 120 giây không có tín hiệu, hệ thống đánh dấu ngay là 'Offline'. Đồng thời, trong phản hồi nhịp tim, máy chủ gửi ngược lại thời gian chuẩn của máy chủ và phiên bản chính sách mới nhất, đóng vai trò cơ chế đồng bộ dự phòng nếu kết nối WebSocket gặp sự cố."</blockquote>
+        `,
+        qa: `
+          <div class="qa-box">
+            <div class="qa-title">❓ Thầy chỉ vào "60s" và "120s" hỏi:</div>
+            <div class="qa-answer">
+              <strong>"Tại sao chu kỳ gửi là 60s mà ngưỡng offline lại là 120s? Tại sao không gửi nhịp tim 5s hay 10s một lần để Dashboard cập nhật nhanh hơn?"</strong><br><br>
+              <strong>💡 Trả lời trực diện:</strong><br>
+              "Dạ thưa Thầy: (1) Chu kỳ 60s là điểm cân bằng vàng giữa độ tươi mới dữ liệu và việc tiết kiệm pin, băng thông mạng và tài nguyên máy chủ. Nếu gửi 5s/lần, máy tính sẽ liên tục bị đánh thức khỏi trạng thái ngủ tiết kiệm điện và làm tăng tải máy chủ không cần thiết.<br>
+              (2) Trong môi trường mạng Wi-Fi gia đình, hiện tượng giật lag mạng hoặc rớt gói tin ngắn hạn trong 1 chu kỳ (60s) là rất phổ biến. Đặt ngưỡng 120s (bằng đúng 2 lần chu kỳ nhịp tim) giúp loại bỏ báo động giả (False Positives), tránh việc Dashboard nhấp nháy Online/Offline liên tục làm phụ huynh hoang mang ạ."
+            </div>
+          </div>
+        `
+      },
+      10: {
+        title: "Nghiệm Thu Version 1 (v0.1)",
+        script: `
+          <h4>Slide 10: Tổng kết nghiệm thu Version 1 (The Backbone)</h4>
+          <blockquote>"Kính thưa Thầy, sau giai đoạn 1, nhóm chúng em đã hoàn thành 100% mục tiêu của Phiên bản 1 (v0.1) với đầy đủ 46 Micro-tasks.<br><br>
+          Toàn bộ 15 kịch bản kiểm thử tự động trên Pytest đều đạt trạng thái PASSED tuyệt đối. Chúng em đã tiến hành nghiệm thu khép vòng đầu–cuối thực tế: Phụ huynh đăng nhập trên Web, tạo mã 8 ký tự với đồng hồ đếm ngược; Agent trên máy tính Windows nhập mã, kết nối thành công, biểu tượng lá chắn khay hệ thống lập tức xuất hiện kèm thông báo Windows chào đón em, và Dashboard tức thì cập nhật trạng thái Online theo thời gian thực.<br><br>
+          Đây là bước đệm nền tảng vững chắc để nhóm bước tiếp vào Version 2."</blockquote>
+        `,
+        qa: `
+          <div class="qa-box">
+            <div class="qa-title">❓ Thầy chỉ vào "15/15 Passed" hỏi:</div>
+            <div class="qa-answer">
+              <strong>"Các bài test này chạy trên môi trường nào? Có test với cơ sở dữ liệu thật hay chỉ mock dữ liệu?"</strong><br><br>
+              <strong>💡 Trả lời trực diện:</strong><br>
+              "Dạ thưa Thầy, các bài test của nhóm là Integration Tests thực thụ: Chúng em sử dụng <code>fastapi.testclient.TestClient</code> kết hợp với SQLite in-memory chạy qua <code>StaticPool</code>. Mỗi bài test đều tạo bảng thật, băm mật khẩu Argon2id thật, tạo token JWT thật, ghi và đọc bản ghi trên session CSDL cô lập rồi tự động dọn dẹp sạch sau khi test kết thúc. Do đó kết quả kiểm thử phản ánh chính xác 100% logic nghiệp vụ khi chạy trên môi trường thực tế ạ."
+            </div>
+          </div>
+        `
+      },
+      11: {
+        title: "Bộ Đếm Monotonic Chống Tua Giờ",
+        script: `
+          <h4>Slide 11: Bộ đếm đơn điệu time.monotonic() (M6)</h4>
+          <blockquote>"Bước sang Version 2, bài toán hóc búa đầu tiên nhóm giải quyết là Module Quản trị thời gian (F1) và Cơ chế chống gian lận đồng hồ hệ thống (M6).<br><br>
+          Một lỗ hổng kinh điển mà bất kỳ đứa trẻ am hiểu máy tính nào cũng thử là vào Settings chỉnh lùi đồng hồ Windows lại vài tiếng để chơi tiếp. Nếu phần mềm sử dụng hàm lấy giờ thông thường như datetime.now() hay time.time(), hệ thống sẽ bị đánh lừa ngay lập tức.<br><br>
+          Nhóm chúng em giải quyết triệt để bài toán này bằng cách sử dụng Đồng hồ đơn điệu time.monotonic(). Trên Windows, hàm này đọc trực tiếp bộ đếm xung nhịp phần cứng QueryPerformanceCounter từ CPU. Xung nhịp này chỉ tăng theo thời gian vật lý, hoàn toàn miễn nhiễm với việc chỉnh giờ của Windows.<br><br>
+          Chúng em đã tiến hành thực nghiệm thực tế: cho trẻ dùng máy, trong lúc đó chỉnh lùi giờ lùi 3 tiếng. Kết quả là bộ đếm vẫn đếm chuẩn xác từng giây, phát hiện độ lệch giờ, và khóa máy tính đúng hạn. Sai số đo đạc thực nghiệm chỉ có 0.18 giây sau 1 tiếng hoạt động liên tục."</blockquote>
+        `,
+        qa: `
+          <div class="qa-box">
+            <div class="qa-title">❓ Thầy chỉ vào "time.monotonic()" hỏi:</div>
+            <div class="qa-answer">
+              <strong>"Nếu máy tính bị tắt đi bật lại hoặc khởi động lại (Reboot) thì `time.monotonic()` sẽ bị reset về 0. Làm sao hệ thống nhớ được trẻ đã dùng bao nhiêu phút trước khi tắt máy?"</strong><br><br>
+              <strong>💡 Trả lời trực diện:</strong><br>
+              "Dạ thưa Thầy, đây là lý do nhóm thiết kế cơ chế lưu đệm bền vững (Persistence) trong <code>agent/storage.py</code>: Mỗi chu kỳ 30 giây (hoặc ngay trước khi tắt máy), tác tử Agent ghi nhận số giây đã sử dụng <code>used_seconds</code> của ngày hôm đó vào bảng <code>daily_usage</code> trong CSDL SQLite cục bộ <code>agent_cache.db</code>.<br>
+              Khi máy tính khởi động lại, <code>ScreenTimeTracker</code> đọc ngay bản ghi của ngày hôm đó lên bộ nhớ RAM. Do đó việc <code>time.monotonic()</code> bị reset theo phiên khởi động phần cứng không làm mất đi tổng số thời gian mà trẻ đã tích lũy trong ngày ạ."
+            </div>
+          </div>
+        `
+      },
+      12: {
+        title: "Nhận Diện Máy Rảnh & Lịch 7×48",
+        script: `
+          <h4>Slide 12: Nhận diện máy rảnh & Ma trận 7×48</h4>
+          <blockquote>"Để đảm bảo tính công bằng và nhân văn theo nguyên tắc NT4, hệ thống tích hợp hai module quan trọng: Nhận diện máy rảnh và Ma trận lịch tuần 7×48.<br><br>
+          Thứ nhất, nếu trẻ rời máy tính đi ăn cơm mà không tắt máy, việc trừ hạn mức chơi của trẻ là không công bằng. Nhóm sử dụng Win32 API user32.GetLastInputInfo để đo khoảng thời gian từ lần cuối cùng có thao tác chuột hoặc bàn phím. Nếu sau 5 phút không có tương tác, hệ thống tự động đóng băng bộ đếm thời gian. Khi trẻ quay lại chạm vào bàn phím, bộ đếm tiếp tục tính từ mốc cũ.<br><br>
+          Thứ hai là Ma trận lịch tuần 7×48, chia 1 tuần thành 336 ô 30 phút. Phụ huynh chỉ cần tô màu các khung giờ cho phép trên Dashboard. Tác tử tính toán chỉ số ô bằng công thức toán học với độ phức tạp O(1), kiểm tra tức thì xem thời điểm hiện tại có được phép dùng máy hay không."</blockquote>
+        `,
+        qa: `
+          <div class="qa-box">
+            <div class="qa-title">❓ Thầy chỉ vào "GetLastInputInfo" hỏi:</div>
+            <div class="qa-answer">
+              <strong>"Nếu đứa trẻ mở một video bài giảng dài 2 tiếng trên YouTube, trẻ không chạm vào chuột hay bàn phím thì có bị tính là Idle và ngừng trừ giờ không? Hoặc trẻ dùng phần mềm tự di chuột (Mouse Jiggler) thì sao?"</strong><br><br>
+              <strong>💡 Trả lời trực diện:</strong><br>
+              "Dạ thưa Thầy: (1) Với video bài giảng: Ở Version 3, Agent tích hợp module giám sát tiến trình <code>psutil</code> và trạng thái media toàn màn hình để nhận diện ứng dụng học tập, từ đó có chính sách đếm giờ linh hoạt theo loại hình hoạt động.<br>
+              (2) Với phần mềm di chuột giả mạo (Mouse Jiggler): Vì Agent ở Version 3 kiểm soát tiến trình theo mã băm SHA-256, các phần mềm auto-click hay jiggler lạ sẽ bị nhận diện và đưa vào danh sách chặn, trẻ không thể cài cắm để đánh lừa hệ thống ạ."
+            </div>
+          </div>
+        `
+      },
+      13: {
+        title: "Khóa Máy Nhân Văn & Re-Lock Loop",
+        script: `
+          <h4>Slide 13: Cơ chế khóa máy nhân văn & Tái khóa cưỡng chế</h4>
+          <blockquote>"Khi thời gian sử dụng chạm ngưỡng giới hạn, hệ thống kích hoạt Cơ chế khóa máy nhân văn và vòng lặp tái khóa cưỡng chế.<br><br>
+          Thay vì đột ngột ngắt nguồn hay tắt ứng dụng làm trẻ hoảng sợ và mất toàn bộ bài tập đang làm dở, OGK thực hiện quy trình 4 nấc: Cảnh báo trước 10 phút, 5 phút, 1 phút và đặc biệt là 60 giây ân hạn cuối cùng. Trong 60 giây này, màn hình hiển thị lời nhắc rõ ràng để trẻ kịp nhấn tổ hợp phím Ctrl + S lưu lại tài liệu Word hay đồ án PowerPoint.<br><br>
+          Sau 60 giây, hệ thống gọi Win32 API gốc user32.LockWorkStation. Hàm này đưa máy tính về màn hình khóa Windows an toàn, giữ nguyên mọi tệp đang mở.<br><br>
+          Và để ngăn trẻ vừa bị khóa xong lại gõ mật khẩu vào chơi tiếp, module system_locker.py có một vòng lặp cưỡng chế chạy ngầm mỗi 5 giây. Nếu trẻ đăng nhập vào lại mà Quota vẫn hết, máy sẽ tự động bị khóa trở lại sau 3 giây. Trẻ hoàn toàn không thể lách rào chắn."</blockquote>
+        `,
+        qa: `
+          <div class="qa-box">
+            <div class="qa-title">❓ Thầy chỉ vào "LockWorkStation()" hỏi:</div>
+            <div class="qa-answer">
+              <strong>"Hàm `LockWorkStation` khóa toàn bộ máy. Nếu cha mẹ muốn dùng máy tính đó để làm việc của người lớn thì có bị khóa theo không?"</strong><br><br>
+              <strong>💡 Trả lời trực diện:</strong><br>
+              "Dạ thưa Thầy: Khi gọi <code>LockWorkStation()</code>, hệ điều hành chỉ khóa phiên làm việc hiện tại và quay về màn hình chọn tài khoản Windows (Switch User).<br>
+              Cha mẹ có thể chọn đăng nhập vào tài khoản Administrator của phụ huynh để làm việc bình thường. Agent OGK được cấu hình liên kết với User Session của trẻ, do đó khi phụ huynh dùng tài khoản riêng của mình thì không bị áp đặt hạn mức của trẻ.<br>
+              Ngoài ra, phụ huynh có thể mở điện thoại, vào Dashboard bấm nút 'Mở khóa' hoặc 'Cộng 15 phút', lệnh WebSocket lập tức giải phóng cờ khóa cho trẻ học tiếp ạ."
+            </div>
+          </div>
+        `
+      },
+      14: {
+        title: "WebSocket Khẩn Cấp & HMAC Policy",
+        script: `
+          <h4>Slide 14: Kênh lệnh khẩn WebSocket & Chữ ký HMAC</h4>
+          <blockquote>"Tính năng nổi bật tiếp theo của Version 2 là Kênh lệnh khẩn cấp qua WebSocket và Cơ chế bảo vệ toàn vẹn chính sách bằng HMAC-SHA256.<br><br>
+          Trước đây ở Version 1, mọi giao tiếp phụ thuộc vào chu kỳ nhịp tim 60 giây. Nếu cha mẹ muốn khóa máy con ngay lập tức thì phải chờ tối đa 60 giây. Ở Version 2, chúng em thiết lập kênh WebSocket song công duy trì liên tục giữa Server và Agent. Khi cha mẹ bấm nút 'Khóa ngay' trên Dashboard, lệnh được đẩy thẳng xuống máy con. Thời gian phản hồi thực tế đo đạc chỉ mất 0.8 giây, vượt xa tiêu chuẩn đặt ra là dưới 5 giây.<br><br>
+          Song song đó, để chống nguy cơ can thiệp gói tin hoặc sửa lén CSDL cục bộ để tăng quota, mỗi chính sách ban hành đều được ký bằng chữ ký số HMAC-SHA256. Agent trước khi áp dụng chính sách bắt buộc phải tính toán lại chữ ký; nếu phát hiện sai lệch dù chỉ 1 bit, tác tử sẽ lập tức từ chối và cảnh báo phụ huynh."</blockquote>
+        `,
+        qa: `
+          <div class="qa-box">
+            <div class="qa-title">❓ Thầy chỉ vào "hmac.compare_digest" hỏi:</div>
+            <div class="qa-answer">
+              <strong>"Tại sao lại dùng `hmac.compare_digest` mà không dùng toán tử so sánh chuỗi thông thường `expected == signature`?"</strong><br><br>
+              <strong>💡 Trả lời trực diện:</strong><br>
+              "Dạ thưa Thầy: Toán tử so sánh chuỗi thông thường <code>==</code> sẽ dừng so sánh ngay ở ký tự đầu tiên bị sai (Fail-fast). Điều này tạo ra sự chênh lệch về thời gian phản hồi ở mức nano-giây tùy thuộc vào vị trí ký tự sai, mở ra lỗ hổng tấn công phân tích thời gian (Timing Attack). Kẻ tấn công có thể dựa vào thời gian phản hồi để đoán từng ký tự của chữ ký bí mật.<br>
+              Hàm <code>hmac.compare_digest</code> là hàm so sánh với thời gian cố định (Constant-Time Comparison), duyệt qua toàn bộ chuỗi bất kể đúng hay sai, triệt tiêu hoàn toàn nguy cơ tấn công Timing Attack ạ."
+            </div>
+          </div>
+        `
+      },
+      15: {
+        title: "Parent Dashboard & Audit Log",
+        script: `
+          <h4>Slide 15: Giao diện Web phụ huynh & Nhật ký kiểm toán</h4>
+          <blockquote>"Tại giao diện Web Dashboard của phụ huynh, toàn bộ các tính năng của Version 2 được tích hợp một cách tinh tế và trực quan.<br><br>
+          Cha mẹ có thể nhìn thấy ngay trạng thái của từng máy tính: đang Online hay Offline, hạn mức giờ hôm nay, và có sẵn 3 nút lệnh khẩn cấp để Khóa ngay, Mở khóa hoặc Thưởng thêm 15 phút chỉ với 1 cú nhấp chuột.<br><br>
+          Đặc biệt, để hiện thực hóa nguyên tắc đạo đức NT5 - Minh bạch hai chiều, chúng em xây dựng bảng Nhật ký kiểm toán (Audit Log). Mọi thao tác đổi giờ hay gửi lệnh của cha mẹ đều được ghi vết rõ ràng: đổi từ bao nhiêu phút sang bao nhiêu phút, từ địa chỉ IP nào và vào thời điểm nào. Trẻ em cũng có thể nhìn thấy nhật ký này để hiểu rằng cha mẹ luôn quản lý một cách minh bạch, nhất quán và có thể giải thích được."</blockquote>
+        `,
+        qa: `
+          <div class="qa-box">
+            <div class="qa-title">❓ Thầy chỉ vào "IP phụ huynh" trong Audit Log hỏi:</div>
+            <div class="qa-answer">
+              <strong>"Nếu phụ huynh đăng nhập từ mạng ngoài (4G/Internet) thì IP này có ghi đúng không? Có bị ảnh hưởng bởi Reverse Proxy không?"</strong><br><br>
+              <strong>💡 Trả lời trực diện:</strong><br>
+              "Dạ thưa Thầy, trong <code>server/routes/dashboard.py</code> và <code>policy_service.py</code>, máy chủ lấy địa chỉ IP thông qua <code>request.client.host</code>.<br>
+              Khi triển khai thực tế sau một Reverse Proxy như Nginx, chúng em đã chuẩn bị cấu hình đọc header <code>X-Forwarded-For</code> hoặc <code>X-Real-IP</code> để lấy đúng địa chỉ IP thực của phụ huynh thay vì IP của Proxy nội bộ, đảm bảo tính chính xác cho hồ sơ kiểm toán ạ."
+            </div>
+          </div>
+        `
+      },
+      16: {
+        title: "Nghiệm Thu Version 2 (v0.2)",
+        script: `
+          <h4>Slide 16: Tổng kết nghiệm thu Version 2 (Time Governance)</h4>
+          <blockquote>"Kính thưa Thầy, slide này tổng kết toàn bộ những gì nhóm đã làm được và nghiệm thu thực tế tính đến thời điểm hiện tại: hoàn thành xuất sắc cả Version 1 và Version 2.<br><br>
+          Chúng em đã hoàn thành toàn bộ 88 Micro-tasks, đáp ứng 100% các tiêu chí chấp nhận DoD.<br><br>
+          Trên màn hình là kết quả chạy tự động bộ kiểm thử pytest với 24/24 kịch bản kiểm thử đạt PASSED tuyệt đối trong 4.69 giây. Từ logic xác thực phụ huynh, quy trình ghép đôi không dây, chu kỳ nhịp tim, cho đến thuật toán băm HMAC, bộ đếm Monotonic chống tua giờ và kênh WebSocket đẩy lệnh thời gian thực — tất cả đều có mã kiểm thử tự động bảo đảm chất lượng nghiêm ngặt."</blockquote>
+        `,
+        qa: `
+          <div class="qa-box">
+            <div class="qa-title">❓ Thầy chỉ vào "24 passed in 4.69s" hỏi:</div>
+            <div class="qa-answer">
+              <strong>"Tại sao thời gian chạy 24 test lại nhanh như vậy (chỉ hơn 4 giây)? Có test nào bị skip hay pass giả không?"</strong><br><br>
+              <strong>💡 Trả lời trực diện:</strong><br>
+              "Dạ thưa Thầy: (1) CSDL SQLite in-memory với cờ <code>poolclass=StaticPool</code> giúp triệt tiêu hoàn toàn độ trễ I/O đọc ghi ổ đĩa.<br>
+              (2) Các hàm kiểm thử bất đồng bộ của FastAPI sử dụng <code>TestClient</code> chạy trực tiếp trên luồng bộ nhớ mà không cần mở socket mạng vật lý.<br>
+              (3) Hoàn toàn không có bài test nào bị Skip hay Pass giả: Thầy có thể thấy từng assertion kiểm tra từ mã băm HMAC, giá trị từng slot nhị phân của ma trận lịch tuần cho đến trạng thái <code>delivered</code> của lệnh WebSocket ạ."
+            </div>
+          </div>
+        `
+      },
+      17: {
+        title: "Kỹ Thuật Mạng: DNS & 4 Phương Án",
+        script: `
+          <h4>Slide 17: Báo cáo kỹ thuật mạng M1, M2</h4>
+          <blockquote>"Thưa Thầy, một trong những nội dung chuyên môn sâu nhất về Mạng máy tính của đồ án là Mục M1 và M2: Cơ chế lọc mạng tầng DNS Proxy và Bảng so sánh 4 phương án kỹ thuật.<br><br>
+          Để lựa chọn giải pháp chặn web, chúng em đã làm nghiên cứu so sánh thực nghiệm giữa 4 công nghệ:<br>
+          - Tệp hosts quá thô sơ, không hỗ trợ wildcard subdomain và rất dễ bị xung đột quyền ghi.<br>
+          - HTTP Forward Proxy thì đòi hỏi phải cài đặt chứng chỉ Root CA giả mạo để giải mã HTTPS (TLS MITM). Điều này vi phạm nghiêm trọng quyền riêng tư, có thể làm lộ mật khẩu ngân hàng của gia đình và gây lỗi bảo mật trình duyệt.<br>
+          - WFP (Windows Filtering Platform) thì đòi hỏi viết Kernel Driver C++, độ rủi ro gây màn hình xanh (BSOD) rất cao.<br><br>
+          Do đó, DNS Proxy cục bộ lắng nghe tại 127.0.0.1:53 là lựa chọn kỹ thuật tối ưu nhất. Nó chặn đứng kết nối ngay từ bước hỏi đường trước khi bắt tay TLS, xử lý linh hoạt tên miền con với độ trễ cực thấp dưới 2ms, và kiểm chứng trực quan bằng phần mềm Wireshark."</blockquote>
+        `,
+        qa: `
+          <div class="qa-box">
+            <div class="qa-title">❓ Thầy chỉ vào "Answer: A 0.0.0.0" hỏi:</div>
+            <div class="qa-answer">
+              <strong>"Tại sao lại trả về địa chỉ 0.0.0.0 mà không trả về 127.0.0.1 hoặc mã lỗi NXDOMAIN?"</strong><br><br>
+              <strong>💡 Trả lời trực diện:</strong><br>
+              "Dạ thưa Thầy: (1) Nếu trả về 127.0.0.1, trình duyệt sẽ cố kết nối HTTP vào cổng 80/443 máy con, gây xung đột nếu máy con có web server nội bộ hoặc mất thời gian chờ timeout.<br>
+              (2) Nếu trả về NXDOMAIN, một số trình duyệt sẽ tự động kích hoạt tính năng tìm kiếm tên miền thay thế hoặc gợi ý bật DoH.<br>
+              (3) Trả về 0.0.0.0 (Non-routable meta-address) là chuẩn công nghiệp của Pi-hole và AdGuard: Hệ điều hành từ chối kết nối ngay tại tầng Socket mà không cần gửi gói SYN ra card mạng, giải phóng tài nguyên tức thì ạ."
+            </div>
+          </div>
+        `
+      },
+      18: {
+        title: "7 Đường Vòng & STRIDE",
+        script: `
+          <h4>Slide 18: Phân tích 7 kỹ thuật vượt rào & STRIDE</h4>
+          <blockquote>"Trong báo cáo kỹ thuật mạng Mục M3 và M5, chúng em phân tích thực nghiệm 7 kịch bản vượt rào mà một đứa trẻ am hiểu công nghệ có thể thực hiện:<br><br>
+          - Nếu trẻ đổi DNS card mạng sang Google 8.8.8.8, Agent sẽ định kỳ kiểm tra và khôi phục lại cấu hình 127.0.0.1.<br>
+          - Nếu trẻ bật DNS-over-HTTPS (DoH) trong Firefox hay Chrome, Agent trả về lỗi NXDOMAIN cho tên miền Canary use-application-dns.net. Đây là chuẩn công nghiệp giúp báo hiệu cho trình duyệt tự tắt DoH và quay về DNS hệ điều hành.<br>
+          - Nếu trẻ cài phần mềm VPN, Agent nhận diện tiến trình bằng mã băm SHA-256 và chặn khởi chạy.<br>
+          - Nếu trẻ mở Task Manager tìm cách tắt Agent, Windows Service Recovery sẽ tự khởi động lại tiến trình sau 5 giây; và nếu bị tắt hẳn thì máy chủ sẽ báo động mất nhịp tim tới phụ huynh sau 2 phút.<br><br>
+          Hệ thống cũng được thẩm định bằng Mô hình đe dọa STRIDE, bảo đảm an toàn trước cả nguy cơ trẻ leo thang đặc quyền lẫn nguy cơ phần mềm bị lợi dụng làm Stalkerware."</blockquote>
+        `,
+        qa: `
+          <div class="qa-box">
+            <div class="qa-title">❓ Thầy chỉ vào Canary domain "use-application-dns.net" hỏi:</div>
+            <div class="qa-answer">
+              <strong>"Tên miền Canary này có cơ chế hoạt động ra sao? Nó là chuẩn của ai ban hành?"</strong><br><br>
+              <strong>💡 Trả lời trực diện:</strong><br>
+              "Dạ thưa Thầy, tên miền <code>use-application-dns.net</code> là chuẩn công nghiệp được tổ chức Mozilla Firefox công bố chính thức vào năm 2019 và sau đó được Google Chromium hỗ trợ.<br>
+              Khi trình duyệt khởi động và có ý định bật tính năng DoH, nó sẽ tự động gửi một truy vấn DNS thông thường tới tên miền <code>use-application-dns.net</code>. Nếu DNS Server trả về mã lỗi <code>NXDOMAIN</code> (Non-Existent Domain), trình duyệt hiểu rằng mạng nội bộ này có chính sách DNS riêng và <strong>sẽ tự động tắt DoH</strong>, quay trở lại gửi DNS qua cổng 53 của hệ điều hành. Nhờ vậy bộ lọc của OGK không bị vô hiệu hóa ạ."
+            </div>
+          </div>
+        `
+      },
+      19: {
+        title: "Lộ Trình Tuần 3 & Tuần 4",
+        script: `
+          <h4>Slide 19: Kế hoạch hoàn thiện Version 3 & Version 4</h4>
+          <blockquote>"Thưa Thầy, đồ án của chúng em được lập kế hoạch 4 tuần rất chặt chẽ theo phương pháp Karpathy:<br><br>
+          - Hai tuần vừa qua, nhóm đã hoàn thành 100% mục tiêu của Tuần 1 và Tuần 2, tạo nên nền tảng kết nối vững chắc và module quản trị thời gian hoàn thiện.<br>
+          - Trong Tuần 3, nhóm sẽ tập trung vào trọng tâm kỹ thuật mạng: hiện thực hóa bộ lọc DNS Proxy cục bộ trên cổng 53 bằng thư viện dnslib, cưỡng chế SafeSearch, kiểm soát ứng dụng bằng mã băm SHA-256 và màn hình minh bạch cho trẻ.<br>
+          - Và ở Tuần 4, nhóm sẽ tiến hành gia cố bảo mật chuyên sâu, đo đạc hiệu năng với 30 mẫu số liệu thực tế về RAM/CPU/Độ trễ DNS, đóng gói toàn bộ mã nguồn, tài liệu báo cáo và video demo.<br><br>
+          Với tiến độ hiện tại, nhóm hoàn toàn tự tin sẽ hoàn thành xuất sắc đồ án đúng hạn và đạt chất lượng cao nhất."</blockquote>
+        `,
+        qa: `
+          <div class="qa-box">
+            <div class="qa-title">❓ Thầy chỉ vào Tuần 3 ("Kiểm soát app theo SHA-256") hỏi:</div>
+            <div class="qa-answer">
+              <strong>"Tại sao lại dùng mã băm SHA-256 mà không kiểm tra tên file `.exe` cho nhanh?"</strong><br><br>
+              <strong>💡 Trả lời trực diện:</strong><br>
+              "Dạ thưa Thầy: Nếu chỉ kiểm tra theo tên tệp thực thi, đứa trẻ chỉ cần đổi tên file <code>game.exe</code> thành <code>word.exe</code> hay <code>notepad.exe</code> là phần mềm bị qua mặt ngay.<br>
+              Bằng cách tính mã băm SHA-256 của toàn bộ tệp nhị phân trên đĩa, dù trẻ có đổi tên file thành bất kỳ tên gì thì mã băm SHA-256 vẫn giữ nguyên. Agent đối chiếu mã băm với danh sách cấm và lập tức chấm dứt tiến trình <code>process.terminate()</code>. Để tối ưu hiệu năng, Agent lưu cache mã băm theo path và last_modified để không phải băm lại nhiều lần ạ."
+            </div>
+          </div>
+        `
+      },
+      20: {
+        title: "Kết Luận & Q&A Defense",
+        script: `
+          <h4>Slide 20: Kết luận & Phiên vấn đáp phản biện</h4>
+          <blockquote>"Kính thưa Thầy và quý Thầy Cô trong Hội đồng,<br><br>
+          Dự án Open Guardian Kids không chỉ là một bài tập lớn về kỹ thuật mạng và lập trình hệ thống, mà còn là một minh chứng thực tế khẳng định rằng: Công nghệ hoàn toàn có thể giúp cha mẹ đồng hành và bảo vệ con trẻ an toàn mà không cần phải xâm phạm bí mật đời tư hay phá vỡ sự tôn trọng trong gia đình.<br><br>
+          Với nền móng vững chắc của hai phiên bản v0.1 và v0.2 đã hoàn thành trọn vẹn và kiểm chứng thực nghiệm 100%, chúng em hoàn toàn tự tin sẽ hoàn thành xuất sắc các mục tiêu còn lại của đồ án.<br><br>
+          Chúng em xin chân thành cảm ơn Thầy đã lắng nghe bài báo cáo. Sau đây, nhóm chúng em rất mong nhận được những nhận xét quý báu và xin sẵn sàng trả lời các câu hỏi phản biện của Thầy ạ!"</blockquote>
+        `,
+        qa: `
+          <div class="qa-box">
+            <div class="qa-title">❓ Thầy hỏi câu hỏi chốt:</div>
+            <div class="qa-answer">
+              <strong>"Trong toàn bộ những gì đã làm từ Ver 1 đến Ver 2, đâu là điểm kỹ thuật mà nhóm tự hào nhất và thấy khó khăn nhất khi hiện thực?"</strong><br><br>
+              <strong>💡 Trả lời trực diện:</strong><br>
+              "Dạ thưa Thầy, điểm kỹ thuật nhóm tự hào nhất và cũng trăn trở nhiều nhất là <strong>Module M6: Cơ chế chống gian lận đồng hồ hệ thống bằng `time.monotonic()` kết hợp vòng lặp cưỡng chế tái khóa</strong>:<br>
+              Ban đầu khi tiếp cận bài toán, các giải pháp thông thường đều bị trẻ qua mặt dễ dàng chỉ bằng một thao tác đổi giờ hệ thống trên Windows. Nhóm đã phải đào sâu vào kiến trúc phần cứng máy tính và Win32 Kernel để tìm ra bộ đếm xung nhịp đơn điệu CPU, kết hợp với API `GetLastInputInfo` để xử lý bài toán máy rảnh, và vòng lặp cưỡng chế tái khóa máy trong 5 giây.<br>
+              Kết quả thực nghiệm cho thấy sai số chỉ 0.18 giây/giờ và hệ thống hoàn toàn miễn nhiễm trước thủ thuật lùi giờ 3 tiếng của trẻ. Đây chính là minh chứng rõ nhất cho nguyên tắc Karpathy 'Think Before Coding' mà nhóm theo đuổi ạ."
+            </div>
+          </div>
+        `
+      }
     };
 
     // State
     let currentSlide = 1;
-    const totalSlides = 18;
+    const totalSlides = 20;
+    let activeTab = 'notes'; // 'notes' or 'qa'
 
-    // Elements
+    // DOM Elements
     const slides = document.querySelectorAll('.slide');
     const slideCounter = document.getElementById('slideCounter');
     const progressBar = document.getElementById('progressBar');
@@ -1766,14 +1622,15 @@ def verify_password(plain, hashed):
     const drawerOverlay = document.getElementById('drawerOverlay');
     const btnFullscreen = document.getElementById('btnFullscreen');
     const btnPrint = document.getElementById('btnPrint');
+    const tabNotes = document.getElementById('tabNotes');
+    const tabQA = document.getElementById('tabQA');
 
     // Build thumbnails
     function buildThumbs() {
       thumbsDrawer.innerHTML = '';
       slides.forEach((slide, idx) => {
         const num = idx + 1;
-        const titleElem = slide.querySelector('.slide-title');
-        const titleText = titleElem ? titleElem.innerText : `Slide ${num}`;
+        const titleText = (slideData[num] && slideData[num].title) || `Slide ${num}`;
         
         const card = document.createElement('div');
         card.className = `thumb-card ${num === currentSlide ? 'active' : ''}`;
@@ -1789,14 +1646,16 @@ def verify_password(plain, hashed):
       });
     }
 
-    // Go to slide
     function goToSlide(target) {
       if (target < 1 || target > totalSlides) return;
 
-      slides.forEach(slide => {
-        slide.classList.remove('active');
-        if (parseInt(slide.getAttribute('data-slide')) === target) {
+      slides.forEach((slide, idx) => {
+        const num = idx + 1;
+        if (num === target) {
           slide.classList.add('active');
+          slide.scrollTop = 0;
+        } else {
+          slide.classList.remove('active');
         }
       });
 
@@ -1805,23 +1664,33 @@ def verify_password(plain, hashed):
     }
 
     function updateUI() {
-      // Counter & Progress
       slideCounter.textContent = `${currentSlide.toString().padStart(2, '0')} / ${totalSlides.toString().padStart(2, '0')}`;
       const progressPercent = ((currentSlide - 1) / (totalSlides - 1)) * 100;
       progressBar.style.width = `${progressPercent}%`;
 
-      // Buttons
       btnPrev.disabled = (currentSlide === 1);
       btnNext.disabled = (currentSlide === totalSlides);
 
-      // Notes
-      notesContent.innerHTML = speakerNotes[currentSlide] || '<p>Không có ghi chú cho slide này.</p>';
+      renderNotesContent();
 
-      // Thumbs active update
       const thumbCards = document.querySelectorAll('.thumb-card');
       thumbCards.forEach((c, i) => {
         c.classList.toggle('active', i + 1 === currentSlide);
       });
+    }
+
+    function renderNotesContent() {
+      const data = slideData[currentSlide];
+      if (!data) {
+        notesContent.innerHTML = '<p>Không có nội dung cho slide này.</p>';
+        return;
+      }
+
+      if (activeTab === 'notes') {
+        notesContent.innerHTML = data.script || '<p>Chưa có lời thoại.</p>';
+      } else {
+        notesContent.innerHTML = data.qa || '<p>Chưa có câu hỏi phản biện.</p>';
+      }
     }
 
     function nextSlide() {
@@ -1868,6 +1737,21 @@ def verify_password(plain, hashed):
       }
     }
 
+    // Tabs inside Speaker Notes
+    tabNotes.addEventListener('click', () => {
+      activeTab = 'notes';
+      tabNotes.classList.add('active');
+      tabQA.classList.remove('active');
+      renderNotesContent();
+    });
+
+    tabQA.addEventListener('click', () => {
+      activeTab = 'qa';
+      tabQA.classList.add('active');
+      tabNotes.classList.remove('active');
+      renderNotesContent();
+    });
+
     // Event Listeners
     btnNext.addEventListener('click', nextSlide);
     btnPrev.addEventListener('click', prevSlide);
@@ -1883,7 +1767,6 @@ def verify_password(plain, hashed):
 
     // Keyboard navigation
     document.addEventListener('keydown', (e) => {
-      // Don't capture keys if typing inside input/textarea
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
       switch(e.key) {
@@ -1911,6 +1794,18 @@ def verify_password(plain, hashed):
           e.preventDefault();
           toggleNotes();
           break;
+        case 'q':
+        case 'Q':
+          e.preventDefault();
+          if (!speakerNotesPanel.classList.contains('open')) {
+            speakerNotesPanel.classList.add('open');
+            btnToggleNotes.classList.add('active');
+          }
+          activeTab = 'qa';
+          tabQA.classList.add('active');
+          tabNotes.classList.remove('active');
+          renderNotesContent();
+          break;
         case 't':
         case 'T':
           e.preventDefault();
@@ -1931,7 +1826,7 @@ def verify_password(plain, hashed):
       }
     });
 
-    // Init
+    // Initialize
     buildThumbs();
     updateUI();
   </script>
