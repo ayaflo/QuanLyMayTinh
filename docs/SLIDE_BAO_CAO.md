@@ -2,8 +2,8 @@
 ## ĐỀ TÀI: XÂY DỰNG ỨNG DỤNG HỖ TRỢ QUẢN LÝ VIỆC SỬ DỤNG MÁY TÍNH CỦA TRẺ EM
 ### TÊN GIẢI PHÁP HỆ THỐNG: OPEN GUARDIAN KIDS (OGK)
 > **Học phần:** Chuyên đề Tốt nghiệp Mạng máy tính & Truyền thông Dữ liệu  
-> **Phương châm cốt lõi:** *"Công cụ đồng hành, không phải phần mềm theo dõi lén"* (Luật Trẻ Em 2016, NĐ 13/2023/NĐ-CP)  
-> **Phương pháp quản trị:** Karpathy Engineering Principles kết hợp Spec-Driven Development  
+> **Phương châm cốt lõi:** *"Giải pháp quản trị thiết bị, an toàn mạng và đồng hành giáo dục gia đình"* (Luật Trẻ Em 2016, NĐ 13/2023/NĐ-CP)  
+> **Phương pháp quản trị:** Spec-Driven Development kết hợp Tiêu chuẩn Kỹ thuật Hệ thống (Engineering Standards)  
 > **Hiện trạng đồ án:** ĐÃ HOÀN THÀNH 100% VERSION 1 (v0.1) VÀ VERSION 2 (v0.2) — ĐẠT 24/24 AUTOMATED TESTS PASSED
 
 ---
@@ -14,7 +14,7 @@
 3. **Slide 3:** Triết lý Thiết kế Cốt lõi & Hiến chương 6 Nguyên tắc Đạo đức (NT1 – NT6)
 4. **Slide 4:** Căn cứ Pháp lý Việt Nam & Chuẩn An toàn Thông tin Quốc tế (NĐ 13/2023, ASVS v4)
 5. **Slide 5:** Kiến trúc Phân tán 3 Khối (Distributed 3-Tier Architecture & Session 0 Isolation)
-6. **Slide 6:** Ngăn xếp Công nghệ & Phương pháp Quản trị Kỹ thuật Karpathy (Simplicity First)
+6. **Slide 6:** Ngăn xếp Công nghệ & Tiêu Chuẩn Kỹ Thuật Hệ Thống (Simplicity First)
 7. **Slide 7:** Luồng Kỹ thuật 1: Xác thực Phụ huynh & Quản trị Phiên (Argon2id, JWT Cookie HttpOnly)
 8. **Slide 8:** Luồng Kỹ thuật 2: Ghép đôi Thiết bị Không dây An toàn (Enrollment, UUID, TTL 10m)
 9. **Slide 9:** Luồng Kỹ thuật 3: Viễn trắc Nhịp tim Định kỳ & Nhận diện Trạng thái (Heartbeat 60s, Online Threshold 120s)
@@ -40,7 +40,7 @@
 ### 1. Nội dung hiển thị trên Slide
 * **Tên đồ án:** XÂY DỰNG ỨNG DỤNG HỖ TRỢ QUẢN LÝ VIỆC SỬ DỤNG MÁY TÍNH CỦA TRẺ EM
 * **Tên giải pháp:** OPEN GUARDIAN KIDS (OGK) — Version 0.2 (Hoàn thành Tuần 1 & Tuần 2)
-* **Khẩu hiệu (Motto):** *"Công cụ đồng hành, không phải phần mềm theo dõi lén"*
+* **Khẩu hiệu (Motto):** *"Giải pháp quản trị thiết bị, an toàn mạng và đồng hành giáo dục gia đình"*
 * **Chuyên ngành:** Mạng Máy Tính & Truyền Thông Dữ Liệu
 * **Nền tảng mục tiêu:** Windows 10/11 x64 (Agent) & Web Dashboard Đa nền tảng (FastAPI)
 * **Giảng viên hướng dẫn:** [Tên Giảng Viên Hướng Dẫn]
@@ -56,7 +56,7 @@
 ### 3. Góc Phản Biện (Thầy sẽ chỉ vào đâu & hỏi gì?)
 * ❓ **Thầy chỉ vào chữ "Version 0.2" và hỏi:** *"Tại sao lại phân chia thành các Version v0.1, v0.2? Căn cứ vào đâu để xác định ranh giới giữa hai phiên bản này?"*
   * 💡 **Trả lời phản biện:**  
-    *"Dạ thưa Thầy, nhóm áp dụng phương pháp phát triển phần mềm theo chuẩn Spec-Driven Development kết hợp nguyên tắc Karpathy 'Surgical Changes':  
+    *"Dạ thưa Thầy, nhóm áp dụng phương pháp phát triển phần mềm theo chuẩn Spec-Driven Development kết hợp kiến trúc module hóa độc lập theo chuẩn Spec-Driven Development:  
     - **Version 0.1 (Tuần 1):** Tập trung xây dựng bộ xương sống kết nối (The Backbone) gồm 3 phân hệ Client - Server - Dashboard, luồng xác thực Argon2id, ghép đôi không dây 8 ký tự và vòng lặp nhịp tim 60s.  
     - **Version 0.2 (Tuần 2):** Tập trung giải quyết trọn vẹn tính năng Quản lý Thời gian (F1), cơ chế đồng hồ đơn điệu `time.monotonic()` chống tua giờ hệ thống (M6), và kênh lệnh khẩn cấp tức thời hai chiều qua WebSocket dưới 5 giây (F4) kèm chữ ký HMAC-SHA256 và Audit Log.  
     Ranh giới này giúp mã nguồn tăng trưởng ổn định, module hóa độc lập, không bị phân mảnh và dễ dàng kiểm thử tự động ở từng nấc thang phát triển ạ."*
@@ -94,7 +94,7 @@
 ### 1. Nội dung hiển thị trên Slide
 * **Bảng 6 Nguyên tắc Bắt buộc (OGK Constitution):**
   * **NT1 – Trẻ biết mình đang được hỗ trợ:** Tray Icon lá chắn luôn sáng trên Taskbar; Balloon Popup thông báo khi máy khởi động; cấm tuyệt đối chế độ chạy ẩn (Stealth mode).
-  * **NT2 – Tối thiểu dữ liệu (Data Minimisation):** Chỉ ghi nhận 4 siêu dữ liệu: Tên app, domain cấp hai, thời lượng, mốc giờ. Không lưu URL đầy đủ, không tiêu đề cửa sổ, không screenshot, không keylogger.
+  * **NT2 – Tối thiểu hóa dữ liệu & Phân quyền module:** Mặc định lưu 4 siêu dữ liệu kỹ thuật: Tên app, domain cấp hai, thời lượng, mốc giờ. Các tính năng nghiên cứu chuyên sâu (Keylogger phân tích từ khóa, Chụp màn hình cảnh báo) được thiết kế thành module mở rộng do phụ huynh kích hoạt.
   * **NT3 – Trẻ có tiếng nói:** Giao diện máy con có nút tương tác "Xin thêm giờ" và "Báo chặn nhầm".
   * **NT4 – Mọi hành động giải thích được:** Khi khóa máy hay chặn app/web, hiển thị popup lý do; cảnh báo trước 10p, 5p, 1p và ân hạn 60s để trẻ lưu bài tập.
   * **NT5 – Minh bạch hai chiều:** Trẻ có màn hình riêng xem đúng dữ liệu cha mẹ thấy; xem được lịch sử thay đổi luật của cha mẹ (Audit Log).
@@ -180,7 +180,7 @@
 
 ---
 
-## SLIDE 6: NGĂN XẾP CÔNG NGHỆ & NGUYÊN TẮC QUẢN TRỊ KARPATHY
+## SLIDE 6: NGĂN XẾP CÔNG NGHỆ & TIÊU CHUẨN KỸ THUẬT HỆ THỐNG
 ### 1. Nội dung hiển thị trên Slide
 * **Bảng tổng hợp Công nghệ chuẩn mực:**
   * **Backend Server:** Python 3.11+, FastAPI (Asynchronous ASGI), Uvicorn, SQLAlchemy ORM, SQLite (WAL mode).
@@ -188,14 +188,14 @@
   * **Client Agent:** Python standard library, `ctypes` (Win32 API `LockWorkStation`, `GetLastInputInfo`), `websocket-client`, `pystray`, `psutil`.
   * **Frontend UI:** HTML5 ngữ nghĩa, Vanilla CSS hiện đại (Glassmorphism, CSS Grid/Flexbox), Vanilla JS (Fetch API, WebSocket).
   * **Kiểm thử tự động:** Pytest, HTTPX TestClient, StaticPool SQLite in-memory.
-* **4 Nguyên tắc Quản trị Kỹ thuật Karpathy (The Karpathy Guidelines):**
+* **4 Tiêu Chuẩn Thiết Kế & Quản Trị Kỹ Thuật (Engineering Standards):**
   1. *Think Before Coding:* Đánh giá rủi ro hệ điều hành (Session 0, DNS port 53, Windows time drift) trước khi gõ mã.
   2. *Simplicity First (Tối giản là trên hết):* Kiến trúc phẳng, không microservice phức tạp không cần thiết, vượt qua bài kiểm tra "Senior Engineer Test" trong 15 phút.
   3. *Surgical Changes:* Chia ranh giới 4 tuần phát triển rõ rệt, diff code nhỏ, không viết tính năng thừa ngoài phạm vi.
   4. *Goal-Driven Execution:* Mỗi tuần đều có Tiêu chí nghiệm thu (Definition of Done) định lượng bằng test tự động và kịch bản E2E.
 
 ### 2. Lời thoại thuyết trình (Speaker Script)
-> *"Thưa Thầy, phương châm công nghệ của nhóm là **'Simplicity First' - Tối giản, chính xác và hiệu quả**, lấy cảm hứng từ các nguyên tắc kỹ thuật của chuyên gia AI Andrej Karpathy.  
+> *"Thưa Thầy, phương châm công nghệ của nhóm là **'Simplicity First' - Tối giản, chính xác và hiệu năng cao**.  
 >  
 > Chúng em kiên quyết không lạm dụng các kiến trúc cồng kềnh như Docker swarm, Kubernetes hay Microservices cho một hệ thống mạng gia đình. Thay vào đó, chúng em tận dụng sức mạnh của **FastAPI bất đồng bộ**, kết hợp **SQLite chế độ WAL**, thư viện **websocket-client** và các Win32 API gốc của hệ điều hành thông qua `ctypes`.  
 >  
@@ -204,7 +204,7 @@
 ### 3. Góc Phản Biện (Thầy sẽ chỉ vào đâu & hỏi gì?)
 * ❓ **Thầy chỉ vào "SQLite (WAL mode)" và hỏi:** *"Tại sao lại dùng SQLite mà không dùng PostgreSQL hay MySQL cho chuyên nghiệp?"*
   * 💡 **Trả lời phản biện:**  
-    *"Dạ thưa Thầy, đây là quyết định kỹ thuật dựa trên nguyên tắc Karpathy và bài toán triển khai thực tế:  
+    *"Dạ thưa Thầy, đây là quyết định kỹ thuật dựa trên tiêu chuẩn tối giản hệ thống và bài toán triển khai thực tế:  
     1. **Môi trường gia đình:** Đồ án nhắm tới việc triển khai trên máy tính gia đình hoặc một thiết bị Raspberry Pi nhỏ gọn. Việc bắt phụ huynh phải cài đặt và cấu hình PostgreSQL hay MySQL là rào cản lớn về mặt triển khai và bảo trì.  
     2. **Hiệu năng chế độ WAL:** Ở chế độ Write-Ahead Logging (`PRAGMA journal_mode=WAL`), SQLite cho phép các tác vụ đọc chạy đồng thời không hề bị chặn bởi tác vụ ghi. Trong một gia đình với 3–5 máy tính con gửi nhịp tim mỗi 60s, SQLite WAL xử lý hàng ngàn giao dịch/giây, dư thừa tải cho bài toán này với mức tiêu tốn RAM chỉ vài Megabytes."*
 
@@ -613,7 +613,7 @@
     * Đóng gói bộ sản phẩm: Báo cáo chính thức 30 trang, Phụ lục M1–M6, Video demo 5–7 phút, README cài đặt sạch trong 15 phút.
 
 ### 2. Lời thoại thuyết trình (Speaker Script)
-> *"Thưa Thầy, đồ án của chúng em được lập kế hoạch 4 tuần rất chặt chẽ theo phương pháp Karpathy:  
+> *"Thưa Thầy, đồ án của chúng em được lập kế hoạch 4 tuần rất chặt chẽ theo phương pháp Spec-Driven Development:  
 >  
 > - Hai tuần vừa qua, nhóm đã **hoàn thành 100% mục tiêu của Tuần 1 và Tuần 2**, tạo nên nền tảng kết nối vững chắc và module quản trị thời gian hoàn thiện.  
 > - Trong **Tuần 3**, nhóm sẽ tập trung vào trọng tâm kỹ thuật mạng: hiện thực hóa bộ lọc DNS Proxy cục bộ trên cổng 53 bằng thư viện `dnslib`, cưỡng chế SafeSearch, kiểm soát ứng dụng bằng mã băm SHA-256 và màn hình minh bạch cho trẻ.  
@@ -654,7 +654,7 @@
   * 💡 **Trả lời phản biện:**  
     *"Dạ thưa Thầy, điểm kỹ thuật nhóm tự hào nhất và cũng trăn trở nhiều nhất là **Module M6: Cơ chế chống gian lận đồng hồ hệ thống bằng `time.monotonic()` kết hợp vòng lặp cưỡng chế tái khóa**:  
     Ban đầu khi tiếp cận bài toán, các giải pháp thông thường đều bị trẻ qua mặt dễ dàng chỉ bằng một thao tác đổi giờ hệ thống trên Windows. Nhóm đã phải đào sâu vào kiến trúc phần cứng máy tính và Win32 Kernel để tìm ra bộ đếm xung nhịp đơn điệu CPU, kết hợp với API `GetLastInputInfo` để xử lý bài toán máy rảnh, và vòng lặp cưỡng chế tái khóa máy trong 5 giây.  
-    Kết quả thực nghiệm cho thấy sai số chỉ 0.18 giây/giờ và hệ thống hoàn toàn miễn nhiễm trước thủ thuật lùi giờ 3 tiếng của trẻ. Đây chính là minh chứng rõ nhất cho nguyên tắc Karpathy 'Think Before Coding' mà nhóm theo đuổi ạ."*
+    Kết quả thực nghiệm cho thấy sai số chỉ 0.18 giây/giờ và hệ thống hoàn toàn miễn nhiễm trước thủ thuật lùi giờ 3 tiếng của trẻ. Đây chính là minh chứng rõ nhất cho phương châm 'Hiểu sâu hệ thống trước khi viết mã' mà nhóm theo đuổi ạ."*
 
 ---
 
