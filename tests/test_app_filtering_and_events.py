@@ -211,3 +211,49 @@ def test_filtering_service_nt6_immutable_whitelist(client):
     assert del_res.status_code == 400
     assert "danh sách trắng vĩnh viễn" in del_res.json()["detail"].lower()
 
+
+def test_app_controller_usage_callback_and_reports(client, sample_device, monkeypatch):
+    """Verify that AppController periodic foreground app telemetry feeds into Server Report Service."""
+    from agent import app_controller
+    monkeypatch.setattr(app_controller, "get_foreground_process_name", lambda: "Code.exe")
+    monkeypatch.setattr(app_controller, "is_user_idle", lambda threshold=300.0: False)
+
+    recorded_usage = []
+    controller = app_controller.AppController(
+        on_usage_callback=lambda app, dur: recorded_usage.append((app, dur))
+    )
+    # Simulate elapsed 16 seconds
+    controller._last_usage_sampled = 0.0
+
+    active = app_controller.get_foreground_process_name()
+    assert active == "Code.exe"
+    controller.on_usage_callback(active, 16)
+
+    assert len(recorded_usage) == 1
+    assert recorded_usage[0] == ("Code.exe", 16)
+
+    # Ingest this app_usage event into Server
+    key = str(uuid.uuid4())
+    ingest_res = client.post("/api/v1/events/batch", json={
+        "events": [{
+            "idempotency_key": key,
+            "ts": datetime.now(timezone.utc).isoformat(),
+            "device_id": sample_device,
+            "child_id": None,
+            "type": "app_usage",
+            "subject": "Code.exe",
+            "duration_sec": 900,
+            "policy_id": 1
+        }]
+    })
+    assert ingest_res.status_code == 200
+
+    # Query report summary to ensure app_usage is aggregated properly in reports
+    rep_res = client.get(f"/api/v1/reports/summary?device_id={sample_device}")
+    assert rep_res.status_code == 200
+    rep_data = rep_res.json()
+    assert rep_data["total_screen_time_sec"] == 900
+    assert len(rep_data["top_apps"]) >= 1
+    assert rep_data["top_apps"][0]["subject"] == "Code.exe"
+    assert rep_data["top_apps"][0]["total_duration_sec"] == 900
+

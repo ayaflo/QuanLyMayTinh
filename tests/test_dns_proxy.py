@@ -149,3 +149,35 @@ def test_dns_proxy_malformed_packet_handling():
     assert proxy.process_dns_query(b"RANDOM_MALFORMED_GARBAGE_BYTES") == b""
 
 
+def test_dns_proxy_ipv6_safesearch_and_sinkhole():
+    """Verify that IPv6 AAAA queries are also safely handled and cannot bypass filtering."""
+    proxy = DNSProxyServer()
+    proxy.update_rules(blocked={"badsite.test"}, enforce_safesearch=True)
+
+    # 1. Google AAAA SafeSearch query -> returns IPv6 SafeSearch VIP
+    g_aaaa = DNSRecord.question("www.google.com", "AAAA").pack()
+    g_resp = DNSRecord.parse(proxy.process_dns_query(g_aaaa))
+    assert g_resp.header.rcode == RCODE.NOERROR
+    assert len(g_resp.rr) == 1
+    assert str(g_resp.rr[0].rdata) == "2001:4860:4806::78"
+
+    # 2. YouTube AAAA SafeSearch query -> returns IPv6 SafeSearch VIP
+    y_aaaa = DNSRecord.question("www.youtube.com", "AAAA").pack()
+    y_resp = DNSRecord.parse(proxy.process_dns_query(y_aaaa))
+    assert y_resp.header.rcode == RCODE.NOERROR
+    assert len(y_resp.rr) == 1
+    assert str(y_resp.rr[0].rdata) == "2001:4860:4806::78"
+
+    # 3. Bing AAAA query -> returns NOERROR with 0 answers (NODATA), forcing client to IPv4
+    b_aaaa = DNSRecord.question("bing.com", "AAAA").pack()
+    b_resp = DNSRecord.parse(proxy.process_dns_query(b_aaaa))
+    assert b_resp.header.rcode == RCODE.NOERROR
+    assert len(b_resp.rr) == 0
+
+    # 4. Blocked domain AAAA query -> returns NOERROR with 0 answers, preventing IPv6 bypass
+    bad_aaaa = DNSRecord.question("badsite.test", "AAAA").pack()
+    bad_resp = DNSRecord.parse(proxy.process_dns_query(bad_aaaa))
+    assert bad_resp.header.rcode == RCODE.NOERROR
+    assert len(bad_resp.rr) == 0
+
+

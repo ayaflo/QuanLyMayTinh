@@ -7,14 +7,16 @@ import socket
 import threading
 import logging
 from typing import Optional, Set, Callable, Dict, Any
-from dnslib import DNSRecord, DNSQuestion, RR, QTYPE, A, RCODE
+from dnslib import DNSRecord, DNSQuestion, RR, QTYPE, A, AAAA, RCODE
 
 logger = logging.getLogger("OGK_DNSProxy")
 
-# SafeSearch Canonical Destination IPs
-SAFESEARCH_GOOGLE_IP = "216.239.38.120"   # forcesafesearch.google.com
-SAFESEARCH_BING_IP = "204.79.197.220"     # strict.bing.com
-SAFESEARCH_YOUTUBE_IP = "216.239.38.120"  # restrict.youtube.com
+# SafeSearch Canonical Destination IPs (IPv4 & IPv6 VIPs)
+SAFESEARCH_GOOGLE_IP = "216.239.38.120"      # forcesafesearch.google.com (IPv4)
+SAFESEARCH_GOOGLE_IPV6 = "2001:4860:4806::78" # forcesafesearch.google.com (IPv6)
+SAFESEARCH_BING_IP = "204.79.197.220"        # strict.bing.com (IPv4)
+SAFESEARCH_YOUTUBE_IP = "216.239.38.120"     # restrict.youtube.com (IPv4)
+SAFESEARCH_YOUTUBE_IPV6 = "2001:4860:4806::78" # restrict.youtube.com (IPv6)
 
 DOH_CANARY_DOMAIN = "use-application-dns.net"
 
@@ -144,19 +146,27 @@ class DNSProxyServer:
                 reply.add_answer(RR(request.q.qname, QTYPE.A, rdata=A("0.0.0.0"), ttl=60))
             return reply.pack()
 
-        # 4. SafeSearch DNS Rewrite (T3_032)
-        if self.enforce_safesearch and qtype in (QTYPE.A, QTYPE.ANY):
+        # 4. SafeSearch DNS Rewrite (T3_032 - Enforce both IPv4 & IPv6 SafeSearch VIPs)
+        if self.enforce_safesearch:
             if is_google_search_domain(clean_domain):
                 reply.header.rcode = RCODE.NOERROR
-                reply.add_answer(RR(request.q.qname, QTYPE.A, rdata=A(SAFESEARCH_GOOGLE_IP), ttl=60))
+                if qtype in (QTYPE.A, QTYPE.ANY):
+                    reply.add_answer(RR(request.q.qname, QTYPE.A, rdata=A(SAFESEARCH_GOOGLE_IP), ttl=60))
+                if qtype in (QTYPE.AAAA, QTYPE.ANY):
+                    reply.add_answer(RR(request.q.qname, QTYPE.AAAA, rdata=AAAA(SAFESEARCH_GOOGLE_IPV6), ttl=60))
                 return reply.pack()
             elif is_bing_search_domain(clean_domain):
                 reply.header.rcode = RCODE.NOERROR
-                reply.add_answer(RR(request.q.qname, QTYPE.A, rdata=A(SAFESEARCH_BING_IP), ttl=60))
+                if qtype in (QTYPE.A, QTYPE.ANY):
+                    reply.add_answer(RR(request.q.qname, QTYPE.A, rdata=A(SAFESEARCH_BING_IP), ttl=60))
+                # For Bing AAAA queries, return NODATA (NOERROR, 0 records) to force stub resolver to use IPv4 VIP
                 return reply.pack()
             elif is_youtube_domain(clean_domain):
                 reply.header.rcode = RCODE.NOERROR
-                reply.add_answer(RR(request.q.qname, QTYPE.A, rdata=A(SAFESEARCH_YOUTUBE_IP), ttl=60))
+                if qtype in (QTYPE.A, QTYPE.ANY):
+                    reply.add_answer(RR(request.q.qname, QTYPE.A, rdata=A(SAFESEARCH_YOUTUBE_IP), ttl=60))
+                if qtype in (QTYPE.AAAA, QTYPE.ANY):
+                    reply.add_answer(RR(request.q.qname, QTYPE.AAAA, rdata=AAAA(SAFESEARCH_YOUTUBE_IPV6), ttl=60))
                 return reply.pack()
 
         # 5. Normal Domain: Forward Upstream (T3_034) & Record Minimal FQDN Access (NT2)

@@ -23,6 +23,7 @@ try:
     from agent.policy_syncer import sync_policy_from_server
     from agent.ws_listener import WebSocketListener
     from agent.dns_proxy import DNSProxyServer
+    from agent.dns_configurator import set_dns_to_localhost, restore_dns_to_dhcp
     from agent.app_controller import AppController
     from agent.event_collector import EventCollector
     from agent.storage import save_dns_rules_cache, load_dns_rules_cache, save_app_rules_cache, load_app_rules_cache
@@ -38,6 +39,7 @@ except ImportError:
     from policy_syncer import sync_policy_from_server
     from ws_listener import WebSocketListener
     from dns_proxy import DNSProxyServer
+    from dns_configurator import set_dns_to_localhost, restore_dns_to_dhcp
     from app_controller import AppController
     from event_collector import EventCollector
 
@@ -185,9 +187,13 @@ def main():
                 f"'{app_name}' đã bị khóa theo quy định: {reason}"
             )
 
+    def handle_app_usage(app_name: str, duration_sec: int):
+        event_collector.record_event(event_type="app_usage", subject=app_name, duration_sec=duration_sec)
+
     app_controller = AppController(
         rules_provider=load_app_rules_cache,
-        on_blocked_callback=handle_app_blocked
+        on_blocked_callback=handle_app_blocked,
+        on_usage_callback=handle_app_usage
     )
 
     def sync_filtering_rules():
@@ -221,6 +227,11 @@ def main():
     app_controller.start()
     try:
         dns_proxy.start()
+        dns_configured = set_dns_to_localhost()
+        if dns_configured:
+            print(" [✓] Đã cấu hình card mạng Windows trỏ DNS về 127.0.0.1 (F2).")
+        else:
+            print(" [!] Khuyến nghị chạy quyền Administrator để tự động đổi DNS card mạng (hoặc trỏ thủ công 127.0.0.1).")
     except Exception as e:
         print(f" [!] Không thể mở cổng DNS 53 (cần quyền Admin Windows hoặc cổng đang bận): {e}")
 
@@ -231,6 +242,7 @@ def main():
         ws_listener.stop()
         app_controller.stop()
         dns_proxy.stop()
+        restore_dns_to_dhcp()
         event_collector.stop()
 
     # Step 6: Run tray icon or headless wait loop

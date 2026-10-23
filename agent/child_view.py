@@ -299,7 +299,8 @@ class ChildViewWindow:
                 messagebox.showwarning("Thiếu Thông Tin", "Vui lòng nhập tên website hoặc app.")
                 return
             dlg.destroy()
-            self._send_request(request_type="unblock_domain", target=target, reason=reason)
+            req_type = "unblock_app" if target.lower().endswith(".exe") else "unblock_domain"
+            self._send_request(request_type=req_type, target=target, reason=reason)
 
         btn_submit = tk.Button(
             dlg,

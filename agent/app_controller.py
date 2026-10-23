@@ -4,6 +4,7 @@ to prevent rename-bypass, terminates unauthorized applications, and displays exp
 """
 
 import os
+import sys
 import time
 import hashlib
 import threading
@@ -11,7 +12,37 @@ import logging
 from typing import Optional, Dict, Callable
 import psutil
 
+try:
+    from .idle_detector import is_user_idle
+except ImportError:
+    try:
+        from idle_detector import is_user_idle
+    except ImportError:
+        is_user_idle = lambda threshold=300.0: False
+
 logger = logging.getLogger("OGK_AppController")
+
+
+def get_foreground_process_name() -> Optional[str]:
+    """Retrieve executable name of foreground window process on Windows.
+    Adheres strictly to Principle NT2: only captures binary name (e.g. chrome.exe),
+    NEVER accesses window titles, URLs, or screen contents.
+    """
+    if sys.platform != "win32":
+        return None
+    try:
+        import ctypes
+        hwnd = ctypes.windll.user32.GetForegroundWindow()
+        if not hwnd:
+            return None
+        pid = ctypes.c_ulong()
+        ctypes.windll.user32.GetWindowThreadProcessId(hwnd, ctypes.byref(pid))
+        if pid.value and pid.value > 4:
+            proc = psutil.Process(pid.value)
+            return proc.name()
+    except Exception:
+        return None
+    return None
 
 
 def get_file_sha256(filepath: str) -> Optional[str]:
@@ -36,16 +67,19 @@ class AppController:
         self,
         rules_provider: Optional[Callable[[], Dict[str, Dict[str, str]]]] = None,
         on_blocked_callback: Optional[Callable[[str, str, str], None]] = None,
+        on_usage_callback: Optional[Callable[[str, int], None]] = None,
         scan_interval_sec: float = 3.0
     ):
         self.rules_provider = rules_provider
         self.on_blocked_callback = on_blocked_callback
+        self.on_usage_callback = on_usage_callback
         self.scan_interval_sec = scan_interval_sec
 
         self._running = False
         self._thread: Optional[threading.Thread] = None
         self._hash_cache: Dict[str, tuple[float, str]] = {}  # {filepath: (mtime, hash)}
         self._recently_notified: Dict[str, float] = {}       # {app_name: last_notified_ts}
+        self._last_usage_sampled: float = time.time()
 
     def _get_cached_sha256(self, filepath: str) -> Optional[str]:
         """Fetch hash from cache if mtime is unchanged, otherwise recompute."""
@@ -140,6 +174,17 @@ class AppController:
         while self._running:
             try:
                 self.scan_and_enforce()
+
+                # Periodically sample active foreground application usage (every ~15s, NT2)
+                now = time.time()
+                elapsed = now - self._last_usage_sampled
+                if elapsed >= 15.0:
+                    self._last_usage_sampled = now
+                    if self.on_usage_callback and not is_user_idle(300.0):
+                        active_app = get_foreground_process_name()
+                        if active_app and active_app.lower() not in ("explorer.exe", "shellexperiencehost.exe"):
+                            self.on_usage_callback(active_app, int(elapsed))
+
             except Exception as e:
                 logger.error(f"Error in AppController scan loop: {e}")
             time.sleep(self.scan_interval_sec)

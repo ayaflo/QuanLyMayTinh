@@ -31,21 +31,24 @@ try:
     from server.routes.reports import router as reports_router
     from server.routes.requests import router as requests_router
     from server.seed_domains import seed_domain_rules
-except ImportError:
-    from database import engine, Base, SessionLocal
-    from routes.auth import router as auth_router
-    from routes.enroll import router as enroll_router
-    from routes.heartbeat import router as heartbeat_router
-    from routes.dashboard import router as dashboard_router
-    from routes.policy import router as policy_router
-    from routes.commands import router as commands_router
-    from routes.ws import router as ws_router
-    from routes.audit import router as audit_router
-    from routes.filtering import router as filtering_router
-    from routes.events import router as events_router
-    from routes.reports import router as reports_router
-    from routes.requests import router as requests_router
-    from seed_domains import seed_domain_rules
+except ModuleNotFoundError as e:
+    if e.name == "server":
+        from database import engine, Base, SessionLocal
+        from routes.auth import router as auth_router
+        from routes.enroll import router as enroll_router
+        from routes.heartbeat import router as heartbeat_router
+        from routes.dashboard import router as dashboard_router
+        from routes.policy import router as policy_router
+        from routes.commands import router as commands_router
+        from routes.ws import router as ws_router
+        from routes.audit import router as audit_router
+        from routes.filtering import router as filtering_router
+        from routes.events import router as events_router
+        from routes.reports import router as reports_router
+        from routes.requests import router as requests_router
+        from seed_domains import seed_domain_rules
+    else:
+        raise
 
 
 

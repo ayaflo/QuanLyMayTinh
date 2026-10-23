@@ -1,7 +1,7 @@
 # TÀI LIỆU HƯỚNG DẪN NGHIỆM THU ĐẦU-CUỐI TUẦN 3 (VERIFY WEEK 3)
 ## ĐỀ TÀI: OPEN GUARDIAN KIDS (OGK) — PHIÊN BẢN 0.3
 > **Mục tiêu phiên bản:** Bộ lọc Website bằng DNS Proxy cục bộ 127.0.0.1:53 & SafeSearch (F2); Kiểm soát tiến trình theo SHA-256 (F2); Bộ đệm sự kiện ngoại tuyến F3 (NT2); Tiếng nói trẻ em NT3 & Minh bạch hai chiều NT5.  
-> **Tổng số Test Cases tự động:** 33/33 PASSED (100%).
+> **Tổng số Test Cases tự động:** 38/38 PASSED (100%).
 
 ---
 
@@ -9,11 +9,11 @@
 
 | Mã DoD | Tiêu chí nghiệm thu | Kết quả kiểm chứng | Trạng thái |
 | :---: | :--- | :--- | :---: |
-| **DoD 1** | Lọc tên miền qua DNS Sinkhole (0.0.0.0), Cưỡng chế SafeSearch & Vô hiệu hóa DoH | `tests/test_dns_proxy.py` đạt 6/6 tests; thử nghiệm qua `nslookup` trả về chính xác IP VIP. | **ĐẠT (PASSED)** |
+| **DoD 1** | Lọc tên miền qua DNS Sinkhole (0.0.0.0), Cưỡng chế SafeSearch & Vô hiệu hóa DoH | `tests/test_dns_proxy.py` đạt 8/8 tests; hỗ trợ cả IPv4 và IPv6 AAAA rewrite; thử nghiệm qua `nslookup` trả về chính xác IP VIP. | **ĐẠT (PASSED)** |
 | **DoD 2** | Kiểm soát ứng dụng theo mã băm SHA-256 (Chống đổi tên file thực thi) | `tests/test_app_filtering_and_events.py` kiểm chứng đổi tên `game.exe` -> `calculator.exe` vẫn nhận diện đúng hash. | **ĐẠT (PASSED)** |
 | **DoD 3** | Bộ đệm sự kiện ngoại tuyến F3 với khóa chống trùng `idempotency_key` | Kiểm chứng đẩy lặp cùng lô sự kiện: lần 1 nhận 2, lần 2 nhận 0, duplicates = 2. | **ĐẠT (PASSED)** |
 | **DoD 4** | Minh bạch hai chiều NT5 & Cơ chế trẻ xin thêm giờ / khiếu nại chặn nhầm NT3 | Giao diện Tkinter `agent/child_view.py` kết nối trực tiếp API `/api/v1/requests`, phụ huynh duyệt tức thì (< 5s). | **ĐẠT (PASSED)** |
-| **DoD 5** | Phụ lục Kỹ thuật Mạng (M1 & M2) và Toàn bộ Test Suite tự động | Đầy đủ 2 tài liệu M1, M2; 33/33 unit/integration tests vượt qua 100%. | **ĐẠT (PASSED)** |
+| **DoD 5** | Phụ lục Kỹ thuật Mạng (M1 & M2) và Toàn bộ Test Suite tự động | Đầy đủ 2 tài liệu M1, M2; 38/38 unit/integration tests vượt qua 100%. | **ĐẠT (PASSED)** |
 
 ---
 
@@ -24,7 +24,7 @@ Mở PowerShell trong thư mục dự án và chạy:
 ```powershell
 .\.venv\Scripts\pytest.exe -v
 ```
-**Kết quả mong đợi:** Toàn bộ 33 tests đạt trạng thái màu xanh `PASSED` mà không có bất kỳ lỗi nào.
+**Kết quả mong đợi:** Toàn bộ 38 tests đạt trạng thái màu xanh `PASSED` mà không có bất kỳ lỗi nào.
 
 ---
 

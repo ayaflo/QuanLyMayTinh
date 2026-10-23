@@ -237,10 +237,20 @@
 
                     {% if req.status == 'pending' %}
                         <div class="request-actions-row">
-                            <button class="btn btn-primary btn-sm" style="flex: 1; padding: 0.4rem;" onclick="reviewChildRequest({{ req.id }}, 'approved')">
-                                ✅ Duyệt (+15p)
-                            </button>
-                            <button class="btn btn-secondary btn-sm" style="flex: 1; padding: 0.4rem;" onclick="reviewChildRequest({{ req.id }}, 'rejected')">
+                            {% if req.request_type == 'add_time' %}
+                                <button class="btn btn-primary btn-sm" style="flex: 1; padding: 0.4rem;" onclick="reviewChildRequest({{ req.id }}, 'approved', 'add_time')">
+                                    ✅ Duyệt (+15p)
+                                </button>
+                            {% elif req.request_type == 'unblock_domain' %}
+                                <button class="btn btn-primary btn-sm" style="flex: 1; padding: 0.4rem;" onclick="reviewChildRequest({{ req.id }}, 'approved', 'unblock_domain')">
+                                    ✅ Mở Chặn Web
+                                </button>
+                            {% else %}
+                                <button class="btn btn-primary btn-sm" style="flex: 1; padding: 0.4rem;" onclick="reviewChildRequest({{ req.id }}, 'approved', 'unblock_app')">
+                                    ✅ Mở Khóa App
+                                </button>
+                            {% endif %}
+                            <button class="btn btn-secondary btn-sm" style="flex: 1; padding: 0.4rem;" onclick="reviewChildRequest({{ req.id }}, 'rejected', '{{ req.request_type }}')">
                                 ❌ Từ chối
                             </button>
                         </div>
@@ -947,14 +957,25 @@
         });
     }
 
-    async function reviewChildRequest(reqId, status) {
+    async function reviewChildRequest(reqId, status, reqType = 'add_time') {
         try {
+            let parentMsg = status === 'approved' ? 'Cha mẹ đồng ý yêu cầu của con.' : 'Cha mẹ chưa đồng ý yêu cầu này.';
+            if (status === 'approved') {
+                if (reqType === 'add_time') {
+                    parentMsg = 'Cha mẹ đồng ý thưởng thêm 15 phút, học xong nghỉ ngơi con nhé!';
+                } else if (reqType === 'unblock_domain') {
+                    parentMsg = 'Cha mẹ đã mở chặn trang web này theo đề xuất của con.';
+                } else if (reqType === 'unblock_app') {
+                    parentMsg = 'Cha mẹ đã mở khóa ứng dụng này theo đề xuất của con.';
+                }
+            }
+
             const res = await fetch(`/api/v1/requests/${reqId}/review`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     status: status,
-                    parent_response: status === 'approved' ? 'Cha mẹ đồng ý yêu cầu của con.' : 'Cha mẹ chưa đồng ý yêu cầu này.',
+                    parent_response: parentMsg,
                     granted_minutes: 15
                 })
             });
@@ -962,7 +983,11 @@
                 const err = await res.json().catch(() => ({}));
                 throw new Error(err.detail || "Không thể xử lý yêu cầu.");
             }
-            showToast(status === 'approved' ? 'Đã duyệt yêu cầu và phát lệnh cộng 15 phút tới máy trẻ!' : 'Đã từ chối yêu cầu.');
+            if (status === 'approved') {
+                showToast(reqType === 'add_time' ? 'Đã duyệt yêu cầu và phát lệnh cộng 15 phút tới máy trẻ!' : 'Đã duyệt yêu cầu mở chặn thành công!');
+            } else {
+                showToast('Đã từ chối yêu cầu.');
+            }
             setTimeout(() => window.location.reload(), 1200);
         } catch (e) {
             showToast(`Lỗi: ${e.message}`, false);
