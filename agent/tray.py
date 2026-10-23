@@ -66,26 +66,31 @@ def show_startup_notification(icon: pystray.Icon) -> None:
         print(f" [i] Thông báo NT1: Open Guardian Kids đang hoạt động và đồng hành cùng em ({e})")
 
 
+def open_child_view():
+    """Launch Child Transparency & Voice GUI window (NT3 & NT5)."""
+    import threading
+    try:
+        from .child_view import ChildViewWindow
+    except ImportError:
+        from child_view import ChildViewWindow
+
+    def _run():
+        app = ChildViewWindow()
+        app.show()
+
+    t = threading.Thread(target=_run, daemon=True, name="OGK_ChildViewWindow")
+    t.start()
+
+
 def on_request_more_time(icon, item):
     """Handler for NT3: Trẻ có tiếng nói - Xin thêm giờ."""
-    try:
-        icon.notify(
-            title="Yêu Cầu Thêm Giờ",
-            message="Yêu cầu xin thêm thời gian đã được ghi nhận và gửi đến phụ huynh."
-        )
-    except Exception:
-        pass
+    open_child_view()
 
 
 def on_transparency_view(icon, item):
     """Handler for NT5: Minh bạch hai chiều - Trẻ được xem báo cáo."""
-    try:
-        icon.notify(
-            title="Minh Bạch Dữ Liệu",
-            message="Hệ thống chỉ lưu thời lượng và ứng dụng, tuyệt đối không chụp màn hình hay đọc tin nhắn (Nghị định 13/2023)."
-        )
-    except Exception:
-        pass
+    open_child_view()
+
 
 
 def show_tray_notification(icon: Optional[pystray.Icon], title: str, message: str) -> None:

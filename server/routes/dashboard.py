@@ -13,14 +13,20 @@ from sqlalchemy.orm import Session
 
 try:
     from ..database import get_db
-    from ..models import Parent, Device, Policy, AuditLog
+    from ..models import Parent, Device, Policy, AuditLog, DomainRule, AppRule, AccessRequest
     from ..security import verify_password, create_access_token, decode_access_token
     from ..services.policy_service import get_or_create_default_policy
+    from ..services.report_service import get_device_report_summary, get_weekly_usage_stats
+    from ..services.filtering_service import get_active_domain_rules, get_active_app_rules, get_domain_category_summaries
+    from ..services.request_service import get_requests
 except (ImportError, ValueError):
     from server.database import get_db
-    from server.models import Parent, Device, Policy, AuditLog
+    from server.models import Parent, Device, Policy, AuditLog, DomainRule, AppRule, AccessRequest
     from server.security import verify_password, create_access_token, decode_access_token
     from server.services.policy_service import get_or_create_default_policy
+    from server.services.report_service import get_device_report_summary, get_weekly_usage_stats
+    from server.services.filtering_service import get_active_domain_rules, get_active_app_rules, get_domain_category_summaries
+    from server.services.request_service import get_requests
 
 # Locate dashboard templates directory
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -167,6 +173,15 @@ def devices_page(
         if dev_ids else []
     )
 
+    # Week 3 (v0.3): Load usage summaries, weekly stats, filtering rules and child requests
+    reports_map = {dev.id: get_device_report_summary(db, dev.id) for dev in devices}
+    weekly_stats_map = {dev.id: get_weekly_usage_stats(db, dev.id) for dev in devices}
+    domain_rules = get_active_domain_rules(db)
+    category_summaries = get_domain_category_summaries(db)
+    app_rules = get_active_app_rules(db)
+    all_requests = get_requests(db)
+    pending_requests = [r for r in all_requests if r.status == "pending"]
+
     return templates.TemplateResponse(
         request=request,
         name="devices.html",
@@ -176,7 +191,15 @@ def devices_page(
             "policies_map": policies_map,
             "audit_logs": audit_logs,
             "online_count": online_count,
-            "offline_count": offline_count
+            "offline_count": offline_count,
+            "reports_map": reports_map,
+            "weekly_stats_map": weekly_stats_map,
+            "domain_rules": domain_rules,
+            "total_domain_rules": len(domain_rules),
+            "category_summaries": category_summaries,
+            "app_rules": app_rules,
+            "all_requests": all_requests,
+            "pending_requests": pending_requests
         }
     )
 
