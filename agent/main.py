@@ -22,10 +22,14 @@ try:
     from agent.system_locker import SystemLocker
     from agent.policy_syncer import sync_policy_from_server
     from agent.ws_listener import WebSocketListener
+    from agent.dns_proxy import DNSProxyServer
+    from agent.app_controller import AppController
+    from agent.event_collector import EventCollector
+    from agent.storage import save_dns_rules_cache, load_dns_rules_cache, save_app_rules_cache, load_app_rules_cache
 except ImportError:
     from config import APP_TITLE, APP_VERSION, SERVER_URL, DEVICE_NAME
     from fingerprint import get_device_fingerprint
-    from storage import load_credentials
+    from storage import load_credentials, save_dns_rules_cache, load_dns_rules_cache, save_app_rules_cache, load_app_rules_cache
     from enrollment_client import pair_with_server
     from heartbeat_client import start_heartbeat_thread
     from tray import init_tray_icon, show_startup_notification, show_tray_notification
@@ -33,6 +37,10 @@ except ImportError:
     from system_locker import SystemLocker
     from policy_syncer import sync_policy_from_server
     from ws_listener import WebSocketListener
+    from dns_proxy import DNSProxyServer
+    from app_controller import AppController
+    from event_collector import EventCollector
+
 
 
 def print_banner():
@@ -148,20 +156,82 @@ def main():
                 show_tray_notification(tray_icon_holder[0], "Thưởng Thời Gian", f"Phụ huynh đã cộng thêm {mins} phút sử dụng!")
         elif action == "policy_updated":
             sync_policy_from_server()
+            sync_filtering_rules()
 
     ws_listener = WebSocketListener(on_command=handle_ws_command)
 
-    # Step 5: Start background workers
+    # Step 5: Week 3 (Version 0.3) Workers: EventCollector, DNS Proxy, AppController
+    event_collector = EventCollector(
+        server_url=SERVER_URL,
+        device_id_provider=lambda: creds['device_id'] if creds else 1,
+        token_provider=lambda: creds['access_token'] if creds else None
+    )
+
+    def handle_dns_event(event_type: str, domain: str):
+        event_collector.record_event(event_type=event_type, subject=domain)
+
+    dns_proxy = DNSProxyServer(
+        host="127.0.0.1",
+        port=53,
+        on_event_callback=handle_dns_event
+    )
+
+    def handle_app_blocked(app_name: str, reason: str, file_hash: str):
+        event_collector.record_event(event_type="blocked_app", subject=app_name)
+        if tray_icon_holder[0]:
+            show_tray_notification(
+                tray_icon_holder[0],
+                "Ứng Dụng Bị Khóa (NT4)",
+                f"'{app_name}' đã bị khóa theo quy định: {reason}"
+            )
+
+    app_controller = AppController(
+        rules_provider=load_app_rules_cache,
+        on_blocked_callback=handle_app_blocked
+    )
+
+    def sync_filtering_rules():
+        import requests
+        try:
+            token = creds.get('access_token')
+            headers = {"Authorization": f"Bearer {token}"} if token else {}
+            res = requests.get(f"{SERVER_URL}/api/v1/filtering/rules", headers=headers, timeout=5.0)
+            if res.status_code == 200:
+                data = res.json()
+                blocked = set(data.get("blocked_domains", []))
+                whitelist = set(data.get("permanent_whitelist", []))
+                dns_proxy.update_rules(blocked=blocked, whitelist=whitelist)
+                app_rules = [{"sha256": a["sha256"], "name": a["name"], "action": "block", "description": a.get("description", "")} for a in data.get("app_blocklist", [])]
+                save_app_rules_cache(app_rules)
+                save_dns_rules_cache([{"domain": d, "action": "block"} for d in blocked] + [{"domain": d, "action": "allow", "is_permanent_whitelist": True} for d in whitelist])
+                print(f" [✓] Đã đồng bộ {len(blocked)} tên miền & {len(app_rules)} khóa app.")
+        except Exception as e:
+            print(f" [!] Dùng bộ quy tắc lọc ngoại tuyến: {e}")
+            cached_dns = load_dns_rules_cache()
+            dns_proxy.update_rules(blocked=cached_dns.get("blocked_domains", set()), whitelist=cached_dns.get("permanent_whitelist", set()))
+
+    sync_filtering_rules()
+
+    # Step 6: Start all background workers
     hb_thread, stop_event = start_heartbeat_thread()
     tracker.start()
     system_locker.start_enforcement()
     ws_listener.start()
+    event_collector.start()
+    app_controller.start()
+    try:
+        dns_proxy.start()
+    except Exception as e:
+        print(f" [!] Không thể mở cổng DNS 53 (cần quyền Admin Windows hoặc cổng đang bận): {e}")
 
     def on_exit():
         stop_event.set()
         tracker.stop()
         system_locker.stop_enforcement()
         ws_listener.stop()
+        app_controller.stop()
+        dns_proxy.stop()
+        event_collector.stop()
 
     # Step 6: Run tray icon or headless wait loop
     if args.headless:

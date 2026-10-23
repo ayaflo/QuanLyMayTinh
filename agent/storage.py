@@ -47,6 +47,35 @@ def _get_connection(db_path: str = DB_PATH) -> sqlite3.Connection:
                 updated_at TEXT NOT NULL
             );
         """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS dns_rules_cache (
+                domain TEXT PRIMARY KEY,
+                action TEXT NOT NULL,
+                is_permanent_whitelist INTEGER NOT NULL DEFAULT 0,
+                category TEXT
+            );
+        """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS app_rules_cache (
+                sha256_hash TEXT PRIMARY KEY,
+                app_name TEXT NOT NULL,
+                action TEXT NOT NULL,
+                description TEXT
+            );
+        """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS pending_events (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                idempotency_key TEXT UNIQUE NOT NULL,
+                ts TEXT NOT NULL,
+                device_id INTEGER NOT NULL,
+                child_id INTEGER,
+                type TEXT NOT NULL,
+                subject TEXT NOT NULL,
+                duration_sec INTEGER NOT NULL DEFAULT 0,
+                policy_id INTEGER
+            );
+        """)
     return conn
 
 
@@ -195,3 +224,153 @@ def update_daily_usage(
                 updated_at = excluded.updated_at;
         """, (date_str, used_seconds, bonus_minutes, is_locked, now_str))
     conn.close()
+
+
+# ============================================================================
+# Week 3 (Version 0.3): DNS Rules, App Rules & Offline Event Buffer (T3_028, T3_042)
+# ============================================================================
+
+def save_dns_rules_cache(rules: list[Dict[str, Any]], db_path: str = DB_PATH) -> None:
+    """Persist domain rules into local SQLite cache for offline DNS resolution."""
+    conn = _get_connection(db_path)
+    with conn:
+        conn.execute("DELETE FROM dns_rules_cache;")
+        conn.executemany("""
+            INSERT OR REPLACE INTO dns_rules_cache (domain, action, is_permanent_whitelist, category)
+            VALUES (?, ?, ?, ?);
+        """, [
+            (
+                r["domain"].lower().strip(),
+                r.get("action", "block"),
+                1 if r.get("is_permanent_whitelist") else 0,
+                r.get("category", "")
+            )
+            for r in rules
+        ])
+    conn.close()
+
+
+def load_dns_rules_cache(db_path: str = DB_PATH) -> Dict[str, Any]:
+    """Load cached domain rules for rapid lookup by the DNS proxy."""
+    conn = _get_connection(db_path)
+    cursor = conn.cursor()
+    cursor.execute("SELECT domain, action, is_permanent_whitelist FROM dns_rules_cache;")
+    rows = cursor.fetchall()
+    conn.close()
+
+    blocked = set()
+    allowed = set()
+    whitelist = set()
+
+    for r in rows:
+        dom = r["domain"]
+        if r["is_permanent_whitelist"] == 1:
+            whitelist.add(dom)
+            allowed.add(dom)
+        elif r["action"] == "block":
+            blocked.add(dom)
+        else:
+            allowed.add(dom)
+
+    return {
+        "blocked_domains": blocked,
+        "allowed_domains": allowed,
+        "permanent_whitelist": whitelist
+    }
+
+
+def save_app_rules_cache(rules: list[Dict[str, Any]], db_path: str = DB_PATH) -> None:
+    """Persist SHA-256 app control rules into local SQLite cache."""
+    conn = _get_connection(db_path)
+    with conn:
+        conn.execute("DELETE FROM app_rules_cache;")
+        conn.executemany("""
+            INSERT OR REPLACE INTO app_rules_cache (sha256_hash, app_name, action, description)
+            VALUES (?, ?, ?, ?);
+        """, [
+            (
+                r["sha256"].lower().strip(),
+                r.get("name", ""),
+                r.get("action", "block"),
+                r.get("description", "")
+            )
+            for r in rules
+        ])
+    conn.close()
+
+
+def load_app_rules_cache(db_path: str = DB_PATH) -> Dict[str, Dict[str, str]]:
+    """Load cached SHA-256 app rules map: {sha256_hash: {name, action, description}}."""
+    conn = _get_connection(db_path)
+    cursor = conn.cursor()
+    cursor.execute("SELECT sha256_hash, app_name, action, description FROM app_rules_cache;")
+    rows = cursor.fetchall()
+    conn.close()
+
+    return {
+        r["sha256_hash"]: {
+            "name": r["app_name"],
+            "action": r["action"],
+            "description": r["description"] or ""
+        }
+        for r in rows
+    }
+
+
+def add_pending_event(event: Dict[str, Any], db_path: str = DB_PATH) -> None:
+    """Buffer an activity event in offline storage until pushed to server (T3_042)."""
+    conn = _get_connection(db_path)
+    with conn:
+        conn.execute("""
+            INSERT OR IGNORE INTO pending_events (
+                idempotency_key, ts, device_id, child_id, type, subject, duration_sec, policy_id
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+        """, (
+            event["idempotency_key"],
+            event["ts"],
+            event["device_id"],
+            event.get("child_id"),
+            event["type"],
+            event["subject"],
+            event.get("duration_sec", 0),
+            event.get("policy_id")
+        ))
+    conn.close()
+
+
+def get_pending_events(limit: int = 200, db_path: str = DB_PATH) -> list[Dict[str, Any]]:
+    """Retrieve buffered events to send in batch."""
+    conn = _get_connection(db_path)
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT idempotency_key, ts, device_id, child_id, type, subject, duration_sec, policy_id
+        FROM pending_events ORDER BY id ASC LIMIT ?;
+    """, (limit,))
+    rows = cursor.fetchall()
+    conn.close()
+
+    return [
+        {
+            "idempotency_key": r["idempotency_key"],
+            "ts": r["ts"],
+            "device_id": r["device_id"],
+            "child_id": r["child_id"],
+            "type": r["type"],
+            "subject": r["subject"],
+            "duration_sec": r["duration_sec"],
+            "policy_id": r["policy_id"]
+        }
+        for r in rows
+    ]
+
+
+def delete_pending_events(keys: list[str], db_path: str = DB_PATH) -> None:
+    """Remove successfully ingested events from local buffer."""
+    if not keys:
+        return
+    conn = _get_connection(db_path)
+    with conn:
+        placeholders = ",".join("?" for _ in keys)
+        conn.execute(f"DELETE FROM pending_events WHERE idempotency_key IN ({placeholders});", keys)
+    conn.close()
+

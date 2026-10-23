@@ -45,6 +45,9 @@ class Device(Base):
     heartbeats = relationship("HeartbeatLog", back_populates="device", cascade="all, delete-orphan")
     policy = relationship("Policy", back_populates="device", uselist=False, cascade="all, delete-orphan")
     commands = relationship("DeviceCommand", back_populates="device", cascade="all, delete-orphan")
+    app_rules = relationship("AppRule", back_populates="device", cascade="all, delete-orphan")
+    activity_events = relationship("ActivityEvent", back_populates="device", cascade="all, delete-orphan")
+    access_requests = relationship("AccessRequest", back_populates="device", cascade="all, delete-orphan")
 
 
 class PairingCode(Base):
@@ -128,3 +131,77 @@ class DeviceCommand(Base):
     delivered_at = Column(DateTime, nullable=True)
 
     device = relationship("Device", back_populates="commands")
+
+
+# ============================================================================
+# Week 3 (Version 0.3): Domain Rules, App Rules, Activity Events, Access Requests
+# ============================================================================
+
+class DomainRule(Base):
+    """Domain filtering rules for DNS Sinkholing (F2).
+    Categories: Giáo dục, Giải trí, Mạng xã hội, Game, Không phù hợp, DoH.
+    NT6: is_permanent_whitelist guarantees immunity from blocking.
+    """
+    __tablename__ = "domain_rules"
+
+    id = Column(Integer, primary_key=True, index=True)
+    category = Column(String(50), nullable=False, index=True)
+    domain = Column(String(255), nullable=False, index=True, unique=True)
+    action = Column(String(20), default="block", nullable=False)  # 'allow' or 'block'
+    is_permanent_whitelist = Column(Boolean, default=False, nullable=False)  # NT6 (schools, 111 hotline)
+    created_at = Column(DateTime, default=utc_now, nullable=False)
+
+
+class AppRule(Base):
+    """Application control rules based on executable binary SHA-256 hash (F2).
+    Prevents bypass via renaming executable files.
+    """
+    __tablename__ = "app_rules"
+
+    id = Column(Integer, primary_key=True, index=True)
+    device_id = Column(Integer, ForeignKey("devices.id", ondelete="CASCADE"), nullable=True)  # NULL = global rule
+    app_name = Column(String(100), nullable=False)
+    sha256_hash = Column(String(64), nullable=False, index=True)
+    action = Column(String(20), default="block", nullable=False)  # 'allow' or 'block'
+    description = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=utc_now, nullable=False)
+
+    device = relationship("Device", back_populates="app_rules")
+
+
+class ActivityEvent(Base):
+    """Minimal activity telemetry event adhering strictly to NT2 and F3 schema.
+    Stores only FQDN domain and application executable name (NO full URLs, NO window titles).
+    """
+    __tablename__ = "activity_events"
+
+    id = Column(Integer, primary_key=True, index=True)
+    idempotency_key = Column(String(64), unique=True, index=True, nullable=False)
+    ts = Column(DateTime, nullable=False, index=True)
+    device_id = Column(Integer, ForeignKey("devices.id", ondelete="CASCADE"), nullable=False)
+    child_id = Column(Integer, nullable=True)
+    type = Column(String(50), nullable=False)  # 'app_usage', 'web_access', 'blocked_app', 'blocked_domain'
+    subject = Column(String(255), nullable=False)  # FQDN or app name ONLY (NT2)
+    duration_sec = Column(Integer, default=0, nullable=False)
+    policy_id = Column(Integer, nullable=True)
+    created_at = Column(DateTime, default=utc_now, nullable=False)
+
+    device = relationship("Device", back_populates="activity_events")
+
+
+class AccessRequest(Base):
+    """Two-way child voice requests for extra screen time or wrongly blocked items (NT3)."""
+    __tablename__ = "access_requests"
+
+    id = Column(Integer, primary_key=True, index=True)
+    device_id = Column(Integer, ForeignKey("devices.id", ondelete="CASCADE"), nullable=False)
+    child_id = Column(Integer, nullable=True)
+    request_type = Column(String(30), nullable=False)  # 'add_time', 'unblock_domain', 'unblock_app'
+    target = Column(String(255), nullable=True)       # Domain or app name or minutes
+    reason = Column(Text, nullable=True)              # Child's explanation
+    status = Column(String(20), default="pending", nullable=False)  # 'pending', 'approved', 'rejected'
+    parent_response = Column(Text, nullable=True)     # Parent's feedback message
+    created_at = Column(DateTime, default=utc_now, nullable=False)
+    resolved_at = Column(DateTime, nullable=True)
+
+    device = relationship("Device", back_populates="access_requests")

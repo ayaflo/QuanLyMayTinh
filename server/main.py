@@ -17,7 +17,7 @@ if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 try:
-    from server.database import engine, Base
+    from server.database import engine, Base, SessionLocal
     from server.routes.auth import router as auth_router
     from server.routes.enroll import router as enroll_router
     from server.routes.heartbeat import router as heartbeat_router
@@ -26,8 +26,13 @@ try:
     from server.routes.commands import router as commands_router
     from server.routes.ws import router as ws_router
     from server.routes.audit import router as audit_router
+    from server.routes.filtering import router as filtering_router
+    from server.routes.events import router as events_router
+    from server.routes.reports import router as reports_router
+    from server.routes.requests import router as requests_router
+    from server.seed_domains import seed_domain_rules
 except ImportError:
-    from database import engine, Base
+    from database import engine, Base, SessionLocal
     from routes.auth import router as auth_router
     from routes.enroll import router as enroll_router
     from routes.heartbeat import router as heartbeat_router
@@ -36,20 +41,30 @@ except ImportError:
     from routes.commands import router as commands_router
     from routes.ws import router as ws_router
     from routes.audit import router as audit_router
+    from routes.filtering import router as filtering_router
+    from routes.events import router as events_router
+    from routes.reports import router as reports_router
+    from routes.requests import router as requests_router
+    from seed_domains import seed_domain_rules
 
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Lifecycle events: create database tables on startup."""
+    """Lifecycle events: create database tables and seed domain classification dataset on startup."""
     Base.metadata.create_all(bind=engine)
+    db = SessionLocal()
+    try:
+        seed_domain_rules(db)
+    finally:
+        db.close()
     yield
 
 
 app = FastAPI(
     title="Open Guardian Kids (OGK) API",
     description="Hệ thống hỗ trợ phụ huynh quản lý và đồng hành việc sử dụng máy tính của trẻ em.",
-    version="0.2.0",
+    version="0.3.0",
     lifespan=lifespan
 )
 
@@ -67,7 +82,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Register API Routers (Week 1: T023 & Week 2: T2_018)
+# Register API Routers (Week 1, Week 2 & Week 3)
 app.include_router(auth_router, prefix="/api/v1/auth", tags=["Authentication"])
 app.include_router(enroll_router, prefix="/api/v1/enroll", tags=["Enrollment"])
 app.include_router(heartbeat_router, prefix="/api/v1/heartbeat", tags=["Heartbeat"])
@@ -75,6 +90,10 @@ app.include_router(policy_router, prefix="/api/v1/policy", tags=["Policy & Time 
 app.include_router(commands_router, prefix="/api/v1/devices", tags=["Emergency Commands"])
 app.include_router(ws_router, prefix="/ws", tags=["WebSocket Real-Time"])
 app.include_router(audit_router, prefix="/api/v1/audit-logs", tags=["Audit Logs"])
+app.include_router(filtering_router)  # includes prefix /api/v1/filtering
+app.include_router(events_router)     # includes prefix /api/v1/events
+app.include_router(reports_router)    # includes prefix /api/v1/reports
+app.include_router(requests_router)   # includes prefix /api/v1/requests
 
 # Register Dashboard View Router (T030)
 app.include_router(dashboard_router, tags=["Dashboard"])
