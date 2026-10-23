@@ -128,3 +128,24 @@ def test_dns_proxy_permanent_whitelist_immunity(monkeypatch):
     w_resp = DNSRecord.parse(proxy.process_dns_query(DNSRecord.question("tongdai111.vn").pack()))
     assert str(w_resp.rr[0].rdata) == "103.1.2.3"
 
+
+def test_dns_proxy_youtube_safesearch_rewrite():
+    """Verify YouTube SafeSearch rewrite to restrict.youtube.com (T3_032)."""
+    proxy = DNSProxyServer()
+    proxy.update_rules(blocked=set(), enforce_safesearch=True)
+
+    y_query = DNSRecord.question("www.youtube.com").pack()
+    y_resp = DNSRecord.parse(proxy.process_dns_query(y_query))
+    assert y_resp.header.rcode == RCODE.NOERROR
+    assert len(y_resp.rr) == 1
+    assert str(y_resp.rr[0].rdata) == "216.239.38.120"
+
+
+def test_dns_proxy_malformed_packet_handling():
+    """Verify DNS proxy gracefully discards garbage or truncated packets without crashing."""
+    proxy = DNSProxyServer()
+    assert proxy.process_dns_query(b"") == b""
+    assert proxy.process_dns_query(b"\x00\x01\x02") == b""
+    assert proxy.process_dns_query(b"RANDOM_MALFORMED_GARBAGE_BYTES") == b""
+
+

@@ -58,6 +58,13 @@ def is_bing_search_domain(domain: str) -> bool:
     return clean == "bing.com" or clean == "www.bing.com"
 
 
+def is_youtube_domain(domain: str) -> bool:
+    """Check if query domain is YouTube (T3_032)."""
+    clean = normalize_domain(domain)
+    return clean in ("youtube.com", "www.youtube.com", "m.youtube.com", "youtube-nocookie.com")
+
+
+
 class DNSProxyServer:
     """Lightweight UDP DNS Proxy Server running on 127.0.0.1 (F2)."""
 
@@ -146,6 +153,10 @@ class DNSProxyServer:
             elif is_bing_search_domain(clean_domain):
                 reply.header.rcode = RCODE.NOERROR
                 reply.add_answer(RR(request.q.qname, QTYPE.A, rdata=A(SAFESEARCH_BING_IP), ttl=60))
+                return reply.pack()
+            elif is_youtube_domain(clean_domain):
+                reply.header.rcode = RCODE.NOERROR
+                reply.add_answer(RR(request.q.qname, QTYPE.A, rdata=A(SAFESEARCH_YOUTUBE_IP), ttl=60))
                 return reply.pack()
 
         # 5. Normal Domain: Forward Upstream (T3_034) & Record Minimal FQDN Access (NT2)

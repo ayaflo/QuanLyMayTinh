@@ -180,3 +180,34 @@ def test_child_access_request_lifecycle(client, sample_device):
     assert reviewed_data["status"] == "approved"
     assert reviewed_data["parent_response"] == review_payload["parent_response"]
     assert reviewed_data["resolved_at"] is not None
+
+
+def test_filtering_service_nt6_immutable_whitelist(client):
+    """Verify NT6: Permanent whitelist entries cannot be blocked or deleted via API (T3_009, T3_014)."""
+    # 1. Create permanent whitelist domain
+    create_payload = {
+        "domain": "truonghoc.edu.vn",
+        "category": "Giáo dục",
+        "action": "allow",
+        "is_permanent_whitelist": True
+    }
+    create_res = client.post("/api/v1/filtering/domain-rules", json=create_payload)
+    assert create_res.status_code == 201
+    rule_id = create_res.json()["id"]
+
+    # 2. Attempting to override permanent whitelist to 'block' must fail
+    block_override = {
+        "domain": "truonghoc.edu.vn",
+        "category": "Giáo dục",
+        "action": "block",
+        "is_permanent_whitelist": False
+    }
+    block_res = client.post("/api/v1/filtering/domain-rules", json=block_override)
+    assert block_res.status_code == 400
+    assert "danh sách trắng vĩnh viễn" in block_res.json()["detail"].lower()
+
+    # 3. Attempting to delete permanent whitelist entry must fail
+    del_res = client.delete(f"/api/v1/filtering/domain-rules/{rule_id}")
+    assert del_res.status_code == 400
+    assert "danh sách trắng vĩnh viễn" in del_res.json()["detail"].lower()
+
