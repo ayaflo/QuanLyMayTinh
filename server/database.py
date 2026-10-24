@@ -26,6 +26,23 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 
+def run_migrations(target_engine=None):
+    """Run lightweight schema migrations for SQLite without requiring Alembic."""
+    eng = target_engine or engine
+    with eng.connect() as conn:
+        try:
+            result = conn.exec_driver_sql("PRAGMA table_info(parents)")
+            columns = [row[1] for row in result.fetchall()]
+            if columns:
+                if "failed_login_attempts" not in columns:
+                    conn.exec_driver_sql("ALTER TABLE parents ADD COLUMN failed_login_attempts INTEGER DEFAULT 0 NOT NULL")
+                if "locked_until" not in columns:
+                    conn.exec_driver_sql("ALTER TABLE parents ADD COLUMN locked_until DATETIME")
+            conn.commit()
+        except Exception:
+            pass
+
+
 def get_db():
     """Dependency provider yielding a database session per request."""
     db = SessionLocal()
@@ -33,3 +50,4 @@ def get_db():
         yield db
     finally:
         db.close()
+

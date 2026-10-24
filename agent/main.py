@@ -24,13 +24,27 @@ try:
     from agent.ws_listener import WebSocketListener
     from agent.dns_proxy import DNSProxyServer
     from agent.dns_configurator import set_dns_to_localhost, restore_dns_to_dhcp
+    from agent.dns_watchdog import DNSWatchdog
     from agent.app_controller import AppController
     from agent.event_collector import EventCollector
-    from agent.storage import save_dns_rules_cache, load_dns_rules_cache, save_app_rules_cache, load_app_rules_cache
+    from agent.storage import (
+        save_dns_rules_cache,
+        load_dns_rules_cache,
+        save_app_rules_cache,
+        load_app_rules_cache,
+        purge_local_data
+    )
 except ImportError:
     from config import APP_TITLE, APP_VERSION, SERVER_URL, DEVICE_NAME
     from fingerprint import get_device_fingerprint
-    from storage import load_credentials, save_dns_rules_cache, load_dns_rules_cache, save_app_rules_cache, load_app_rules_cache
+    from storage import (
+        load_credentials,
+        save_dns_rules_cache,
+        load_dns_rules_cache,
+        save_app_rules_cache,
+        load_app_rules_cache,
+        purge_local_data
+    )
     from enrollment_client import pair_with_server
     from heartbeat_client import start_heartbeat_thread
     from tray import init_tray_icon, show_startup_notification, show_tray_notification
@@ -40,6 +54,7 @@ except ImportError:
     from ws_listener import WebSocketListener
     from dns_proxy import DNSProxyServer
     from dns_configurator import set_dns_to_localhost, restore_dns_to_dhcp
+    from dns_watchdog import DNSWatchdog
     from app_controller import AppController
     from event_collector import EventCollector
 
@@ -159,6 +174,15 @@ def main():
         elif action == "policy_updated":
             sync_policy_from_server()
             sync_filtering_rules()
+        elif action == "purge_local_data":
+            print(" [!] Nhận lệnh từ phụ huynh: Xóa toàn bộ dữ liệu máy tính (Nghị định 13/2023)...")
+            purge_local_data()
+            if tray_icon_holder[0]:
+                show_tray_notification(
+                    tray_icon_holder[0],
+                    "Quyền Riêng Tư (NĐ 13/2023)",
+                    "Dữ liệu lịch sử máy tính đã được xóa trắng theo yêu cầu của cha mẹ."
+                )
 
     ws_listener = WebSocketListener(on_command=handle_ws_command)
 
@@ -176,6 +200,26 @@ def main():
         host="127.0.0.1",
         port=53,
         on_event_callback=handle_dns_event
+    )
+
+    def handle_dns_tamper(interface_name: str, old_dns: list[str]):
+        old_dns_str = ", ".join(old_dns) if old_dns else "dhcp_or_none"
+        print(f"\n [!] PHÁT HIỆN CAN THIỆP DNS (M3) TRÊN CARD '{interface_name}': {old_dns_str} -> Đã tự động khôi phục 127.0.0.1")
+        event_collector.record_event(
+            event_type="tamper_attempt",
+            subject=f"dns_adapter:{interface_name}"
+        )
+        if tray_icon_holder[0]:
+            show_tray_notification(
+                tray_icon_holder[0],
+                "Cảnh Báo Vượt Rào Mạng (M3)",
+                f"Phát hiện DNS card mạng '{interface_name}' bị can thiệp. Đã tự động khôi phục về 127.0.0.1."
+            )
+
+    dns_watchdog = DNSWatchdog(
+        check_interval_sec=20.0,
+        target_dns="127.0.0.1",
+        on_tamper_callback=handle_dns_tamper
     )
 
     def handle_app_blocked(app_name: str, reason: str, file_hash: str):
@@ -228,8 +272,9 @@ def main():
     try:
         dns_proxy.start()
         dns_configured = set_dns_to_localhost()
+        dns_watchdog.start()
         if dns_configured:
-            print(" [✓] Đã cấu hình card mạng Windows trỏ DNS về 127.0.0.1 (F2).")
+            print(" [✓] Đã cấu hình card mạng Windows trỏ DNS về 127.0.0.1 (F2 & M3).")
         else:
             print(" [!] Khuyến nghị chạy quyền Administrator để tự động đổi DNS card mạng (hoặc trỏ thủ công 127.0.0.1).")
     except Exception as e:
@@ -237,6 +282,7 @@ def main():
 
     def on_exit():
         stop_event.set()
+        dns_watchdog.stop()
         tracker.stop()
         system_locker.stop_enforcement()
         ws_listener.stop()

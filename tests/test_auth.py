@@ -15,7 +15,9 @@ from server.security import (
     hash_password,
     verify_password,
     create_access_token,
-    decode_access_token
+    decode_access_token,
+    reset_ip_rate_limits,
+    clear_revoked_tokens
 )
 from server.main import app
 
@@ -31,7 +33,9 @@ TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engin
 
 @pytest.fixture(autouse=True)
 def setup_test_db():
-    """Create fresh tables for every test and tear down after."""
+    """Create fresh tables for every test, reset rate limits/tokens, and tear down after."""
+    reset_ip_rate_limits()
+    clear_revoked_tokens()
     Base.metadata.create_all(bind=engine)
     db = TestingSessionLocal()
     try:
@@ -46,6 +50,8 @@ def setup_test_db():
     finally:
         db.close()
         Base.metadata.drop_all(bind=engine)
+        reset_ip_rate_limits()
+        clear_revoked_tokens()
 
 
 @pytest.fixture
@@ -132,3 +138,106 @@ def test_login_nonexistent_user(client):
     )
     assert response.status_code == 401
     assert "Tên đăng nhập hoặc mật khẩu không chính xác" in response.json()["detail"]
+
+
+def test_login_password_minimum_10_chars(client):
+    """Test NIST SP 800-63B password length policy: rejects < 10 chars with 422."""
+    response = client.post(
+        "/api/v1/auth/login",
+        json={"username": "test_parent", "password": "Short123"}  # 8 chars
+    )
+    assert response.status_code == 422
+
+
+def test_account_lockout_after_5_failed_attempts(client):
+    """Test brute-force lockout: 5 consecutive failed attempts lock account for 15 minutes."""
+    # Attempts 1 to 4 should return 401
+    for i in range(4):
+        resp = client.post(
+            "/api/v1/auth/login",
+            json={"username": "test_parent", "password": "WrongPassword#1"}
+        )
+        assert resp.status_code == 401, f"Attempt {i+1} should return 401"
+
+    # Attempt 5 should trigger account lockout (HTTP 423)
+    resp5 = client.post(
+        "/api/v1/auth/login",
+        json={"username": "test_parent", "password": "WrongPassword#1"}
+    )
+    assert resp5.status_code == 423
+    assert "tạm khóa 15 phút" in resp5.json()["detail"]
+
+    # Even with correct password, account must remain locked
+    resp_locked = client.post(
+        "/api/v1/auth/login",
+        json={"username": "test_parent", "password": "ValidPassword123"}
+    )
+    assert resp_locked.status_code == 423
+    assert "tạm khóa" in resp_locked.json()["detail"]
+
+
+def test_successful_login_resets_failed_counter(client, setup_test_db):
+    """Test that a valid login resets the failed login attempt counter."""
+    # 2 failed attempts
+    for _ in range(2):
+        client.post(
+            "/api/v1/auth/login",
+            json={"username": "test_parent", "password": "WrongPassword#1"}
+        )
+
+    # 3rd attempt is successful
+    resp = client.post(
+        "/api/v1/auth/login",
+        json={"username": "test_parent", "password": "ValidPassword123"}
+    )
+    assert resp.status_code == 200
+
+    # Query DB to verify counter was reset to 0
+    parent = setup_test_db.query(Parent).filter(Parent.username == "test_parent").first()
+    assert parent.failed_login_attempts == 0
+    assert parent.locked_until is None
+
+
+def test_ip_rate_limiting(client):
+    """Test sliding window IP rate limiting: 10 requests allowed, 11th triggers 429."""
+    reset_ip_rate_limits()
+    # 10 allowed requests
+    for i in range(10):
+        resp = client.post(
+            "/api/v1/auth/login",
+            json={"username": "unknown_user", "password": "ValidPassword123"}
+        )
+        assert resp.status_code == 401, f"Request {i+1} should be evaluated"
+
+    # 11th request triggers 429 Too Many Requests
+    resp11 = client.post(
+        "/api/v1/auth/login",
+        json={"username": "unknown_user", "password": "ValidPassword123"}
+    )
+    assert resp11.status_code == 429
+    assert "Quá nhiều yêu cầu đăng nhập" in resp11.json()["detail"]
+
+
+def test_explicit_session_revocation_on_logout(client):
+    """Test that logging out explicitly revokes the session token server-side."""
+    # 1. Login to get token
+    login_resp = client.post(
+        "/api/v1/auth/login",
+        json={"username": "test_parent", "password": "ValidPassword123"}
+    )
+    assert login_resp.status_code == 200
+    token = login_resp.json()["access_token"]
+
+    # Verify token is valid
+    assert decode_access_token(token) is not None
+
+    # 2. Call logout API
+    logout_resp = client.post(
+        "/api/v1/auth/logout",
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    assert logout_resp.status_code == 200
+
+    # 3. Verify token is now revoked and cannot be decoded
+    assert decode_access_token(token) is None
+

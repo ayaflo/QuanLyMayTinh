@@ -79,6 +79,12 @@ def _get_connection(db_path: str = DB_PATH) -> sqlite3.Connection:
     return conn
 
 
+def init_db(db_path: str = DB_PATH) -> None:
+    """Explicitly initialize local SQLite schema if needed."""
+    conn = _get_connection(db_path)
+    conn.close()
+
+
 def save_credentials(
     device_id: int,
     access_token: str,
@@ -373,4 +379,22 @@ def delete_pending_events(keys: list[str], db_path: str = DB_PATH) -> None:
         placeholders = ",".join("?" for _ in keys)
         conn.execute(f"DELETE FROM pending_events WHERE idempotency_key IN ({placeholders});", keys)
     conn.close()
+
+
+def purge_local_data(db_path: str = DB_PATH) -> Dict[str, int]:
+    """Wipe all cached activity events, daily usage, and local rule caches (Right to Erasure / Decree 13/2023)."""
+    conn = _get_connection(db_path)
+    with conn:
+        c1 = conn.execute("DELETE FROM pending_events;").rowcount
+        c2 = conn.execute("DELETE FROM daily_usage;").rowcount
+        c3 = conn.execute("DELETE FROM dns_rules_cache;").rowcount
+        c4 = conn.execute("DELETE FROM app_rules_cache;").rowcount
+    conn.close()
+    return {
+        "pending_events_deleted": c1,
+        "daily_usage_deleted": c2,
+        "dns_rules_deleted": c3,
+        "app_rules_deleted": c4
+    }
+
 

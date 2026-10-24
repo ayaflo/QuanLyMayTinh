@@ -29,7 +29,7 @@ def get_active_interfaces() -> List[str]:
                 parts = line.split()
                 if len(parts) >= 5:
                     iface_name = " ".join(parts[4:])
-                    if iface_name and iface_name not in interfaces:
+                    if iface_name and iface_name not in interfaces and "loopback" not in iface_name.lower():
                         interfaces.append(iface_name)
     except Exception as e:
         logger.warning(f"Could not discover network interfaces via netsh: {e}")

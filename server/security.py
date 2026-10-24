@@ -3,12 +3,14 @@ Provides Argon2id password hashing, verification, and HMAC-SHA256 token generati
 """
 
 import os
+import time
 import json
 import hmac
 import hashlib
 import base64
+from threading import Lock
 from datetime import datetime, timedelta, timezone
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List, Set
 from passlib.context import CryptContext
 
 SECRET_KEY = os.getenv("SECRET_KEY", "change-this-secret-key-in-production")
@@ -16,6 +18,66 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 15
 
 # Password hashing context configured with Argon2id
 pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
+
+# ----------------------------------------------------------------------------
+# In-memory Token Revocation Store (ASVS Session Invalidation)
+# ----------------------------------------------------------------------------
+_REVOKED_TOKENS: Set[str] = set()
+_REVOKED_LOCK = Lock()
+
+
+def revoke_token(token: str) -> None:
+    """Explicitly revoke an active session token (e.g., on parent logout)."""
+    if not token:
+        return
+    with _REVOKED_LOCK:
+        _REVOKED_TOKENS.add(token.strip())
+
+
+def is_token_revoked(token: str) -> bool:
+    """Check if token has been revoked by server-side invalidation."""
+    if not token:
+        return False
+    with _REVOKED_LOCK:
+        return token.strip() in _REVOKED_TOKENS
+
+
+def clear_revoked_tokens() -> None:
+    """Clear revocation store (primarily for unit test isolation)."""
+    with _REVOKED_LOCK:
+        _REVOKED_TOKENS.clear()
+
+
+# ----------------------------------------------------------------------------
+# In-memory IP-based Rate Limiter (Brute-Force & DoS Protection)
+# ----------------------------------------------------------------------------
+_IP_RATE_LIMITS: Dict[str, List[float]] = {}
+_RATE_LIMIT_LOCK = Lock()
+
+
+def check_ip_rate_limit(ip: str, limit: int = 10, window_seconds: int = 60) -> bool:
+    """Check if a request from client IP is permitted within sliding window.
+
+    Returns True if allowed, False if limit exceeded.
+    """
+    if not ip:
+        return True
+    now = time.time()
+    with _RATE_LIMIT_LOCK:
+        timestamps = _IP_RATE_LIMITS.setdefault(ip, [])
+        cutoff = now - window_seconds
+        valid_timestamps = [ts for ts in timestamps if ts > cutoff]
+        _IP_RATE_LIMITS[ip] = valid_timestamps
+        if len(valid_timestamps) >= limit:
+            return False
+        valid_timestamps.append(now)
+        return True
+
+
+def reset_ip_rate_limits() -> None:
+    """Reset all IP rate limit tracking counters (for unit test isolation)."""
+    with _RATE_LIMIT_LOCK:
+        _IP_RATE_LIMITS.clear()
 
 
 def hash_password(password: str) -> str:
@@ -75,10 +137,13 @@ def create_access_token(data: Dict[str, Any], expires_delta: Optional[timedelta]
 def decode_access_token(token: str) -> Optional[Dict[str, Any]]:
     """Decode and verify a signed token.
 
-    Returns the payload dictionary if the signature is valid and token is not expired,
-    or None if verification fails.
+    Returns the payload dictionary if the signature is valid, token is not expired,
+    and token has not been revoked. Returns None otherwise.
     """
     try:
+        if is_token_revoked(token):
+            return None
+
         parts = token.split(".")
         if len(parts) != 3:
             return None

@@ -63,9 +63,14 @@ async def send_emergency_command(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    # Anti-IDOR check
-    device = db.query(Device).filter(Device.id == device_id, Device.parent_id == parent.id).first()
+    # Anti-IDOR check: verify existence and ownership
+    device = db.query(Device).filter(Device.id == device_id).first()
     if not device:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Không tìm thấy thiết bị"
+        )
+    if device.parent_id != parent.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Bạn không có quyền quản lý thiết bị này"

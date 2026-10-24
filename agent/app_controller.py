@@ -103,11 +103,16 @@ class AppController:
         if not rules:
             return []
 
-        # Target set of blocked SHA-256 hashes
+        # Target set of blocked SHA-256 hashes & blocked executable names (T3_041 & T4_019)
         blocked_hashes = {
             h.lower(): info for h, info in rules.items() if info.get("action") == "block"
         }
-        if not blocked_hashes:
+        blocked_names = {
+            info["name"].lower(): info
+            for info in rules.values()
+            if info.get("action") == "block" and info.get("name")
+        }
+        if not blocked_hashes and not blocked_names:
             return []
 
         terminated_apps = []
@@ -122,19 +127,22 @@ class AppController:
                 exe_path = proc.info.get('exe')
                 app_name = proc.info.get('name') or "Unknown"
 
-                if not exe_path:
+                if not exe_path and not app_name:
                     continue
 
-                # SHA-256 detection defeats binary renaming (T3_041)
-                file_hash = self._get_cached_sha256(exe_path)
-                if not file_hash:
-                    continue
+                # SHA-256 detection defeats binary renaming (T3_041); name matching catches VPNs (T4_019)
+                file_hash = self._get_cached_sha256(exe_path) if exe_path else None
+                rule_info = None
 
-                if file_hash in blocked_hashes:
+                if file_hash and file_hash in blocked_hashes:
                     rule_info = blocked_hashes[file_hash]
+                elif app_name.lower() in blocked_names:
+                    rule_info = blocked_names[app_name.lower()]
+
+                if rule_info:
                     reason = rule_info.get("description") or "Quy định của cha mẹ"
                     logger.warning(
-                        f"[APP BLOCKED] Terminating PID {pid} ({app_name}) | Hash: {file_hash[:12]}... | Reason: {reason}"
+                        f"[APP BLOCKED] Terminating PID {pid} ({app_name}) | Hash: {str(file_hash)[:12]}... | Reason: {reason}"
                     )
 
                     # Terminate process (T3_040)

@@ -16,10 +16,17 @@ def utc_now():
 # Phase 2 / T010: Authentication Schemas
 # ============================================================================
 
-class LoginRequest(BaseModel):
-    """Schema for parent login requests."""
+class ParentCreate(BaseModel):
+    """Schema for parent account creation (NIST SP 800-63B compliant)."""
     username: str = Field(..., min_length=3, max_length=50, description="Parent account username")
-    password: str = Field(..., min_length=6, description="Parent account password")
+    password: str = Field(..., min_length=10, description="Parent account password (min 10 characters)")
+
+
+class LoginRequest(BaseModel):
+    """Schema for parent login requests (NIST SP 800-63B compliant)."""
+    username: str = Field(..., min_length=3, max_length=50, description="Parent account username")
+    password: str = Field(..., min_length=10, description="Parent account password (NIST SP 800-63B requires >= 10 chars)")
+
 
 
 class TokenResponse(BaseModel):
@@ -284,4 +291,14 @@ class ReportSummaryResponse(BaseModel):
     top_apps: list[UsageSummaryItem] = []
     top_domains: list[UsageSummaryItem] = []
     blocked_attempts_count: int = 0
+
+
+# ============================================================================
+# Week 4 (Version 0.4): Data Retention & Right to Erasure (Decree 13/2023)
+# ============================================================================
+
+class EraseDeviceDataRequest(BaseModel):
+    """Schema for Right to Erasure confirmation requiring parent password."""
+    password: str = Field(..., min_length=1, description="Mật khẩu phụ huynh xác nhận quyền xóa dữ liệu")
+
 

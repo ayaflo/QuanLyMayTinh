@@ -24,6 +24,8 @@ class Parent(Base):
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String(50), unique=True, index=True, nullable=False)
     password_hash = Column(String(255), nullable=False)
+    failed_login_attempts = Column(Integer, default=0, nullable=False)
+    locked_until = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=utc_now, nullable=False)
 
     devices = relationship("Device", back_populates="parent", cascade="all, delete-orphan")

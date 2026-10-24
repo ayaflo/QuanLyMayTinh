@@ -4,7 +4,7 @@ Renders Jinja2 HTML templates for login, device management, and pairing code mod
 
 import os
 from typing import Optional
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from fastapi import APIRouter, Depends, Request, Response, Form, status
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
@@ -14,7 +14,13 @@ from sqlalchemy.orm import Session
 try:
     from ..database import get_db
     from ..models import Parent, Device, Policy, AuditLog, DomainRule, AppRule, AccessRequest
-    from ..security import verify_password, create_access_token, decode_access_token
+    from ..security import (
+        verify_password,
+        create_access_token,
+        decode_access_token,
+        check_ip_rate_limit,
+        revoke_token
+    )
     from ..services.policy_service import get_or_create_default_policy
     from ..services.report_service import get_device_report_summary, get_weekly_usage_stats
     from ..services.filtering_service import get_active_domain_rules, get_active_app_rules, get_domain_category_summaries
@@ -22,7 +28,13 @@ try:
 except (ImportError, ValueError):
     from server.database import get_db
     from server.models import Parent, Device, Policy, AuditLog, DomainRule, AppRule, AccessRequest
-    from server.security import verify_password, create_access_token, decode_access_token
+    from server.security import (
+        verify_password,
+        create_access_token,
+        decode_access_token,
+        check_ip_rate_limit,
+        revoke_token
+    )
     from server.services.policy_service import get_or_create_default_policy
     from server.services.report_service import get_device_report_summary, get_weekly_usage_stats
     from server.services.filtering_service import get_active_domain_rules, get_active_app_rules, get_domain_category_summaries
@@ -84,9 +96,66 @@ def handle_login(
     password: str = Form(...),
     db: Session = Depends(get_db)
 ):
-    """Process login form submission, set HTTP-only session cookie, redirect to /devices."""
+    """Process login form submission, enforce rate limits and lockout, set HTTP-only cookie."""
+    # 1. IP Rate Limiting Check
+    client_ip = request.client.host if request.client else "127.0.0.1"
+    if not check_ip_rate_limit(client_ip, limit=10, window_seconds=60):
+        return templates.TemplateResponse(
+            request=request,
+            name="login.html",
+            context={
+                "parent": None,
+                "username": username,
+                "error": "Quá nhiều yêu cầu đăng nhập từ IP này. Vui lòng thử lại sau 1 phút."
+            },
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS
+        )
+
     parent = db.query(Parent).filter(Parent.username == username.strip()).first()
+
+    # 2. Lockout Check
+    now = datetime.now(timezone.utc)
+    if parent and parent.locked_until:
+        locked_until = parent.locked_until
+        if locked_until.tzinfo is None:
+            locked_until = locked_until.replace(tzinfo=timezone.utc)
+        if locked_until > now:
+            remaining_secs = int((locked_until - now).total_seconds())
+            remaining_mins = max(1, (remaining_secs + 59) // 60)
+            return templates.TemplateResponse(
+                request=request,
+                name="login.html",
+                context={
+                    "parent": None,
+                    "username": username,
+                    "error": f"Tài khoản đã bị tạm khóa do nhập sai mật khẩu quá 5 lần. Vui lòng thử lại sau {remaining_mins} phút."
+                },
+                status_code=status.HTTP_423_LOCKED
+            )
+        else:
+            parent.locked_until = None
+            parent.failed_login_attempts = 0
+            db.commit()
+
+    # 3. Password Verification
     if not parent or not verify_password(password, parent.password_hash):
+        if parent:
+            parent.failed_login_attempts = (parent.failed_login_attempts or 0) + 1
+            if parent.failed_login_attempts >= 5:
+                parent.locked_until = datetime.now(timezone.utc) + timedelta(minutes=15)
+                db.commit()
+                return templates.TemplateResponse(
+                    request=request,
+                    name="login.html",
+                    context={
+                        "parent": None,
+                        "username": username,
+                        "error": "Tài khoản đã bị tạm khóa 15 phút do nhập sai mật khẩu quá 5 lần liên tiếp."
+                    },
+                    status_code=status.HTTP_423_LOCKED
+                )
+            db.commit()
+
         return templates.TemplateResponse(
             request=request,
             name="login.html",
@@ -98,7 +167,13 @@ def handle_login(
             status_code=status.HTTP_401_UNAUTHORIZED
         )
 
-    # 15-minute access token
+    # 4. Successful Login: Reset failed counters
+    if parent.failed_login_attempts != 0 or parent.locked_until is not None:
+        parent.failed_login_attempts = 0
+        parent.locked_until = None
+        db.commit()
+
+    # 5. 15-minute access token
     access_token = create_access_token({
         "sub": f"parent:{parent.id}",
         "parent_id": parent.id,
@@ -118,10 +193,18 @@ def handle_login(
 
 
 @router.get("/logout", summary="Đăng xuất tài khoản phụ huynh")
-def logout():
-    """Clear session cookie and redirect to login page."""
+def logout(request: Request):
+    """Clear session cookie, revoke token server-side, and redirect to login page."""
+    token = request.cookies.get("access_token")
+    if token:
+        revoke_token(token)
+
     redirect = RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
-    redirect.delete_cookie("access_token")
+    redirect.delete_cookie(
+        key="access_token",
+        httponly=True,
+        samesite="lax"
+    )
     return redirect
 
 
@@ -179,7 +262,7 @@ def devices_page(
     domain_rules = get_active_domain_rules(db)
     category_summaries = get_domain_category_summaries(db)
     app_rules = get_active_app_rules(db)
-    all_requests = get_requests(db)
+    all_requests = [r for r in get_requests(db) if r.device_id in dev_ids] if dev_ids else []
     pending_requests = [r for r in all_requests if r.status == "pending"]
 
     return templates.TemplateResponse(

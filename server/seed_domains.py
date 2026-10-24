@@ -14,10 +14,10 @@ from datetime import datetime, timezone
 
 try:
     from .database import SessionLocal, engine, Base
-    from .models import DomainRule
+    from .models import DomainRule, AppRule
 except (ImportError, ValueError):
     from server.database import SessionLocal, engine, Base
-    from server.models import DomainRule
+    from server.models import DomainRule, AppRule
 
 
 def utc_now():
@@ -279,13 +279,87 @@ def seed_domain_rules(db: Session) -> int:
     return inserted
 
 
+SEED_APP_RULES_DATA = [
+    {
+        "app_name": "Cloudflare WARP.exe",
+        "sha256_hash": "7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069",
+        "action": "block",
+        "description": "Ứng dụng VPN Cloudflare WARP - Ngăn chặn vượt rào DNS"
+    },
+    {
+        "app_name": "warp-svc.exe",
+        "sha256_hash": "5a8dd3ad0756a93ded72b823b19dd877a602b783a0c4415e30715e6138426172",
+        "action": "block",
+        "description": "Dịch vụ VPN ngầm Cloudflare WARP"
+    },
+    {
+        "app_name": "ProtonVPN.exe",
+        "sha256_hash": "4e07408562bedb8b60ce05c1decfe3ad16b72230967de01f640b7e4729b49fce",
+        "action": "block",
+        "description": "Ứng dụng ProtonVPN - Ngăn chặn đường hầm mã hóa vượt rào"
+    },
+    {
+        "app_name": "ProtonVPN.Launcher.exe",
+        "sha256_hash": "4b227777d4dd1fc61c6f884f48641d02b4d121d3fd328cb08b5531fcacdabf8a",
+        "action": "block",
+        "description": "Trình khởi chạy ứng dụng ProtonVPN"
+    },
+    {
+        "app_name": "psiphon3.exe",
+        "sha256_hash": "ef2d127de37b942baad06145e54b0c619a1f22327b2ebbcfbec78f5564afe39d",
+        "action": "block",
+        "description": "Công cụ vượt tường lửa Psiphon 3"
+    },
+    {
+        "app_name": "u.exe",
+        "sha256_hash": "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918",
+        "action": "block",
+        "description": "Công cụ proxy UltraSurf (u.exe)"
+    },
+    {
+        "app_name": "ultrasurf.exe",
+        "sha256_hash": "04f8996da763b7a969b1028ee3007569eaf3a635486ddab211d512c85b9df8fb",
+        "action": "block",
+        "description": "Ứng dụng proxy vượt rào UltraSurf"
+    }
+]
+
+
+def seed_app_rules(db: Session) -> int:
+    """Seed predefined VPN application rules into the database (T4_019 - M3 Anti-Bypass).
+    Returns the count of new app rules inserted.
+    """
+    inserted = 0
+    for item in SEED_APP_RULES_DATA:
+        existing = db.query(AppRule).filter(
+            (AppRule.app_name == item["app_name"]) | (AppRule.sha256_hash == item["sha256_hash"])
+        ).first()
+        if not existing:
+            rule = AppRule(
+                device_id=None,  # Global rule applying to all devices
+                app_name=item["app_name"],
+                sha256_hash=item["sha256_hash"],
+                action=item["action"],
+                description=item["description"],
+                created_at=utc_now()
+            )
+            db.add(rule)
+            inserted += 1
+    if inserted > 0:
+        db.commit()
+    return inserted
+
+
 if __name__ == "__main__":
     db = SessionLocal()
     try:
         # Create tables if not existing
         Base.metadata.create_all(bind=engine)
-        count = seed_domain_rules(db)
-        total = db.query(DomainRule).count()
-        print(f"[*] Seeded {count} new domains. Total domain rules in DB: {total}")
+        count_domains = seed_domain_rules(db)
+        count_apps = seed_app_rules(db)
+        total_domains = db.query(DomainRule).count()
+        total_apps = db.query(AppRule).count()
+        print(f"[*] Seeded {count_domains} new domains (Total: {total_domains}).")
+        print(f"[*] Seeded {count_apps} new VPN app rules (Total: {total_apps}).")
     finally:
         db.close()

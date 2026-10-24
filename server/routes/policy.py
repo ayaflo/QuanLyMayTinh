@@ -76,12 +76,12 @@ def get_policy(
     """Retrieve policy for a device. Devices authenticate via token; parents pass device_id."""
     target_device_id = device_id
 
-    # If called by Agent
+    parent = None
     agent_device = _get_device_from_token(credentials, db)
     if agent_device:
         target_device_id = agent_device.id
-    elif not target_device_id:
-        # Fallback to parent check
+    else:
+        # Authenticate parent
         parent = _get_parent_from_request(request, credentials, db)
         if not parent:
             raise HTTPException(
@@ -89,15 +89,22 @@ def get_policy(
                 detail="Yêu cầu xác thực tài khoản phụ huynh hoặc thiết bị",
                 headers={"WWW-Authenticate": "Bearer"},
             )
-        # If parent didn't specify device_id, pick their first device if any
-        first_dev = db.query(Device).filter(Device.parent_id == parent.id).first()
-        if not first_dev:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Chưa có thiết bị nào được ghép đôi")
-        target_device_id = first_dev.id
+        if not target_device_id:
+            first_dev = db.query(Device).filter(Device.parent_id == parent.id).first()
+            if not first_dev:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Chưa có thiết bị nào được ghép đôi")
+            target_device_id = first_dev.id
 
     device = db.query(Device).filter(Device.id == target_device_id).first()
     if not device:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Không tìm thấy thiết bị")
+
+    # Anti-IDOR check for parent caller
+    if parent and device.parent_id != parent.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Bạn không có quyền xem chính sách của thiết bị này"
+        )
 
     policy = get_or_create_default_policy(db, device.id)
     return policy
@@ -120,9 +127,14 @@ async def update_policy(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    # Anti-IDOR check: verify device ownership
-    device = db.query(Device).filter(Device.id == device_id, Device.parent_id == parent.id).first()
+    # Anti-IDOR check: verify device existence and parent ownership
+    device = db.query(Device).filter(Device.id == device_id).first()
     if not device:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Không tìm thấy thiết bị"
+        )
+    if device.parent_id != parent.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Bạn không có quyền chỉnh sửa thiết bị này"
