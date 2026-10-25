@@ -16,6 +16,15 @@ python -m PyInstaller --noconfirm --onedir --windowed `
     --hidden-import "psutil" `
     --hidden-import "websockets" `
     --hidden-import "cryptography" `
+    --hidden-import "tkinter" `
+    --hidden-import "tkinter.ttk" `
+    --hidden-import "tkinter.messagebox" `
+    --hidden-import "PIL" `
+    --hidden-import "pystray" `
+    --hidden-import "winreg" `
+    --hidden-import "agent.pairing_gui" `
+    --hidden-import "agent.autostart" `
+    --hidden-import "agent.child_view" `
     agent/main.py
 
 Write-Host "[✓] Hoàn tất đóng gói! Tệp thực thi tại: dist/ogk-agent/ogk-agent.exe" -ForegroundColor Green
