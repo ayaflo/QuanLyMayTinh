@@ -32,6 +32,7 @@ try:
     from server.routes.requests import router as requests_router
     from server.routes.retention import router as retention_router
     from server.seed_domains import seed_domain_rules, seed_app_rules
+    from server.seed import seed_data
     from server.services.retention_service import purge_expired_activity_data
 except ModuleNotFoundError as e:
     if e.name == "server":
@@ -50,6 +51,7 @@ except ModuleNotFoundError as e:
         from routes.requests import router as requests_router
         from routes.retention import router as retention_router
         from seed_domains import seed_domain_rules, seed_app_rules
+        from seed import seed_data
         from services.retention_service import purge_expired_activity_data
     else:
         raise
@@ -64,6 +66,7 @@ async def lifespan(app: FastAPI):
     run_migrations(engine)
     db = SessionLocal()
     try:
+        seed_data(db)
         seed_domain_rules(db)
         seed_app_rules(db)
         # Perform an initial startup retention sweep

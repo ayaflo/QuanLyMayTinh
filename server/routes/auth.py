@@ -11,9 +11,10 @@ from sqlalchemy.orm import Session
 try:
     from ..database import get_db
     from ..models import Parent
-    from ..schemas import LoginRequest, TokenResponse
+    from ..schemas import LoginRequest, ParentCreate, TokenResponse
     from ..security import (
         verify_password,
+        hash_password,
         create_access_token,
         decode_access_token,
         check_ip_rate_limit,
@@ -22,9 +23,10 @@ try:
 except (ImportError, ValueError):
     from server.database import get_db
     from server.models import Parent
-    from server.schemas import LoginRequest, TokenResponse
+    from server.schemas import LoginRequest, ParentCreate, TokenResponse
     from server.security import (
         verify_password,
+        hash_password,
         create_access_token,
         decode_access_token,
         check_ip_rate_limit,
@@ -189,4 +191,77 @@ def logout(
         samesite="lax"
     )
     return {"message": "Đăng xuất thành công, phiên làm việc đã bị thu hồi."}
+
+
+@router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED, summary="Đăng ký tài khoản phụ huynh mới")
+def register(
+    req: ParentCreate,
+    request: Request,
+    response: Response,
+    db: Session = Depends(get_db)
+) -> TokenResponse:
+    """Register a new parent account (NIST SP 800-63B compliant).
+    Hashes password with Argon2id, issues session token, sets HTTP-only cookie.
+    """
+    # 1. Rate Limiting Check (10 requests/min per IP)
+    client_ip = request.client.host if request.client else "127.0.0.1"
+    if not check_ip_rate_limit(client_ip, limit=10, window_seconds=60):
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Quá nhiều yêu cầu từ địa chỉ IP này. Vui lòng thử lại sau 1 phút."
+        )
+
+    clean_username = req.username.strip()
+    if len(clean_username) < 3 or len(clean_username) > 50:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Tên đăng nhập phải có độ dài từ 3 đến 50 ký tự."
+        )
+
+    if len(req.password) < 10:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Mật khẩu phải có tối thiểu 10 ký tự theo chuẩn NIST SP 800-63B."
+        )
+
+    # 2. Check for duplicate username
+    existing_parent = db.query(Parent).filter(Parent.username == clean_username).first()
+    if existing_parent:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Tên đăng nhập này đã được sử dụng. Vui lòng chọn tên khác."
+        )
+
+    # 3. Hash password using Argon2id and create record
+    hashed_pwd = hash_password(req.password)
+    new_parent = Parent(
+        username=clean_username,
+        password_hash=hashed_pwd
+    )
+    db.add(new_parent)
+    db.commit()
+    db.refresh(new_parent)
+
+    # 4. Issue Access Token (15 minutes validity)
+    access_token = create_access_token({
+        "sub": f"parent:{new_parent.id}",
+        "parent_id": new_parent.id,
+        "username": new_parent.username,
+        "role": "parent"
+    })
+
+    # 5. Set Secure HTTP-only Cookie
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        max_age=900,
+        samesite="lax"
+    )
+
+    return TokenResponse(
+        access_token=access_token,
+        token_type="bearer",
+        expires_in=900
+    )
 

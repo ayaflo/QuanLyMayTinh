@@ -16,6 +16,7 @@ try:
     from ..models import Parent, Device, Policy, AuditLog, DomainRule, AppRule, AccessRequest
     from ..security import (
         verify_password,
+        hash_password,
         create_access_token,
         decode_access_token,
         check_ip_rate_limit,
@@ -30,6 +31,7 @@ except (ImportError, ValueError):
     from server.models import Parent, Device, Policy, AuditLog, DomainRule, AppRule, AccessRequest
     from server.security import (
         verify_password,
+        hash_password,
         create_access_token,
         decode_access_token,
         check_ip_rate_limit,
@@ -86,6 +88,125 @@ def login_page(
         name="login.html",
         context={"parent": None, "error": None}
     )
+
+
+@router.get("/register", response_class=HTMLResponse, summary="Hiển thị trang đăng ký phụ huynh")
+def register_page(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """Render parent registration page or redirect to /devices if already authenticated."""
+    parent = get_current_parent_from_cookie(request, db)
+    if parent:
+        return RedirectResponse(url="/devices", status_code=status.HTTP_302_FOUND)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="register.html",
+        context={"parent": None, "error": None}
+    )
+
+
+@router.post("/register", response_class=HTMLResponse, summary="Xử lý đăng ký tài khoản phụ huynh từ Form HTML")
+def handle_register(
+    request: Request,
+    response: Response,
+    username: str = Form(...),
+    password: str = Form(...),
+    confirm_password: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    """Process parent self-registration, validate password and duplicates, log in and redirect."""
+    client_ip = request.client.host if request.client else "127.0.0.1"
+    if not check_ip_rate_limit(client_ip, limit=10, window_seconds=60):
+        return templates.TemplateResponse(
+            request=request,
+            name="register.html",
+            context={
+                "parent": None,
+                "username": username,
+                "error": "Quá nhiều yêu cầu từ IP này. Vui lòng thử lại sau 1 phút."
+            },
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS
+        )
+
+    clean_user = username.strip()
+    if len(clean_user) < 3 or len(clean_user) > 50:
+        return templates.TemplateResponse(
+            request=request,
+            name="register.html",
+            context={
+                "parent": None,
+                "username": username,
+                "error": "Tên đăng nhập phải có độ dài từ 3 đến 50 ký tự."
+            },
+            status_code=status.HTTP_400_BAD_REQUEST
+        )
+
+    if len(password) < 10:
+        return templates.TemplateResponse(
+            request=request,
+            name="register.html",
+            context={
+                "parent": None,
+                "username": username,
+                "error": "Mật khẩu phải có tối thiểu 10 ký tự (theo khuyến nghị bảo mật NIST SP 800-63B)."
+            },
+            status_code=status.HTTP_400_BAD_REQUEST
+        )
+
+    if password != confirm_password:
+        return templates.TemplateResponse(
+            request=request,
+            name="register.html",
+            context={
+                "parent": None,
+                "username": username,
+                "error": "Mật khẩu xác nhận không khớp với mật khẩu đã nhập."
+            },
+            status_code=status.HTTP_400_BAD_REQUEST
+        )
+
+    existing = db.query(Parent).filter(Parent.username == clean_user).first()
+    if existing:
+        return templates.TemplateResponse(
+            request=request,
+            name="register.html",
+            context={
+                "parent": None,
+                "username": username,
+                "error": f"Tên đăng nhập '{clean_user}' đã tồn tại trong hệ thống. Vui lòng chọn tên khác."
+            },
+            status_code=status.HTTP_400_BAD_REQUEST
+        )
+
+    # Create new parent record
+    hashed_pwd = hash_password(password)
+    new_parent = Parent(
+        username=clean_user,
+        password_hash=hashed_pwd
+    )
+    db.add(new_parent)
+    db.commit()
+    db.refresh(new_parent)
+
+    # Issue access token and redirect straight into /devices
+    access_token = create_access_token({
+        "sub": f"parent:{new_parent.id}",
+        "parent_id": new_parent.id,
+        "username": new_parent.username,
+        "role": "parent"
+    })
+
+    redirect = RedirectResponse(url="/devices", status_code=status.HTTP_302_FOUND)
+    redirect.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        max_age=900,
+        samesite="lax"
+    )
+    return redirect
 
 
 @router.post("/login", response_class=HTMLResponse, summary="Xử lý đăng nhập từ Form HTML")

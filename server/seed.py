@@ -21,32 +21,47 @@ except ImportError:
 
 
 
-def seed_data():
-    """Seed initial data into database."""
-    # Ensure tables exist
+def seed_data(db=None):
+    """Seed initial data into database.
+    Ensures default admin accounts 'admin' and 'parent_admin' exist.
+    """
     Base.metadata.create_all(bind=engine)
 
-    db = SessionLocal()
-    try:
-        existing_parent = db.query(Parent).filter(Parent.username == "parent_admin").first()
-        if existing_parent:
-            print(" [i] Tài khoản phụ huynh 'parent_admin' đã tồn tại trong CSDL.")
-            return existing_parent
+    should_close = False
+    if db is None:
+        db = SessionLocal()
+        should_close = True
 
-        hashed_pwd = hash_password("Admin@123456")
-        admin = Parent(
-            username="parent_admin",
-            password_hash=hashed_pwd
-        )
-        db.add(admin)
+    try:
+        # 1. Seed parent_admin
+        existing_parent = db.query(Parent).filter(Parent.username == "parent_admin").first()
+        if not existing_parent:
+            hashed_pwd = hash_password("Admin@123456")
+            admin_parent = Parent(
+                username="parent_admin",
+                password_hash=hashed_pwd
+            )
+            db.add(admin_parent)
+            print(" [+] Khởi tạo tài khoản phụ huynh: 'parent_admin' / 'Admin@123456'")
+        else:
+            admin_parent = existing_parent
+
+        # 2. Seed admin
+        existing_admin = db.query(Parent).filter(Parent.username == "admin").first()
+        if not existing_admin:
+            hashed_pwd_admin = hash_password("Admin@123456")
+            admin_user = Parent(
+                username="admin",
+                password_hash=hashed_pwd_admin
+            )
+            db.add(admin_user)
+            print(" [+] Khởi tạo tài khoản phụ huynh: 'admin' / 'Admin@123456'")
+
         db.commit()
-        db.refresh(admin)
-        print(" [+] Khởi tạo thành công tài khoản phụ huynh mẫu:")
-        print("     Username: parent_admin")
-        print("     Password: Admin@123456")
-        return admin
+        return admin_parent
     finally:
-        db.close()
+        if should_close:
+            db.close()
 
 
 if __name__ == "__main__":

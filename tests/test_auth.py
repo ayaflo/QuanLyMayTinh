@@ -241,3 +241,96 @@ def test_explicit_session_revocation_on_logout(client):
     # 3. Verify token is now revoked and cannot be decoded
     assert decode_access_token(token) is None
 
+
+def test_parent_self_registration_api(client, setup_test_db):
+    """Test successful self-registration via /api/v1/auth/register."""
+    reset_ip_rate_limits()
+    resp = client.post(
+        "/api/v1/auth/register",
+        json={"username": "new_parent_user", "password": "SecurePassword2026!"}
+    )
+    assert resp.status_code == 201
+    data = resp.json()
+    assert "access_token" in data
+    assert data["token_type"] == "bearer"
+
+    # Verify parent is created in DB
+    created = setup_test_db.query(Parent).filter(Parent.username == "new_parent_user").first()
+    assert created is not None
+    assert created.failed_login_attempts == 0
+
+    # Verify can decode token
+    payload = decode_access_token(data["access_token"])
+    assert payload["username"] == "new_parent_user"
+    assert payload["parent_id"] == created.id
+
+
+def test_parent_registration_duplicate_username(client):
+    """Test that registering an already existing username returns 400."""
+    reset_ip_rate_limits()
+    resp = client.post(
+        "/api/v1/auth/register",
+        json={"username": "test_parent", "password": "AnotherPassword123"}
+    )
+    assert resp.status_code == 400
+    assert "đã được sử dụng" in resp.json()["detail"]
+
+
+def test_parent_registration_weak_password(client):
+    """Test NIST SP 800-63B password length enforcement (<10 characters)."""
+    reset_ip_rate_limits()
+    resp = client.post(
+        "/api/v1/auth/register",
+        json={"username": "short_pwd_user", "password": "short"}
+    )
+    assert resp.status_code == 422 or resp.status_code == 400
+
+
+def test_dashboard_registration_flow(client, setup_test_db):
+    """Test web dashboard GET /register and POST /register form submission."""
+    reset_ip_rate_limits()
+    # 1. GET /register returns HTML page
+    get_resp = client.get("/register")
+    assert get_resp.status_code == 200
+    assert "Đăng Ký Tài Khoản Phụ Huynh" in get_resp.text
+
+    # 2. POST /register with mismatching passwords fails
+    fail_resp = client.post(
+        "/register",
+        data={
+            "username": "form_parent",
+            "password": "ValidPassword123",
+            "confirm_password": "DifferentPassword123"
+        }
+    )
+    assert fail_resp.status_code == 400
+    assert "không khớp" in fail_resp.text
+
+    # 3. POST /register with valid form data succeeds and redirects
+    success_resp = client.post(
+        "/register",
+        data={
+            "username": "form_parent",
+            "password": "ValidPassword123",
+            "confirm_password": "ValidPassword123"
+        },
+        follow_redirects=False
+    )
+    assert success_resp.status_code == 302
+    assert success_resp.headers["location"] == "/devices"
+    assert "access_token" in success_resp.cookies
+
+
+def test_seed_data_creates_both_admin_and_parent_admin(setup_test_db):
+    """Verify seed_data creates both 'admin' and 'parent_admin' accounts."""
+    from server.seed import seed_data
+    seed_data(setup_test_db)
+
+    admin = setup_test_db.query(Parent).filter(Parent.username == "admin").first()
+    assert admin is not None
+    assert verify_password("Admin@123456", admin.password_hash)
+
+    p_admin = setup_test_db.query(Parent).filter(Parent.username == "parent_admin").first()
+    assert p_admin is not None
+    assert verify_password("Admin@123456", p_admin.password_hash)
+
