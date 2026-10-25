@@ -6,11 +6,11 @@ from typing import Optional, Dict, Any, Tuple
 import requests
 
 try:
-    from .config import SERVER_URL, DEVICE_NAME
+    from .config import SERVER_URL, DEVICE_NAME, REQUEST_TIMEOUT
     from .fingerprint import get_device_fingerprint
     from .storage import save_credentials
 except ImportError:
-    from config import SERVER_URL, DEVICE_NAME
+    from config import SERVER_URL, DEVICE_NAME, REQUEST_TIMEOUT
     from fingerprint import get_device_fingerprint
     from storage import save_credentials
 
@@ -49,7 +49,7 @@ def pair_with_server(
             endpoint,
             json=payload,
             headers={"Content-Type": "application/json"},
-            timeout=10
+            timeout=REQUEST_TIMEOUT
         )
 
         if response.status_code == 200:
@@ -78,6 +78,6 @@ def pair_with_server(
     except requests.exceptions.ConnectionError:
         return False, f"Không thể kết nối đến máy chủ tại {server_url}. Vui lòng kiểm tra lại mạng hoặc máy chủ.", None
     except requests.exceptions.Timeout:
-        return False, "Hết thời gian chờ phản hồi từ máy chủ.", None
+        return False, f"Hết thời gian chờ phản hồi từ {server_url} (Nếu máy chủ Render đang ngủ đông, vui lòng thử lại sau 15-20 giây).", None
     except Exception as e:
         return False, f"Lỗi không xác định: {str(e)}", None

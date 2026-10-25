@@ -12,9 +12,9 @@ if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 try:
-    from agent.config import APP_TITLE, APP_VERSION, SERVER_URL, DEVICE_NAME
+    from agent.config import APP_TITLE, APP_VERSION, SERVER_URL, DEVICE_NAME, REQUEST_TIMEOUT
     from agent.fingerprint import get_device_fingerprint
-    from agent.storage import load_credentials
+    from agent.storage import load_credentials, clear_credentials
     from agent.enrollment_client import pair_with_server
     from agent.heartbeat_client import start_heartbeat_thread
     from agent.tray import init_tray_icon, show_startup_notification, show_tray_notification
@@ -35,10 +35,11 @@ try:
         purge_local_data
     )
 except ImportError:
-    from config import APP_TITLE, APP_VERSION, SERVER_URL, DEVICE_NAME
+    from config import APP_TITLE, APP_VERSION, SERVER_URL, DEVICE_NAME, REQUEST_TIMEOUT
     from fingerprint import get_device_fingerprint
     from storage import (
         load_credentials,
+        clear_credentials,
         save_dns_rules_cache,
         load_dns_rules_cache,
         save_app_rules_cache,
@@ -74,7 +75,7 @@ def prompt_enrollment(server_url: str = SERVER_URL) -> bool:
     print("\n [!] Máy tính này chưa được ghép đôi với tài khoản phụ huynh.")
     print(f"     Mã nhận diện máy (Fingerprint): {fingerprint}")
     print(f"     Máy chủ kết nối: {server_url}\n")
-    print(" Vui lòng đăng nhập vào Web Dashboard phụ huynh (http://127.0.0.1:8000/devices),")
+    print(f" Vui lòng đăng nhập vào Web Dashboard phụ huynh ({server_url}/devices),")
     print(" nhấn '+ Thêm Thiết Bị Mới' và lấy mã ghép đôi 8 ký tự.")
 
     while True:
@@ -105,13 +106,36 @@ def prompt_enrollment(server_url: str = SERVER_URL) -> bool:
 def main():
     parser = argparse.ArgumentParser(description=f"{APP_TITLE} Client Agent")
     parser.add_argument("--pair-code", type=str, help="Auto-pair using provided 8-char code")
+    parser.add_argument("--re-pair", action="store_true", help="Xóa thông tin cũ và ghép đôi lại với máy chủ mới")
     parser.add_argument("--headless", action="store_true", help="Run without system tray GUI")
     args = parser.parse_args()
 
     print_banner()
 
     # Step 1: Check existing credentials
-    creds = load_credentials()
+    if args.re_pair:
+        print(" [*] Đang xóa thông tin ghép đôi cũ theo tham số --re-pair...")
+        clear_credentials()
+        creds = None
+    else:
+        creds = load_credentials()
+
+    # Verify if old credentials belong to current server or need re-enrollment
+    if creds and not args.pair_code:
+        import requests
+        try:
+            test_resp = requests.get(
+                f"{SERVER_URL}/api/v1/policy",
+                headers={"Authorization": f"Bearer {creds['access_token']}"},
+                timeout=min(REQUEST_TIMEOUT, 10)
+            )
+            if test_resp.status_code == 401:
+                print(f"\n [!] Máy chủ tại {SERVER_URL} từ chối thông tin ghép đôi cũ (HTTP 401).")
+                print("     (Tự động chuyển sang chế độ ghép đôi mới với máy chủ)...")
+                clear_credentials()
+                creds = None
+        except Exception:
+            pass
 
     if not creds:
         # If auto-pair code passed via argument
@@ -245,7 +269,7 @@ def main():
         try:
             token = creds.get('access_token')
             headers = {"Authorization": f"Bearer {token}"} if token else {}
-            res = requests.get(f"{SERVER_URL}/api/v1/filtering/rules", headers=headers, timeout=5.0)
+            res = requests.get(f"{SERVER_URL}/api/v1/filtering/rules", headers=headers, timeout=REQUEST_TIMEOUT)
             if res.status_code == 200:
                 data = res.json()
                 blocked = set(data.get("blocked_domains", []))

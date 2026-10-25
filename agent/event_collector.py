@@ -13,10 +13,10 @@ from typing import Optional, Callable, Dict, Any
 
 try:
     from .storage import add_pending_event, get_pending_events, delete_pending_events, load_credentials
-    from .config import SERVER_URL
+    from .config import SERVER_URL, REQUEST_TIMEOUT
 except ImportError:
     from storage import add_pending_event, get_pending_events, delete_pending_events, load_credentials
-    from config import SERVER_URL
+    from config import SERVER_URL, REQUEST_TIMEOUT
 
 logger = logging.getLogger("OGK_EventCollector")
 
@@ -101,7 +101,7 @@ class EventCollector:
 
         target_url = f"{self.server_url}/api/v1/events/batch"
         try:
-            resp = requests.post(target_url, json={"events": events}, headers=headers, timeout=5.0)
+            resp = requests.post(target_url, json={"events": events}, headers=headers, timeout=REQUEST_TIMEOUT)
             if resp.status_code == 200:
                 keys = [ev["idempotency_key"] for ev in events]
                 delete_pending_events(keys)

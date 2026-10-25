@@ -8,11 +8,11 @@ from typing import Optional, Dict, Any, Tuple
 import requests
 
 try:
-    from .config import SERVER_URL, HEARTBEAT_INTERVAL
+    from .config import SERVER_URL, HEARTBEAT_INTERVAL, REQUEST_TIMEOUT
     from .fingerprint import get_device_fingerprint
     from .storage import load_credentials
 except ImportError:
-    from config import SERVER_URL, HEARTBEAT_INTERVAL
+    from config import SERVER_URL, HEARTBEAT_INTERVAL, REQUEST_TIMEOUT
     from fingerprint import get_device_fingerprint
     from storage import load_credentials
 
@@ -54,7 +54,7 @@ def send_heartbeat(
             endpoint,
             json=payload,
             headers=headers,
-            timeout=10
+            timeout=REQUEST_TIMEOUT
         )
         if response.status_code == 200:
             return True, response.json()

@@ -9,10 +9,10 @@ from typing import Optional, Callable, Dict, Any
 import websocket
 
 try:
-    from .config import SERVER_URL, DB_PATH
+    from .config import SERVER_URL, DB_PATH, REQUEST_TIMEOUT
     from .storage import load_credentials
 except ImportError:
-    from config import SERVER_URL, DB_PATH
+    from config import SERVER_URL, DB_PATH, REQUEST_TIMEOUT
     from storage import load_credentials
 
 
@@ -76,7 +76,7 @@ class WebSocketListener:
 
             try:
                 print(f"[WS] Connecting to {ws_url}...")
-                self._ws = websocket.create_connection(ws_url, timeout=15)
+                self._ws = websocket.create_connection(ws_url, timeout=REQUEST_TIMEOUT)
                 print("[WS] Connected successfully! Ready for emergency commands (< 5s).")
 
                 while self.running:

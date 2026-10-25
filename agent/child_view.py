@@ -12,10 +12,10 @@ import logging
 
 try:
     from .storage import load_credentials, get_daily_usage, load_policy_cache
-    from .config import SERVER_URL
+    from .config import SERVER_URL, REQUEST_TIMEOUT
 except ImportError:
     from storage import load_credentials, get_daily_usage, load_policy_cache
-    from config import SERVER_URL
+    from config import SERVER_URL, REQUEST_TIMEOUT
 
 logger = logging.getLogger("OGK_ChildView")
 
@@ -202,7 +202,7 @@ class ChildViewWindow:
 
         try:
             url = f"{self.server_url}/api/v1/requests"
-            resp = requests.post(url, json=payload, headers=headers, timeout=5.0)
+            resp = requests.post(url, json=payload, headers=headers, timeout=REQUEST_TIMEOUT)
             if resp.status_code in (200, 201):
                 messagebox.showinfo(
                     "Đã Gửi Thành Công",

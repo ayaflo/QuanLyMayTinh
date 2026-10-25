@@ -9,10 +9,10 @@ from typing import Optional, Dict, Any
 import requests
 
 try:
-    from .config import SERVER_URL, DB_PATH
+    from .config import SERVER_URL, DB_PATH, REQUEST_TIMEOUT
     from .storage import load_credentials, save_policy_cache, load_policy_cache
 except ImportError:
-    from config import SERVER_URL, DB_PATH
+    from config import SERVER_URL, DB_PATH, REQUEST_TIMEOUT
     from storage import load_credentials, save_policy_cache, load_policy_cache
 
 SECRET_KEY = os.getenv("SECRET_KEY", "change-this-secret-key-in-production")
@@ -49,7 +49,7 @@ def sync_policy_from_server(server_url: str = SERVER_URL, db_path: str = DB_PATH
     headers = {"Authorization": f"Bearer {access_token}"}
 
     try:
-        response = requests.get(url, headers=headers, timeout=10)
+        response = requests.get(url, headers=headers, timeout=REQUEST_TIMEOUT)
         if response.status_code != 200:
             print(f"[POLICY] Failed to fetch policy: HTTP {response.status_code}")
             return None
