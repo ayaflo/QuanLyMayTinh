@@ -177,6 +177,20 @@ def main():
 
     print(f"\n [✓] Đã xác thực thiết bị ID: #{creds['device_id']} ({creds.get('device_name', DEVICE_NAME)})")
 
+    # Ensure autostart with Windows is enabled
+    try:
+        try:
+            from agent.autostart import is_autostart_enabled, enable_autostart
+        except ImportError:
+            from autostart import is_autostart_enabled, enable_autostart
+
+        if not is_autostart_enabled() and not args.headless:
+            ok, msg = enable_autostart()
+            if ok:
+                print(" [✓] Tự động kích hoạt: Agent sẽ luôn khởi động cùng Windows khi mở máy.")
+    except Exception:
+        pass
+
     # Step 2: Sync initial policy from server (F4)
     sync_policy_from_server()
 

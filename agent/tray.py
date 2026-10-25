@@ -11,9 +11,11 @@ from pystray import MenuItem as item, Menu
 try:
     from .config import APP_TITLE, DEVICE_NAME
     from .storage import load_credentials
+    from .autostart import is_autostart_enabled, enable_autostart, disable_autostart
 except ImportError:
     from config import APP_TITLE, DEVICE_NAME
     from storage import load_credentials
+    from autostart import is_autostart_enabled, enable_autostart, disable_autostart
 
 
 def create_shield_icon_image(size: int = 64) -> Image.Image:
@@ -146,6 +148,14 @@ def init_tray_icon(
     creds = load_credentials()
     device_label = creds.get("device_name", DEVICE_NAME) if creds else DEVICE_NAME
 
+    def on_toggle_autostart(icon, item):
+        if is_autostart_enabled():
+            disable_autostart()
+            show_tray_notification(icon, "Khởi Động Cùng Windows", "Đã tắt tự động khởi động cùng Windows.")
+        else:
+            enable_autostart()
+            show_tray_notification(icon, "Khởi Động Cùng Windows", "Đã bật tự động khởi động cùng Windows.")
+
     menu = Menu(
         item(f"🛡️ {APP_TITLE}", None, enabled=False),
         item(f"💻 Máy: {device_label}", None, enabled=False),
@@ -155,6 +165,7 @@ def init_tray_icon(
         item("⏳ Xin thêm giờ... (NT3)", on_request_more_time),
         item("📖 Minh bạch bảo mật... (NT5)", on_transparency_view),
         item("🔗 Ghép đôi lại thiết bị...", lambda icon, item: open_pairing_dialog()),
+        item("🚀 Khởi động cùng Windows", on_toggle_autostart, checked=lambda item: is_autostart_enabled()),
         Menu.SEPARATOR,
         item("Thoát", on_exit)
     )
