@@ -147,27 +147,40 @@ def build_docx_report(output_path: str):
 
     doc.add_heading("2.1 Kiến trúc DNS Sinkhole Proxy (Cổng UDP 53)", level=2)
     doc.add_paragraph(
-        "Để lọc mạng mà không cần cài đặt chứng chỉ SSL/TLS gốc vào máy tính của trẻ, OGK can thiệp ở tầng phân giải tên miền (DNS - Lớp 7 OSI). "
-        "Khi card mạng Wi-Fi/Ethernet trỏ về 127.0.0.1, mọi truy vấn tên miền của hệ điều hành đều đi qua Socket UDP nội bộ của Agent:"
-    )
-    doc.add_paragraph(
-        "• Khi tên miền thuộc danh mục cấm: Proxy lập tức phản hồi bản ghi Synthetic A Record trỏ về 0.0.0.0 với TTL = 60s. "
-        "Thời gian phản hồi nội bộ đạt 0.83 ms, nhanh hơn 40 lần so với truy vấn ra Internet.\n"
-        "• Khi tên miền hợp lệ: Proxy chuyển tiếp tới DNS Upstream gia đình (1.1.1.3 - Cloudflare Families chặn malware).\n"
-        "• Miễn nhiễm vĩnh viễn (NT6 Whitelist): Các cổng giáo dục (moet.gov.vn, *.edu.vn) và Tổng đài Quốc gia 111 được bảo vệ cứng trong mã nguồn."
-    )
-
-    doc.add_heading("2.2 Cưỡng chế SafeSearch & Vô hiệu hóa DoH", level=2)
-    doc.add_paragraph(
-        "• Google SafeSearch: Ghi đè CNAME / IP của google.com trỏ về forcesafesearch.google.com (216.239.38.120).\n"
-        "• YouTube Restricted Mode: Ghi đè youtube.com trỏ về VIP restrict.youtube.com (216.239.38.119).\n"
-        "• Chống vượt rào DoH: Bắt truy vấn Canary Domain 'use-application-dns.net' và trả về NXDOMAIN, buộc trình duyệt hiện đại tắt DoH và quay về DNS cổng 53."
+        "• Ví dụ trực quan đời thường: Giống như một Nhân viên lễ tân thông minh túc trực ở cổng khu dân cư. "
+        "Khi trẻ hỏi đường đến thư viện học tập (scratch.mit.edu), lễ tân tra danh bạ và chỉ đường chính xác. "
+        "Nhưng khi trẻ hỏi đường đến quán cờ bạc hay web xấu (game-bai.com), lễ tân không quát mắng mà chỉ thẳng vào "
+        "một ngõ cụt có bờ tường bịt kín (0.0.0.0). Trình duyệt chạy vào ngõ cụt và lập tức ngắt kết nối mà không tốn băng thông.\n"
+        "• Lời giải kỹ thuật chuyên sâu: Tác tử OGK-Agent cấu hình card mạng Wi-Fi/Ethernet trỏ DNS chính về 127.0.0.1 và "
+        "mở Socket UDP lắng nghe tại cổng 53 (RFC 1035). Khi nhận DNS Query, hệ thống đối soát bảng Domain Rules trong RAM "
+        "theo thuật toán Subdomain Wildcard (*.domain.com). Nếu cấm: Phản hồi Synthetic A Record trỏ về 0.0.0.0 với TTL=60s "
+        "trong thời gian siêu tốc chỉ 0.83 ms (nhanh hơn 40 lần truy vấn Internet). Nếu hợp lệ: Chuyển tiếp tới Cloudflare Families 1.1.1.3.\n"
+        "• Bảo vệ bất khả xâm phạm (NT6): Các cổng giáo dục quốc gia (moet.gov.vn, *.edu.vn) và Tổng đài 111 được ghim cứng "
+        "trong mã nguồn, máy chủ sẽ từ chối với ngoại lệ NT6ViolationError nếu ai cố tình tạo luật cấm."
     )
 
-    doc.add_heading("2.3 Kiểm soát Ứng dụng bằng mã băm SHA-256", level=2)
+    doc.add_heading("2.2 Cưỡng bức SafeSearch & Vô hiệu hóa DoH (DNS over HTTPS)", level=2)
     doc.add_paragraph(
-        "Để triệt tiêu thủ thuật đổi tên file thực thi (ví dụ roblox.exe thành winword.exe), AppController quét tiến trình mỗi 3 giây và "
-        "tính mã băm SHA-256 của file nhị phân trên đĩa. Cơ chế Cache theo mtime đảm bảo mức chiếm dụng CPU duy trì ở mức 0.0%."
+        "• SafeSearch hoạt động ra sao? Giống như việc dẫn con vào Đại siêu thị bách hóa (Google/YouTube) nhưng đi qua "
+        "'Cửa kiểm duyệt dành riêng cho thiếu nhi' nơi các quầy hàng người lớn bị che rèm kín mít. Về kỹ thuật: Các dịch vụ này "
+        "chạy HTTPS cổng 443 nên không được bẻ khóa SSL nhằm tôn trọng quyền riêng tư (NT2). DNS Proxy của OGK bắt gói tin DNS và "
+        "ghi đè bản ghi A trả về các địa chỉ IP VIP chuyên dụng cho trường học: forcesafesearch.google.com (216.239.38.120), "
+        "strict.bing.com (204.79.197.220), restrict.youtube.com (216.239.38.119). Khi trình duyệt gửi yêu cầu tới các IP VIP này, "
+        "máy chủ Google/YouTube cưỡng bức bật cờ SafeSearch: Strict ON và khóa xám nút gạt cài đặt, trẻ không thể nào tắt được!\n"
+        "• Đánh chặn DoH bằng NXDOMAIN: Trẻ bật 'Secure DNS' trong Chrome/Edge để mã hóa DNS qua cổng 443 nhằm lách luật. "
+        "Theo chuẩn RFC của Mozilla/Chromium, trước khi bật DoH, trình duyệt bắt buộc phải truy vấn thử nghiệm tên miền Canary: "
+        "'use-application-dns.net'. DNS Proxy của OGK bắt gói tin này và trả về mã lỗi NXDOMAIN (RCODE=3). Nhận được mã này, "
+        "trình duyệt tự hiểu mạng gia đình yêu cầu tắt DoH và tự động quay về sử dụng Socket DNS cổng 53 của hệ điều hành."
+    )
+
+    doc.add_heading("2.3 Kiểm soát Ứng dụng bằng mã băm SHA-256 (Chống đổi tên file)", level=2)
+    doc.add_paragraph(
+        "• Ví dụ trực quan đời thường: Giống như một kẻ trốn trại cởi áo in chữ 'Roblox' (roblox.exe) mặc vào bộ vest in chữ "
+        "'Soạn thảo Word' (winword.exe). Người bảo vệ của OGK không nhìn vào chiếc áo ngoài (tên file), mà yêu cầu đặt tay lên "
+        "máy quét vân tay sinh trắc học (Mã băm SHA-256). Dù thay 100 chiếc áo khác nhau, vân tay nhị phân của tệp game không đổi!\n"
+        "• Lời giải kỹ thuật: AppController quét tiến trình mỗi 3 giây bằng psutil.process_iter(), trích xuất đường dẫn thực tế proc.exe() "
+        "và tính mã băm SHA-256 của file nhị phân trên đĩa. Nếu trùng danh sách cấm, lập tức gọi proc.terminate() trong <= 3s và "
+        "hiện thông báo giải thích lý do cho trẻ (NT4). Bộ đệm mtime Cache cặp (file_path, mtime, sha256) giúp CPU chiếm dụng 0.0%."
     )
 
     # -------------------------------------------------------------
@@ -176,25 +189,41 @@ def build_docx_report(output_path: str):
     h3 = doc.add_heading("CHƯƠNG 3: BẢO MẬT NÂNG CAO F5, PHÁP LÝ & KHẢ NĂNG CHỊU LỖI (TUẦN 4)", level=1)
     h3.style.font.color.rgb = RGBColor(15, 23, 42)
 
-    doc.add_heading("3.1 Gia cố Bảo mật F5 (NIST SP 800-63B & OWASP ASVS v4)", level=2)
+    doc.add_heading("3.1 DNSWatchdog là gì & Giải pháp khi trẻ cố tình can thiệp?", level=2)
     doc.add_paragraph(
-        "• Mật khẩu >= 10 ký tự kết hợp hàm băm Argon2id ngốn bộ nhớ, ngăn chặn tấn công GPU/ASIC.\n"
+        "• DNSWatchdog là gì? Giống như một Chú cảnh vệ đi tuần tra mỗi 20 giây một lần. Cứ 20 giây chú lại kiểm tra biển chỉ dẫn "
+        "giao thông. Nếu ai đó (trẻ em) lén xoay biển sang 8.8.8.8 của Google, chú cảnh vệ lập tức dùng cờ-lê siết chặt và kéo biển "
+        "quay ngược lại 127.0.0.1 bằng lệnh netsh, đồng thời gửi cảnh báo vi phạm về cho cha mẹ.\n"
+        "• Nhỡ trẻ tắt luôn DNSWatchdog trong Task Manager thì sao? Cơ chế phòng vệ 3 lớp của OGK giải quyết triệt để:\n"
+        "  1. Lớp 1 (Phân quyền Windows): Máy tính được thiết lập tài khoản của Trẻ là Standard User, Phụ huynh giữ quyền Administrator. "
+        "Khi trẻ mở Task Manager bấm End Process vào tiến trình Agent (chạy đặc quyền High/System), nhân hệ điều hành Windows Security "
+        "Reference Monitor lập tức chặn đứng với lỗi 'Access is Denied'.\n"
+        "  2. Lớp 2 (Tự phục hồi Netsh): Nếu trẻ bằng cách nào đó đổi DNS card mạng, DNSWatchdog giật lại cấu hình 127.0.0.1 sau 20s.\n"
+        "  3. Lớp 3 (Tự khởi động cùng Windows): Module autostart.py tự ghi vào Registry HKCU\\...\\Run với pythonw.exe, đảm bảo mỗi khi "
+        "bật máy Agent luôn tự chạy ngầm dưới khay hệ thống mà không có cửa sổ đen cmd."
+    )
+
+    doc.add_heading("3.2 Đồng hồ Đơn điệu time.monotonic() & Chế độ Tự trị Ngoại tuyến", level=2)
+    doc.add_paragraph(
+        "• Đồng hồ đơn điệu vs Đồng hồ Windows: Trẻ lén vặn lùi đồng hồ treo tường Windows (time.time()) 2 tiếng để xin chơi thêm. "
+        "Nhưng trọng tài OGK đeo trên cổ chiếc đồng hồ quả quýt chạy bằng lò xo cơ học (time.monotonic()) đọc trực tiếp từ bộ đếm "
+        "xung nhịp vi xử lý phần cứng Win32 QueryPerformanceCounter. Giá trị này chỉ tăng đơn điệu theo thời gian thực, không thể bị "
+        "vặn lùi bởi việc chỉnh giờ Windows hay tháo pin CMOS. Tích hợp IdleDetector dừng đếm khi trẻ rời máy > 180s (GetLastInputInfo).\n"
+        "• Trẻ rút dây mạng / ngắt Wi-Fi thì sao? OGK chuyển sang Chế độ Tự Trị Ngoại Tuyến (Autonomous Mode). Chính sách đã nạp trong "
+        "SQLite cục bộ; ScreenTimeTracker tự đếm giờ và gọi SystemLocker tự khóa máy ngay lập tức khi hết giờ mà không cần mạng Internet! "
+        "Viễn trắc vi phạm được đệm SQLite và tự động đồng bộ bù khi có mạng trở lại kèm idempotency_key.\n"
+        "• Trẻ restart máy thì sao? Số phút dùng được lưu đều đặn vào SQLite. Khởi động lại máy, Agent nạp lại phút cũ và đếm tiếp, "
+        "trẻ không thể reset giờ chơi bằng cách restart máy tính."
+    )
+
+    doc.add_heading("3.3 Gia cố Bảo mật F5 & Tuân thủ Nghị định 13/2023/NĐ-CP", level=2)
+    doc.add_paragraph(
+        "• Chuẩn mật khẩu NIST SP 800-63B: Mật khẩu >= 10 ký tự, băm Argon2id (RAM 64MB, t=3, p=4) kháng máy đào GPU.\n"
         "• Chống Brute-Force: Khóa tài khoản 15 phút sau 5 lần liên tiếp nhập sai mật khẩu (HTTP 423 Locked).\n"
-        "• In-memory IP Rate Limiting: 10 requests/phút/IP trên các endpoint xác thực và ghép đôi.\n"
-        "• Chống IDOR: Mọi thao tác API điều khiển hay xem báo cáo đều xác thực quyền sở hữu thiết bị (device.parent_id == current_parent.id).\n"
-        "• Mã hóa AES-256-GCM AEAD: Nonce 12 bytes + Auth Tag 16 bytes, bảo vệ tính toàn vẹn dữ liệu nhạy cảm."
-    )
-
-    doc.add_heading("3.2 Tuân thủ Pháp lý Nghị định 13/2023/NĐ-CP", level=2)
-    doc.add_paragraph(
-        "• Tự động xóa dữ liệu sau 90 ngày: Tác vụ ngầm 24h tự động dọn dẹp các sự kiện viễn trắc và nhịp tim cũ.\n"
-        "• Quyền yêu cầu xóa dữ liệu của trẻ (Right to Erasure): Phụ huynh nhập mật khẩu để kích hoạt lệnh xóa sạch dữ liệu trên Server và đồng bộ lệnh WebSocket xóa sạch bộ đệm SQLite ngoại tuyến của Agent."
-    )
-
-    doc.add_heading("3.3 Tác tử Chống Vượt rào M3 (Anti-Bypass Guard)", level=2)
-    doc.add_paragraph(
-        "• DNSWatchdog: Luồng chạy ngầm quét mỗi 20 giây. Nếu phát hiện card mạng bị đổi sang 8.8.8.8 hay DHCP, lập tức khôi phục về 127.0.0.1 và gửi cảnh báo viễn trắc.\n"
-        "• Chặn VPN/Proxy: Gieo mầm sẵn các tiến trình VPN (WARP, ProtonVPN, Psiphon, UltraSurf) và tiêu diệt ngay lập tức trong vòng 3 giây."
+        "• Triệt tiêu 100% IDOR: Mọi API kiểm tra bắt buộc device.parent_id == current_parent.id, ngăn phụ huynh này can thiệp máy phụ huynh khác.\n"
+        "• Tuân thủ Nghị định 13: Tự động tiêu hủy viễn trắc quá 90 ngày (chu kỳ 24h); quyền yêu cầu xóa dữ liệu của trẻ "
+        "(Right to Erasure) xác thực mật khẩu phụ huynh và phát lệnh WebSocket xóa sạch dữ liệu trên Server lẫn máy con.\n"
+        "• Chặn VPN/Proxy: AppController tiêu diệt các tiến trình WARP, ProtonVPN, Psiphon, UltraSurf trong vòng 3 giây."
     )
 
     # -------------------------------------------------------------
@@ -246,10 +275,10 @@ def build_docx_report(output_path: str):
     doc.add_heading("CHƯƠNG 5: KẾT QUẢ KIỂM THỬ TỰ ĐỘNG & ĐỐI CHIẾU TIÊU CHÍ DoD", level=1)
 
     doc.add_paragraph(
-        "Toàn bộ hệ thống Open Guardian Kids Version 0.4 đạt 61/61 Test Cases tự động PASSED (100%) trong 9.83 giây:"
+        "Toàn bộ hệ thống Open Guardian Kids Version 0.4 đạt 69/69 Test Cases tự động PASSED (100%):"
     )
 
-    t_tests = doc.add_table(rows=11, cols=3)
+    t_tests = doc.add_table(rows=12, cols=3)
     t_tests.alignment = WD_TABLE_ALIGNMENT.CENTER
     test_headers = ["Tệp kiểm thử tự động", "Mô tả phạm vi kiểm thử", "Kết quả (Pass Rate)"]
     for j, h in enumerate(test_headers):
@@ -266,8 +295,9 @@ def build_docx_report(output_path: str):
         ("tests/test_fault_tolerance.py", "3 tests M5: Mất mạng đệm SQLite, sập server tự khóa, crash recovery", "3/3 PASSED (100%)"),
         ("tests/test_dns_proxy.py", "9 tests F2: Phân giải tên miền, SafeSearch, DoH Canary, Whitelist NT6", "9/9 PASSED (100%)"),
         ("tests/test_app_filtering_and_events.py", "5 tests: Băm SHA-256, Batch ingestion idempotency, Yêu cầu của trẻ", "5/5 PASSED (100%)"),
-        ("tests/test_auth.py", "10 tests: Băm Argon2id, JWT tamper, Brute-force lockout, IP rate limit", "10/10 PASSED (100%)"),
-        ("tests/test_enrollment.py", "6 tests: Ghép đôi 8 ký tự, TTL 10 phút, Chống mã dùng lại", "6/6 PASSED (100%)"),
+        ("tests/test_auth.py", "15 tests: Băm Argon2id, JWT tamper, Brute-force lockout, Đăng ký phụ huynh, Phân quyền", "15/15 PASSED (100%)"),
+        ("tests/test_enrollment.py", "7 tests: Ghép đôi 8 ký tự, TTL 10 phút, Chống mã dùng lại, API cấp mã", "7/7 PASSED (100%)"),
+        ("tests/test_autostart.py", "2 tests: Tự khởi động Windows Registry HKCU\\...\\Run, pythonw.exe nền", "2/2 PASSED (100%)"),
         ("tests/test_heartbeat.py", "4 tests: Nhịp tim 60s, Ngưỡng 120s Online/Offline, Bearer Token", "4/4 PASSED (100%)"),
         ("tests/test_policy.py", "4 tests: Chữ ký HMAC-SHA256, Ma trận tuần 7x48, Anti-IDOR", "4/4 PASSED (100%)"),
         ("tests/test_time_tracker.py", "4 tests: Bộ đếm đơn điệu time.monotonic, Chống tua giờ M6", "4/4 PASSED (100%)"),
