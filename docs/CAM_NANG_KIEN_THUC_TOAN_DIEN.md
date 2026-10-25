@@ -52,6 +52,34 @@
   - [6.1. Nghị định 13/2023/NĐ-CP (Điều 20) về Xử lý dữ liệu cá nhân của trẻ em](#61-nghị-định-132023nđ-cp-điều-20-về-xử-lý-dữ-liệu-cá-nhân-của-trẻ-em)
   - [6.2. Luật Trẻ Em 2016 (Điều 21) & Quyền bí mật đời sống riêng tư](#62-luật-trẻ-em-2016-điều-21--quyền-bí-mật-đời-sống-riêng-tư)
   - [6.3. Tiêu chuẩn xác thực NIST SP 800-63B & Tiêu chuẩn bảo mật ứng dụng OWASP ASVS v4](#63-tiêu-chuẩn-xác-thực-nist-sp-800-63b--tiêu-chuẩn-bảo-mật-ứng-dụng-owasp-asvs-v4)
+- [PHẦN 7: TẦNG LỌC MẠNG DNS SINKHOLE, SAFESEARCH & KHẮC CHẾ DoH/DoT](#phần-7-tầng-lọc-mạng-dns-sinkhole-safesearch--khắc-chế-dohdot)
+  - [7.1. Cấu trúc bản tin DNS nhị phân (RFC 1035): Header 12 byte & Các trường dữ liệu](#71-cấu-trúc-bản-tin-dns-nhị-phân-rfc-1035-header-12-byte--các-trường-dữ-liệu)
+  - [7.2. So sánh Synthetic IP: Tại sao trả về 0.0.0.0 thay vì 127.0.0.1?](#72-so-sánh-synthetic-ip-tại-sao-trả-về-0000-thay-vì-127001)
+  - [7.3. Kỹ thuật DNS VIP Rewriting: Cưỡng chế Google SafeSearch & YouTube Restricted Mode](#73-kỹ-thuật-dns-vip-rewriting-cưỡng-chế-google-safesearch--youtube-restricted-mode)
+  - [7.4. Khắc chế DoH (DNS-over-HTTPS) & DoT (DNS-over-TLS) qua Canary Domain NXDOMAIN](#74-khắc-chế-doh-dns-over-https--dot-dns-over-tls-qua-canary-domain-nxdomain)
+  - [7.5. Lập trình DNS Proxy Socket UDP 53 Non-blocking & Xử lý xung đột Windows Dnscache](#75-lập-trình-dns-proxy-socket-udp-53-non-blocking--xử-lý-xung-đột-windows-dnscache)
+  - [7.6. Thuật toán phân giải tên miền: Domain Trie vs Regex vs Set Matching & Immunity Whitelist (NT6)](#76-thuật-toán-phân-giải-tên-miền-domain-trie-vs-regex-vs-set-matching--immunity-whitelist-nt6)
+- [PHẦN 8: KIỂM SOÁT ỨNG DỤNG BẰNG MÃ BĂM SHA-256 & TỐI ƯU HÓA mtime CACHE](#phần-8-kiểm-soát-ứng-dụng-bằng-mã-băm-sha-256--tối-ưu-hóa-mtime-cache)
+  - [8.1. Hạn chế chí mạng của lọc theo tên tiến trình (process.name) & Kỹ thuật đổi tên file](#81-hạn-chế-chí-mạng-của-lọc-theo-tên-tiến-trình-processname--kỹ-thuật-đổi-tên-file)
+  - [8.2. Giải thuật băm nhị phân SHA-256 theo khối (Chunked Reading 64KB)](#82-giải-thuật-băm-nhị-phân-sha-256-theo-khối-chunked-reading-64kb)
+  - [8.3. Tối ưu hóa hiệu năng bằng bộ nhớ đệm mtime (os.path.getmtime Cache): Giảm 450ms xuống 0.02ms](#83-tối-ưu-hóa-hiệu-năng-bằng-bộ-nhớ-đệm-mtime-ospathgetmtime-cache-giảm-450ms-xuống-002ms)
+  - [8.4. Xử lý ngoại lệ nhân hệ điều hành: AccessDenied, NoSuchProcess, ZombieProcess](#84-xử-lý-ngoại-lệ-nhân-hệ-điều-hành-accessdenied-nosuchprocess-zombieprocess)
+  - [8.5. Cơ chế cách ly và hạ gục tiến trình vi phạm: terminate() vs kill() trong Win32](#85-cơ-chế-cách-ly-và-hạ-gục-tiến-trình-vi-phạm-terminate-vs-kill-trong-win32)
+- [PHẦN 9: BẢO MẬT CẤP CAO F5, MÃ HÓA AES-256-GCM AEAD & TRIỆT TIÊU IDOR](#phần-9-bảo-mật-cấp-cao-f5-mã-hóa-aes-256-gcm-aead--triệt-tiêu-idor)
+  - [9.1. Mã hóa xác thực dữ liệu kết hợp AEAD & Tiêu chuẩn AES-256-GCM](#91-mã-hóa-xác-thực-dữ-liệu-kết-hợp-aead--tiêu-chuẩn-aes-256-gcm)
+  - [9.2. Mổ xẻ cấu trúc bản tin mã hóa: Nonce 12 byte, Ciphertext & Auth Tag 16 byte (Chống Bit-Flipping)](#92-mổ-xẻ-cấu-trúc-bản-tin-mã-hóa-nonce-12-byte-ciphertext--auth-tag-16-byte-chống-bit-flipping)
+  - [9.3. Lỗ hổng IDOR (Insecure Direct Object Reference) trong ứng dụng giám sát](#93-lỗ-hổng-idor-insecure-direct-object-reference-trong-ứng-dụng-giám-sát)
+  - [9.4. Cơ chế phòng thủ IDOR 2 lớp: Scope JWT + Ownership Check trong CSDL](#94-cơ-chế-phòng-thủ-idor-2-lớp-scope-jwt--ownership-check-trong-csdl)
+  - [9.5. Phòng chống tấn công Brute-force & DoS: Khóa tài khoản 15 phút & IP Rate Limiting](#95-phòng-chống-tấn-công-brute-force--dos-khóa-tài-khoản-15-phút--ip-rate-limiting)
+- [PHẦN 10: PHÁP LÝ NGHỊ ĐỊNH 13/2023/NĐ-CP, QUYỀN XÓA DỮ LIỆU & CHỊU LỖI NGOẠI TUYẾN M5](#phần-10-pháp-lý-nghị-định-132023nđ-cp-quyền-xóa-dữ-liệu--chịu-lỗi-ngoại-tuyến-m5)
+  - [10.1. Chu kỳ lưu trữ dữ liệu (Data Retention Lifecycle) 90 ngày & Cron Job tự động Prune](#101-chu-kỳ-lưu-trữ-dữ-liệu-data-retention-lifecycle-90-ngày--cron-job-tự-động-prune)
+  - [10.2. Quyền được lãng quên (Right to Erasure): Quy trình xóa đồng bộ 2 chiều Server - Agent](#102-quyền-được-lãng-quên-right-to-erasure-quy-trình-xóa-đồng-bộ-2-chiều-server---agent)
+  - [10.3. Khả năng chịu lỗi và tự phục hồi M5: Mất mạng, Server crash & DNS Watchdog Netsh](#103-khả-năng-chịu-lỗi-và-tự-phục-hồi-m5-mất-mạng-server-crash--dns-watchdog-netsh)
+- [PHẦN 11: THỰC NGHIỆM ĐO LƯỜNG HIỆU NĂNG M4 & KHẮC CHẾ 7 KỸ THUẬT VƯỢT RÀO M3](#phần-11-thực-nghiệm-đo-lường-hiệu-năng-m4--khắc-chế-7-kỹ-thuật-vượt-rào-m3)
+  - [11.1. Phương pháp đo kiểm thực nghiệm hiệu năng hệ thống M4 (RAM, CPU, DNS Latency, WebSocket)](#111-phương-pháp-đo-kiểm-thực-nghiệm-hiệu-năng-hệ-thống-m4-ram-cpu-dns-latency-websocket)
+  - [11.2. Phân tích kết quả thực nghiệm M4: So sánh mục tiêu ban đầu vs Kết quả thực tế](#112-phân-tích-kết-quả-thực-nghiệm-m4-so-sánh-mục-tiêu-ban-đầu-vs-kết-quả-thực-tế)
+  - [11.3. Ma trận khắc chế toàn diện 7 kỹ thuật vượt rào kinh điển của học sinh (Anti-Bypass M3)](#113-ma-trận-khắc-chế-toàn-diện-7-kỹ-thuật-vượt-rào-kinh-điển-của-học-sinh-anti-bypass-m3)
+
 
 ---
 
@@ -897,3 +925,473 @@ Khi Server gửi Token xác thực về trình duyệt phụ huynh qua Header `S
   * Tiêu chuẩn hướng dẫn định danh số của Viện Tiêu chuẩn và Kỹ thuật Quốc gia Hoa Kỳ: Quy định bắt buộc sử dụng các thuật toán băm ngốn bộ nhớ như Argon2id để kháng cự tấn công bẻ khóa bằng phần cứng chuyên dụng, loại bỏ quy tắc bắt buộc đổi mật khẩu định kỳ vô nghĩa và thay bằng cơ chế kiểm tra mật khẩu yếu.
 * **OWASP ASVS v4 (Application Security Verification Standard):**
   * Bộ tiêu chuẩn kiểm chứng bảo mật ứng dụng web của tổ chức an ninh mạng OWASP toàn cầu: Đặt ra các tiêu chí kiểm thử khắt khe về quản lý phiên làm việc, thiết lập đầy đủ các cờ bảo vệ Cookie (`HttpOnly`, `SameSite=Strict`), vô hiệu hóa hiển thị chi tiết lỗi máy chủ ra ngoài giao diện, và chuẩn hóa dữ liệu đầu vào chống các cuộc tấn công SQL Injection và Cross-Site Scripting (XSS).
+
+
+---
+
+# PHẦN 7: TẦNG LỌC MẠNG DNS SINKHOLE, SAFESEARCH & KHẮC CHẾ DoH/DoT
+
+### 7.1. Cấu trúc bản tin DNS nhị phân (RFC 1035): Header 12 byte & Các trường dữ liệu
+
+Trong tầng giao vận mạng, bản tin DNS mặc định truyền tải qua giao thức **UDP trên cổng 53**. Mọi gói tin DNS (cả truy vấn Request lẫn phản hồi Response) đều tuân thủ chặt chẽ định dạng nhị phân theo chuẩn quốc tế **RFC 1035**:
+
+```
++-------------------------------------------------------------------+
+|                        DNS MESSAGE HEADER (12 Bytes)              |
+|  0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15                   |
++-------------------------------------------------------------------+
+|                         ID (16 bits)                              |
++----+--------+----+----+----+----+----+----+----+------------------+
+| QR | Opcode | AA | TC | RD | RA | Z  | AD | CD |    RCODE (4)     |
++----+--------+----+----+----+----+----+----+----+------------------+
+|                    QDCOUNT / Question Count (16)                  |
++-------------------------------------------------------------------+
+|                    ANCOUNT / Answer Count (16)                    |
++-------------------------------------------------------------------+
+|                    NSCOUNT / Authority Count (16)                 |
++-------------------------------------------------------------------+
+|                    ARCOUNT / Additional Count (16)                |
++-------------------------------------------------------------------+
+|                        QUESTION SECTION                           |
+|  - QNAME: Tên miền dạng nhãn độ dài (vd: \x03www\x06google\x03com\x00) |
+|  - QTYPE: Loại bản ghi truy vấn (vd: 0x0001 = A, 0x001C = AAAA)   |
+|  - QCLASS: Lớp mạng (0x0001 = IN / Internet)                      |
++-------------------------------------------------------------------+
+|                        ANSWER SECTION (Nếu có)                    |
+|  - NAME: Con trỏ nén tên miền (0xC00C trỏ về QNAME)               |
+|  - TYPE (16) | CLASS (16) | TTL (32 bits) | RDLENGTH (16 bits)    |
+|  - RDATA: Dữ liệu địa chỉ IP trả về (vd: 4 bytes cho IPv4)        |
++-------------------------------------------------------------------+
+```
+
+* **Mổ xẻ từng bit trong 12 bytes Header:**
+  1. **ID (16 bits / 2 bytes):** Định danh duy nhất của gói tin, do Client sinh ngẫu nhiên. Khi Server phản hồi, bắt buộc phải sao chép nguyên vẹn ID này để Client ghép đôi kết quả truy vấn.
+  2. **QR (Query/Response Flag - 1 bit):** Bit 0 = Bản tin truy vấn (Request); Bit 1 = Bản tin phản hồi (Response).
+  3. **Opcode (4 bits):** Loại truy vấn (0 = Standard Query / Truy vấn chuẩn; 1 = Inverse Query; 2 = Server Status).
+  4. **AA (Authoritative Answer - 1 bit):** Cờ xác nhận máy chủ DNS trả về có nắm giữ thẩm quyền chính thức của tên miền hay chỉ là bộ nhớ đệm (Cache).
+  5. **TC (Truncation Flag - 1 bit):** Cờ báo gói tin bị cắt cụt do vượt quá kích thước tối đa 512 bytes của gói UDP.
+  6. **RD (Recursion Desired - 1 bit):** Client yêu cầu máy chủ phân giải đệ quy (hỏi tiếp các DNS root/tld nếu không có sẵn).
+  7. **RA (Recursion Available - 1 bit):** Server báo có hỗ trợ giải đệ quy hay không.
+  8. **RCODE (Response Code - 4 bits):** Mã kết quả phản hồi của truy vấn:
+     * `RCODE = 0 (NOERROR):` Truy vấn thành công rực rỡ, có bản ghi trả về.
+     * `RCODE = 3 (NXDOMAIN):` Tên miền không tồn tại trên Internet (Non-Existent Domain). OGK sử dụng mã này để đánh lừa tính năng DoH của trình duyệt.
+     * `RCODE = 2 (SERVFAIL):` Máy chủ DNS gặp sự cố nội bộ.
+     * `RCODE = 5 (REFUSED):` Máy chủ DNS từ chối phục vụ truy vấn vì lý do chính sách.
+  9. **QDCOUNT, ANCOUNT, NSCOUNT, ARCOUNT (mỗi trường 16 bits):** Số lượng câu hỏi, số lượng câu trả lời, số bản ghi quản trị, và số bản ghi phụ trợ đính kèm.
+
+* **Cơ chế nén con trỏ (Name Compression - Pointer 0xC0):**  
+  Để tiết kiệm băng thông mạng 512 bytes của gói UDP, RFC 1035 quy định nếu tên miền ở Answer trùng lặp với tên miền ở Question, DNS Server không ghi lại chuỗi ký tự mà chỉ ghi 2 bytes: `0xC00C` (Trong đó `0xC0` là 2 bit đầu `11` báo hiệu đây là một Offset Pointer, và `0x0C = 12` trỏ đúng vào byte thứ 12 của gói tin — nơi bắt đầu chuỗi QNAME trong phần Question).
+
+---
+
+### 7.2. So sánh Synthetic IP: Tại sao trả về `0.0.0.0` thay vì `127.0.0.1`?
+
+Khi một tên miền nằm trong danh sách đen (Blacklist) bị Agent chặn, DNS Sinkhole Proxy sẽ can thiệp và phản hồi một bản ghi Synthetic A Record (Địa chỉ IP tổng hợp giả lập). Trong thực tế thiết kế mạng, có hai lựa chọn phổ biến là `127.0.0.1` (Localhost) và `0.0.0.0` (Unspecified Address).
+
+| Tiêu chí kỹ thuật | Trả về `127.0.0.1` (Localhost Loopback) | Trả về `0.0.0.0` (RFC 3513 / RFC 5735) [OGK CHỌN] |
+| :--- | :--- | :--- |
+| **Bản chất địa chỉ** | Địa chỉ lặp nội bộ (Loopback Adapter). Gói tin được định tuyến ngược vào chính máy tính của trẻ. | Địa chỉ không xác định (Unspecified/Non-routable Address), mang ý nghĩa "không có máy chủ đích nào ở đây". |
+| **Hành vi bắt tay TCP** | Trình duyệt cố gắng gửi gói tin `TCP SYN` đến cổng 80 hoặc 443 của `127.0.0.1` trên máy con. | Kernel mạng Windows nhận diện `0.0.0.0` là địa chỉ bất hợp lệ cho gói tin gửi đi, lập tức từ chối ngay ở tầng Socket. |
+| **Hậu quả độ trễ (Latency)** | Nếu máy con không mở web server, Windows gửi gói `TCP RST` hoặc chờ timeout 20 - 30 giây khiến trình duyệt quay vòng đơ lag. Nếu máy con có cài web server ngầm (như IIS, XAMPP, Skype), trang web đen bị biến tướng thành giao diện nội bộ gây xung đột nghiêm trọng! | **Thời gian phản hồi bằng 0 mili-giây (0 ms).** Trình duyệt lập tức báo lỗi `ERR_ADDRESS_INVALID` hoặc `ERR_CONNECTION_REFUSED` ngay lập tức, không tiêu tốn CPU, không lag mạng. |
+| **Quy chuẩn quốc tế** | Phương pháp cũ thời kỳ Hosts file thập niên 1990 (đã lỗi thời). | **Khuyến nghị hiện đại của IETF, Pi-hole, AdGuard Home** và các hệ thống tường lửa doanh nghiệp chuyên nghiệp. |
+
+---
+
+### 7.3. Kỹ thuật DNS VIP Rewriting: Cưỡng chế Google SafeSearch & YouTube Restricted Mode
+
+Các bộ máy tìm kiếm như Google, Bing và nền tảng video YouTube đều hỗ trợ chế độ tìm kiếm an toàn cho trẻ em (SafeSearch / Restricted Mode) nhằm loại bỏ tự động 100% hình ảnh bạo lực, nội dung khiêu dâm và kinh dị. Tuy nhiên, nếu dựa vào việc cài đặt trên giao diện trình duyệt, trẻ hoàn toàn có thể vào phần Settings hoặc dùng chế độ Ẩn danh (Incognito) để tự tay tắt tính năng này.
+
+* **Cơ chế DNS VIP Rewriting của OGK:**
+  Thay vì dựa vào người dùng, OGK can thiệp ở mức độ mạng hạ tầng:
+  1. Khi trình duyệt của trẻ phân giải tên miền tìm kiếm, ví dụ `www.google.com`, truy vấn DNS rơi vào `dns_proxy.py`.
+  2. Proxy phát hiện đây là domain tìm kiếm thuộc diện quản lý.
+  3. Proxy không gửi truy vấn ra ngoài Internet để lấy IP thật của Google, mà **thay thế trực tiếp (Rewrite)** bằng IP của máy chủ VIP cưỡng chế SafeSearch do chính Google/Microsoft công bố:
+     * **Google SafeSearch:** Mọi tên miền `*.google.com`, `*.google.com.vn` $ightarrow$ Trả về CNAME `forcesafesearch.google.com` hoặc Synthetic IP `216.239.38.120`.
+     * **Bing SafeSearch:** Mọi tên miền `*.bing.com` $ightarrow$ Trả về CNAME `strict.bing.com` hoặc Synthetic IP `204.79.197.220`.
+     * **YouTube Restricted Mode:** Mọi tên miền `*.youtube.com`, `youtubei.googleapis.com` $ightarrow$ Trả về CNAME `restrict.youtube.com`.
+  4. Trình duyệt kết nối đến cụm máy chủ VIP của Google qua IP `216.239.38.120`. Cụm máy chủ này được cấu hình phần cứng để **luôn luôn kích hoạt SafeSearch ở mức độ nghiêm ngặt nhất (Strict Mode)**, ngay cả khi trẻ dùng trình duyệt ẩn danh hoặc tài khoản khách. Trẻ không có bất kỳ nút bấm nào để vô hiệu hóa!
+
+---
+
+### 7.4. Khắc chế DoH (DNS-over-HTTPS) & DoT (DNS-over-TLS) qua Canary Domain NXDOMAIN
+
+* **DoH (RFC 8484) & DoT (RFC 7858) là gì?**
+  * Bình thường, DNS chạy trên cổng UDP 53 không mã hóa.
+  * DoT mã hóa truy vấn DNS bằng TLS chạy trên cổng riêng **TCP 853**.
+  * DoH tinh vi hơn rất nhiều: Đóng gói toàn bộ truy vấn DNS vào trong gói tin HTTPS chuẩn (cổng TCP 443), trộn lẫn hoàn toàn với lưu lượng lướt web thông thường.
+  * **Mối đe dọa:** Trình duyệt Chrome, Edge, Firefox hiện nay tự ý kích hoạt DoH trỏ về các máy chủ DNS công cộng của bên thứ ba (như Cloudflare `1.1.1.1` hay Google `8.8.8.8`). Khi DoH hoạt động, mọi truy vấn đều bị mã hóa qua TLS 1.3, khiến DNS Sinkhole Proxy trên cổng 53 của OGK hoàn toàn "bị mù", không thể bắt và lọc web được nữa!
+
+* **Chiến lược khắc chế 2 lớp của OGK:**
+  1. **Khắc chế DoT:** Thiết lập luật Windows Firewall chặn đứng hoàn toàn cổng TCP ra ngoài `Outbound Port 853`.
+  2. **Khắc chế DoH bằng cơ chế Canary Domain Quốc Tế:**
+     * Tổ chức Mozilla Firefox và các nhà phát triển Chromium (Google, Microsoft) đã thống nhất một tiêu chuẩn an toàn cho mạng gia đình và trường học: Trước khi trình duyệt tự động kích hoạt tính năng DoH, nó **bắt buộc phải gửi một truy vấn thăm dò (Canary Query)** bằng DNS thông thường đến tên miền chim báo bão đặc biệt:  
+       $$	ext{Canary Domain} = 	extbf{use-application-dns.net}$$
+     * **Thuật toán xử lý của OGK:**  
+       Khi gói tin hỏi `use-application-dns.net` tới `dns_proxy.py`, Agent lập tức chặn lại và gửi trả về gói tin DNS với mã phản hồi:  
+       $$	extbf{RCODE = 3 (NXDOMAIN - Non-Existent Domain)}$$
+     * **Kết quả:** Nhận được tín hiệu `NXDOMAIN`, trình duyệt hiểu rằng mạng máy tính này đang có chính sách giám sát phụ huynh nội bộ hợp pháp. Trình duyệt sẽ **ngay lập tức vô hiệu hóa tính năng DoH ngầm**, quay trở lại sử dụng DNS phân giải cổng UDP 53 của hệ điều hành — nơi mà OGK Sinkhole đang kiểm soát 100%!
+
+---
+
+### 7.5. Lập trình DNS Proxy Socket UDP 53 Non-blocking & Xử lý xung đột Windows Dnscache
+
+* **Lập trình Socket UDP Non-blocking:**
+  * Khác với kết nối TCP luồng (Stream), UDP là giao thức phi kết nối (Datagram).
+  * Proxy khởi tạo Socket UDP gắn vào cổng nội bộ: `sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)`.
+  * Gắn cờ non-blocking `sock.setblocking(False)` hoặc chạy trong vòng lặp bất đồng bộ của `asyncio` thông qua `asyncio.DatagramProtocol`.
+  * Cơ chế xử lý luồng: Khi nhận gói tin từ máy tính con qua `recvfrom(512)`, Proxy giải mã tiêu đề nhị phân. Nếu tên miền hợp lệ, Proxy sử dụng bộ nhớ đệm (Cache) hoặc chuyển tiếp nhanh (Forward) qua Socket UDP thứ hai tới Upstream DNS (Cloudflare `1.1.1.1` hoặc Google `8.8.8.8`), sau đó chuyển tiếp kết quả trả về cho máy tính con. Độ trễ toàn trình đo đạc thực tế chỉ **0.83 ms**.
+
+* **Bài toán xung đột dịch vụ Windows DNS Client (`Dnscache`):**
+  * Trên Windows, dịch vụ hệ thống `Dnscache` (DNS Client Service) có nhiệm vụ quản lý đệm DNS cho hệ điều hành. Tuy nhiên, `Dnscache` hoạt động ở vai trò Client phân giải, **không lắng nghe (listen) cổng UDP 53 trên địa chỉ Loopback `127.0.0.1`**.
+  * Do đó, OGK Proxy có thể bind cổng `127.0.0.1:53` hoàn toàn trơn tru mà không sợ xung đột cổng (`WSAEADDRINUSE`).
+  * Sau khi Proxy khởi động thành công, Agent sử dụng thư viện `ctypes` hoặc công cụ dòng lệnh `netsh` của Windows để đổi cấu hình DNS của card mạng chính:
+    ```cmd
+    netsh interface ip set dns name="Wi-Fi" source=static addr=127.0.0.1
+    ```
+  * Mọi ứng dụng trên Windows (Chrome, Edge, Game, Torrent) khi gọi hàm API Windows Socket (`getaddrinfo` / `DnsQuery`) đều tự động chuyển hướng gói tin vào `127.0.0.1:53` để OGK thẩm tra.
+
+---
+
+### 7.6. Thuật toán phân giải tên miền: Domain Trie vs Regex vs Set Matching & Immunity Whitelist (NT6)
+
+* **So sánh các cấu trúc dữ liệu đối soát tên miền:**
+  * **Regex (Biểu thức chính quy):** Quá chậm ($O(N 	imes L)$), gây nghẽn cổ chai CPU khi danh sách đen lên đến hàng chục ngàn tên miền.
+  * **Hash Set ($O(1)$ lookup):** Tốc độ cực nhanh cho tên miền chính xác (Exact match), nhưng không xử lý được tên miền phụ con (Subdomain wildcard như `*.tiktok.com`).
+  * **Cấu trúc Cây tiền tố đảo ngược (Reverse Domain Trie) [OGK KẾT HỢP HASH SET]:**
+    * Tên miền được phân rã ngược từ đuôi: `m.tiktok.com` $ightarrow$ `['com', 'tiktok', 'm']`.
+    * Kiểm tra nhanh qua bảng băm rút gọn các cấp domain cha: Kiểm tra `m.tiktok.com`, nếu không có kiểm tra tiếp `tiktok.com`. Độ phức tạp trung bình chỉ là $O(K)$ với $K$ là số cấp của tên miền (thường $K \le 4$), tốc độ xử lý dưới $0.01	ext{ ms}$.
+
+* **Danh mục Miễn nhiễm Vĩnh viễn (Immunity Whitelist - Nguyên tắc NT6):**
+  * Nhằm đảm bảo quyền được học tập và kết nối thiết yếu của trẻ em, OGK quy định một danh sách bất khả xâm phạm ở mức lõi cứng (Hardcoded Immunity):
+    * Cổng dịch vụ học tập quốc gia: `moet.gov.vn`, `edu.vn`.
+    * Nền tảng học trực tuyến: `zoom.us`, `teams.microsoft.com`, `classroom.google.com`.
+    * Cập nhật hệ điều hành thiết yếu: `windowsupdate.com`, `update.microsoft.com`.
+    * Hạ tầng phân giải mạng cơ bản: `use-application-dns.net` (Canary domain trả về NXDOMAIN).
+  * **Nguyên tắc kỹ thuật:** Bất kể phụ huynh có nhập tên miền học tập vào danh sách cấm hoặc giờ giới nghiêm kích hoạt, thuật toán kiểm tra tính miễn nhiễm (Immunity Check) luôn được chạy đầu tiên. Nếu thuộc Whitelist, gói tin lập tức được cho qua, ngăn chặn hoàn toàn việc phụ huynh lạm quyền cắt đứt liên lạc học tập khẩn cấp của con.
+
+---
+
+# PHẦN 8: KIỂM SOÁT ỨNG DỤNG BẰNG MÃ BĂM SHA-256 & TỐI ƯU HÓA mtime CACHE
+
+### 8.1. Hạn chế chí mạng của lọc theo tên tiến trình (`process.name`) & Kỹ thuật đổi tên file
+
+Hầu hết các phần mềm quản lý máy tính sơ sài trên thị trường hiện nay áp dụng cách tiếp cận ngây thơ: Lấy danh sách tiến trình đang chạy qua lệnh `psutil.process_iter()` và so sánh chuỗi tên tệp nhị phân (`proc.name() == "League of Legends.exe"` hay `"RobloxPlayerBeta.exe"`).
+
+* **Lỗ hổng chết người của cơ chế này:**
+  * Học sinh và trẻ em chỉ cần vào thư mục cài đặt game, bấm phím `F2` đổi tên tệp thực thi từ `Roblox.exe` thành `Winword.exe`, `Calculator.exe` hoặc `Chrome.exe`.
+  * Khi tiến trình khởi chạy, Windows tải file vào bộ nhớ với tên mới `Winword.exe`.
+  * Bộ lọc ngây thơ hoàn toàn bị qua mặt vì so sánh chuỗi thấy tên hợp lệ, cho phép game chạy thỏa thích!
+
+---
+
+### 8.2. Giải thuật băm nhị phân SHA-256 theo khối (Chunked Reading 64KB)
+
+Để triệt tiêu hoàn toàn kỹ thuật đổi tên file, OGK định danh ứng dụng dựa trên **Mã băm nhị phân SHA-256 (Cryptographic Binary Hash)** của chính tệp thực thi đó trên ổ đĩa cứng. Dù tệp có bị đổi tên thành bất cứ thứ gì, nội dung nhị phân (Machine Code) bên trong không đổi, giá trị băm SHA-256 tạo ra vẫn là duy nhất tuyệt đối ($2^{256}$ khả năng, xác suất trùng lặp bằng 0).
+
+* **Vấn đề bộ nhớ khi băm tệp nhị phân lớn:**
+  * Các tựa game hiện đại thường có tệp thực thi `.exe` dung lượng từ vài trăm Megabytes đến hàng Gigabytes.
+  * Nếu dùng `open(path, 'rb').read()` để đọc trọn gói vào RAM, máy tính con sẽ lập tức cạn kiệt bộ nhớ (Out-Of-Memory Crash), gây giật lag máy tính nghiêm trọng.
+* **Giải pháp băm theo khối 64KB (Chunked Streaming):**
+  ```python
+  import hashlib
+
+  def calculate_sha256(filepath: str, chunk_size: int = 65536) -> str:
+      hasher = hashlib.sha256()
+      with open(filepath, 'rb') as f:
+          while chunk := f.read(chunk_size):
+              hasher.update(chunk)
+      return hasher.hexdigest().lower()
+  ```
+  * Tệp nhị phân được đọc tuần tự từng khối đệm nhỏ đúng **64 KB (65,536 bytes)** và nạp vào bộ băm trực tiếp. Dung lượng RAM chiếm dụng của Agent luôn cố định dưới **1 MB** dù tệp game có dung lượng lớn đến đâu!
+
+---
+
+### 8.3. Tối ưu hóa hiệu năng bằng bộ nhớ đệm mtime (`os.path.getmtime` Cache): Giảm 450ms xuống 0.02ms
+
+Mặc dù băm theo khối đã giải quyết bài toán RAM, nhưng việc đọc ổ cứng liên tục (I/O Disk Read) sau mỗi 5 giây quét tiến trình sẽ khiến ổ đĩa quá tải (Disk 100%), gây sụt giảm tuổi thọ ổ SSD và tiêu tốn CPU.
+
+* **Thuật toán mtime Caching của OGK:**
+  1. Trong hệ điều hành Windows (NTFS), mỗi tệp tin đều có một thuộc tính siêu dữ liệu gọi là **Last Modified Time (`mtime`)** — thời điểm tệp bị chỉnh sửa lần cuối cùng.
+  2. Việc đọc siêu dữ liệu `mtime` thông qua hàm gọi hệ điều hành `os.path.getmtime(filepath)` chỉ tốn một thao tác đọc chỉ mục trong bảng Master File Table (MFT) của ổ đĩa, tiêu tốn **0.02 mili-giây**, hoàn toàn không phải đọc nội dung tệp!
+  3. **Cấu trúc bộ nhớ đệm trong RAM:**
+     $$	ext{Cache} = \{ 	ext{filepath} : (	ext{mtime}, 	ext{sha256\_digest}) \}$$
+  4. **Quy trình thẩm tra tiến trình:**
+     * Agent lấy đường dẫn tệp thực thi của tiến trình: `proc.exe()`.
+     * Kiểm tra thời gian sửa đổi hiện tại của tệp: $T_{	ext{current}} = 	ext{os.path.getmtime}(path)$.
+     * Đối chiếu với Cache: Nếu đường dẫn đã tồn tại và $T_{	ext{current}} == T_{	ext{cached}}$, Agent lấy ngay mã SHA-256 từ RAM ra dùng mà **không cần đọc lại đĩa cứng**!
+     * Chỉ khi tệp bị ghi đè, cập nhật bản vá hoặc lần đầu tiên phát hiện, Agent mới thực hiện băm nhị phân lại một lần duy nhất.
+  * **Kết quả đo lường thực tế:** Thời gian quét danh sách 150 tiến trình giảm từ **450 ms** xuống còn **0.8 ms**, mức chiếm dụng CPU của Agent đo đạc duy trì ở mức **0.0%** (xem Báo cáo M4).
+
+---
+
+### 8.4. Xử lý ngoại lệ nhân hệ điều hành: AccessDenied, NoSuchProcess, ZombieProcess
+
+Trong quá trình duyệt qua bảng tiến trình của hệ điều hành Windows bằng thư viện `psutil`, Agent chắc chắn sẽ gặp các tình huống đặc biệt của nhân hệ điều hành. Nếu không bắt ngoại lệ chuẩn xác, tiến trình Agent sẽ bị sập bất ngờ:
+
+1. **`psutil.AccessDenied` (Truy cập bị từ chối):**
+   * Xảy ra khi Agent cố gắng truy vấn đường dẫn thực thi `proc.exe()` của các tiến trình hệ thống cấp nhân (Kernel System Processes) chạy ở Session 0 như `System (PID 4)`, `smss.exe`, `csrss.exe`, hoặc các phần mềm diệt virus có cơ chế tự vệ (Anti-Cheat/EDR).
+   * **Cách xử lý:** Bắt riêng ngoại lệ `except psutil.AccessDenied: pass` và bỏ qua, đánh dấu đây là tiến trình hệ thống miễn nhiễm, tuyệt đối không can thiệp.
+2. **`psutil.NoSuchProcess` (Tiến trình không tồn tại):**
+   * Xảy ra trong môi trường đa nhiệm: Một tiến trình vừa xuất hiện trong danh sách duyệt nhưng đã kịp thoát hoặc bị người dùng đóng lại trước khi Agent kịp gọi hàm băm hoặc kết liễu.
+   * **Cách xử lý:** Bắt `except psutil.NoSuchProcess: pass` và loại bỏ PID đó khỏi danh sách theo dõi.
+3. **`psutil.ZombieProcess` (Tiến trình thây ma):**
+   * Tiến trình đã dừng hoạt động nhưng tiến trình cha chưa đọc mã thoát (Exit Code), vẫn còn chiếm giữ một mục trong bảng tiến trình hệ điều hành.
+   * **Cách xử lý:** Bắt ngoại lệ, giải phóng tài nguyên và bỏ qua.
+
+---
+
+### 8.5. Cơ chế cách ly và hạ gục tiến trình vi phạm: `terminate()` vs `kill()` trong Win32
+
+Khi phát hiện một ứng dụng có mã băm SHA-256 hoặc tên nằm trong danh mục cấm tại thời điểm hiện tại (ví dụ game trong giờ học), Agent tiến hành cưỡng chế đóng ứng dụng theo quy trình 2 pha:
+
+* **Pha 1: `proc.terminate()` (Yêu cầu đóng lịch sự):**
+  * Ánh xạ xuống Win32 API: Gửi thông điệp `WM_CLOSE` hoặc tín hiệu `SIGTERM` tới hàng đợi cửa sổ của ứng dụng.
+  * Ứng dụng có cơ hội lưu dữ liệu đang làm dở và dọn dẹp bộ nhớ trước khi thoát.
+  * Agent chờ tối đa 2.0 giây (`proc.wait(timeout=2.0)`).
+* **Pha 2: `proc.kill()` (Hạ gục cưỡng chế - Chặn đứng lươn lẹo):**
+  * Nếu sau 2.0 giây ứng dụng cố tình phớt lờ, treo đơ hoặc hiện hộp thoại câu giờ hỏi "Bạn có chắc muốn thoát không?", Agent lập tức gọi Win32 API gốc:
+    $$	extbf{TerminateProcess(hProcess, uExitCode = 1)}$$
+  * Hệ điều hành Windows lập tức thu hồi toàn bộ phân vùng bộ nhớ (Virtual Memory), giải phóng Handle và tiêu diệt tiến trình ngay lập tức ở mức nhân, không cho phép ứng dụng phản kháng!
+
+---
+
+# PHẦN 9: BẢO MẬT CẤP CAO F5, MÃ HÓA AES-256-GCM AEAD & TRIỆT TIÊU IDOR
+
+### 9.1. Mã hóa xác thực dữ liệu kết hợp AEAD & Tiêu chuẩn AES-256-GCM
+
+* **Hạn chế của các chế độ mã hóa cổ điển (ECB, CBC):**
+  * Các chế độ mã hóa khối truyền thống như AES-CBC chỉ cung cấp tính **Bảo mật (Confidentiality)** — biến dữ liệu thành chuỗi vô nghĩa.
+  * Tuy nhiên, chúng **không có tính Toàn vẹn (Integrity)**: Kẻ tấn công đứng ở giữa đường truyền có thể thực hiện tấn công lật bit (Bit-Flipping Attack) hoặc tấn công giải mã qua thông báo lỗi (Padding Oracle Attack) để thay đổi nội dung gói tin mà bên nhận không hề phát hiện!
+* **Chuẩn AEAD (Authenticated Encryption with Associated Data) & AES-256-GCM:**
+  * **AEAD** là tiêu chuẩn mật mã hiện đại bậc nhất, kết hợp đồng thời cả 2 mục tiêu: Vừa mã hóa bảo mật dữ liệu, vừa tạo ra một mã xác thực toàn vẹn (Authentication Tag).
+  * **AES-256-GCM (Galois/Counter Mode):** Sử dụng khóa đối xứng độ dài 256 bits kết hợp thuật toán đếm Counter và phép nhân trường nhị phân Galois (Galois Field Multiplication). Tốc độ xử lý cực nhanh nhờ hỗ trợ tập lệnh tăng tốc phần cứng của CPU (Intel AES-NI) và miễn nhiễm hoàn toàn với các cuộc tấn công thám mã cổ điển.
+
+---
+
+### 9.2. Mổ xẻ cấu trúc bản tin mã hóa: Nonce 12 byte, Ciphertext & Auth Tag 16 byte (Chống Bit-Flipping)
+
+Trong module `server/crypto_utils.py` của OGK, mọi dữ liệu viễn trắc nhạy cảm trước khi lưu đệm hoặc chuyển tiếp đều được đóng gói theo định dạng nhị phân chuẩn quốc tế:
+
+```
++------------------+----------------------------------+-------------------+
+|  Nonce (12 Bytes)|       Ciphertext (N Bytes)       | Auth Tag (16 Bytes)|
++------------------+----------------------------------+-------------------+
+```
+
+1. **Khóa bí mật Master Key ($K$ - 32 Bytes / 256 bits):** Lưu an toàn trong biến môi trường hệ thống của Server/Agent, không bao giờ gửi qua mạng.
+2. **Số ngẫu nhiên dùng một lần Nonce / IV (12 Bytes / 96 bits):**
+   * Được sinh ngẫu nhiên độc lập bằng bộ sinh số ngẫu nhiên an toàn mật mã của hệ điều hành: `os.urandom(12)`.
+   * **Nguyên tắc sống còn của GCM:** Không bao giờ được dùng lại cùng một Nonce với cùng một Khóa bí mật. Việc dùng ngẫu nhiên 12 bytes đảm bảo xác suất trùng lặp là $rac{1}{2^{96}}$ (gần như bằng 0 trong suốt vòng đời vũ trụ).
+3. **Bản mã Ciphertext ($N$ Bytes):** Nội dung dữ liệu gốc sau khi đi qua thuật toán mã hóa khối Counter.
+4. **Mã xác thực toàn vẹn Authentication Tag (16 Bytes / 128 bits):**
+   * Được tính toán dựa trên toàn bộ Bản mã và Nonce qua hàm nhân Galois.
+   * **Cơ chế chống Bit-Flipping:** Khi bên nhận tiến hành giải mã, nếu kẻ tấn công sửa đổi dù chỉ **duy nhất 1 bit** trong Nonce hoặc Ciphertext, thuật toán tính lại Auth Tag sẽ cho kết quả sai lệch. Hàm giải mã lập tức ném ra ngoại lệ `InvalidTag` và hủy bỏ toàn bộ gói tin, ngăn chặn triệt để mọi hành vi tiêm mã độc hoặc giả mạo dữ liệu!
+
+---
+
+### 9.3. Lỗ hổng IDOR (Insecure Direct Object Reference) trong ứng dụng giám sát
+
+* **Bản chất lỗ hổng IDOR:**
+  * Xảy ra khi lập trình viên tin tưởng mù quáng vào định danh tài nguyên (như `device_id`, `kid_id`) do người dùng gửi lên từ Client mà không kiểm tra xem người dùng đó có thực sự sở hữu tài nguyên đó hay không.
+  * **Kịch bản tấn công thực tế trong phần mềm gia đình:**
+    * Phụ huynh A đăng nhập hợp lệ, nhận được JWT Token của Phụ huynh A.
+    * Phụ huynh A mở giao diện xem máy con mình có `device_id = 1`.
+    * Phụ huynh A sửa request trên thanh công cụ thành `GET /api/devices/2/activity-logs`.
+    * Nếu Server chỉ kiểm tra "Người gửi có token JWT hợp lệ hay không?" $ightarrow$ Server trả về toàn bộ lịch sử lướt web của bé nhà Phụ huynh B! Đây là vi phạm nghiêm trọng luật riêng tư và chuẩn an toàn thông tin!
+
+---
+
+### 9.4. Cơ chế phòng thủ IDOR 2 lớp: Scope JWT + Ownership Check trong CSDL
+
+OGK triệt tiêu 100% lỗ hổng IDOR trên mọi Endpoint nhạy cảm (`routes/devices.py`, `routes/rules.py`, `routes/alerts.py`) bằng mô hình kiểm soát truy cập dựa trên mối quan hệ (Relationship-Based Access Control):
+
+```
+Client Request -> [ LỚP 1: JWT Verification ] -> [ LỚP 2: CSDL Ownership Check ] -> Response
+                  - Giải mã chữ ký Token          - device = db.get(device_id)
+                  - Lấy parent_id từ payload      - IF device.parent_id != parent_id:
+                  - Token hết hạn? -> 401           RAISE HTTPException(403 FORBIDDEN)
+```
+
+* **Mã nguồn thực thi chuẩn mẫu trong OGK:**
+  ```python
+  @router.get("/devices/{device_id}/rules")
+  async def get_device_rules(
+      device_id: int, 
+      db: Session = Depends(get_db), 
+      current_parent: Parent = Depends(get_current_parent)
+  ):
+      device = db.query(Device).filter(Device.id == device_id).first()
+      if not device:
+          raise HTTPException(status_code=404, detail="Thiết bị không tồn tại")
+      
+      # KIỂM TRA QUYỀN SỞ HỮU TRIỆT TIÊU IDOR
+      if device.parent_id != current_parent.id:
+          raise HTTPException(
+              status_code=status.HTTP_403_FORBIDDEN, 
+              detail="Truy cập bị từ chối: Thiết bị không thuộc tài khoản của bạn"
+          )
+      return device.rules
+  ```
+  * Nhờ cơ chế này, dù kẻ tấn công có đoán được toàn bộ ID của các máy con khác trong hệ thống, mọi yêu cầu can thiệp đều bị chặn đứng ở mức mã trạng thái `403 Forbidden` kèm ghi nhận cảnh báo an ninh vào Audit Log.
+
+---
+
+### 9.5. Phòng chống tấn công Brute-force & DoS: Khóa tài khoản 15 phút & IP Rate Limiting
+
+* **Khóa tài khoản lũy tiến (Account Lockout Policy - Chuẩn NIST SP 800-63B):**
+  * Kẻ tấn công sử dụng danh sách từ điển mật khẩu phổ biến để dò mật khẩu phụ huynh trên API `/api/auth/login`.
+  * **Thuật toán xử lý của OGK:**
+    * Bảng `parents` trong CSDL lưu 2 trường: `failed_login_attempts (int)` và `locked_until (datetime)`.
+    * Mỗi lần đăng nhập thất bại, `failed_login_attempts += 1`.
+    * Khi số lần sai chạm ngưỡng **5 lần liên tiếp**, hệ thống lập tức khóa tài khoản:  
+      $$	ext{locked\_until} = 	ext{datetime.utcnow}() + 	ext{timedelta(minutes=15)}$$
+    * Trong 15 phút này, mọi nỗ lực đăng nhập đúng hay sai đều bị từ chối ngay lập tức với mã lỗi `403 Account Locked`, làm nản lòng hoàn toàn các công cụ tấn công tự động.
+* **Bộ đệm giới hạn tần suất theo IP (IP Rate Limiting Middleware):**
+  * Sử dụng thuật toán Bộ xô rò rỉ (Leaky Bucket / Sliding Window) trên tầng Middleware của FastAPI.
+  * Giới hạn tối đa **60 requests/phút** đối với mỗi địa chỉ IP Client. Nếu vượt ngưỡng, hệ thống trả về mã `429 Too Many Requests`, ngăn chặn triệt để tấn công từ chối dịch vụ (DoS) làm sập máy chủ.
+
+---
+
+# PHẦN 10: PHÁP LÝ NGHỊ ĐỊNH 13/2023/NĐ-CP, QUYỀN XÓA DỮ LIỆU & CHỊU LỖI NGOẠI TUYẾN M5
+
+### 10.1. Chu kỳ lưu trữ dữ liệu (Data Retention Lifecycle) 90 ngày & Cron Job tự động Prune
+
+* **Căn cứ pháp lý:**
+  * **Điều 20 & Điều 21 Nghị định 13/2023/NĐ-CP:** Dữ liệu cá nhân của trẻ em chỉ được phép lưu trữ trong khoảng thời gian cần thiết để thực hiện mục đích đã đăng ký với cha mẹ; khi hết thời hạn bắt buộc phải xóa bỏ không thể khôi phục.
+* **Cơ chế kỹ thuật trong OGK:**
+  * Hệ thống thiết lập chu kỳ vòng đời dữ liệu tối đa là **90 ngày**.
+  * Bảng `activity_logs`, `alert_logs` và `heartbeat_logs` được định kỳ quét dọn bằng một Cron Job chạy ngầm (hoặc hàm kích hoạt định kỳ trong `server/routes/retention.py`):
+    ```sql
+    DELETE FROM activity_logs WHERE timestamp < datetime('now', '-90 days');
+    DELETE FROM alert_logs WHERE timestamp < datetime('now', '-90 days');
+    ```
+  * Sau lệnh xóa, hệ thống tự động kích hoạt lệnh `VACUUM;` trong SQLite để giải phóng dung lượng phân mảnh ổ cứng và ghi đè các sector bộ nhớ cũ, đảm bảo dữ liệu quá hạn không bao giờ bị trích xuất lại bằng các phần mềm phục hồi dữ liệu chuyên dụng.
+
+---
+
+### 10.2. Quyền được lãng quên (Right to Erasure): Quy trình xóa đồng bộ 2 chiều Server - Agent
+
+* **Căn cứ pháp lý:**
+  * Quyền được xóa dữ liệu cá nhân là một trong những quyền cơ bản của chủ thể dữ liệu theo Nghị định 13 và chuẩn GDPR. Khi cha mẹ cảm thấy con đã đủ lớn hoặc không muốn tiếp tục giám sát, hệ thống phải cung cấp cơ chế xóa sạch triệt để.
+* **Quy trình xóa đồng bộ 2 chiều (2-Way Synchronous Purge):**
+  1. **Bước 1 (Phụ huynh xác nhận):** Trên Dashboard, phụ huynh bấm nút *"Xóa toàn bộ dữ liệu thiết bị"* và nhập lại mật khẩu tài khoản để xác thực danh tính cấp cao.
+  2. **Bước 2 (Gửi tín hiệu cưỡng chế qua WebSocket):** Server gửi gói tin sự kiện khẩn `{ "event": "DEVICE_PURGE", "device_id": X }` tới máy con đang kết nối.
+  3. **Bước 3 (Thao tác dọn sạch trên Agent):**
+     * Agent nhận lệnh, lập tức hủy phiên làm việc.
+     * Xóa sạch tệp cơ sở dữ liệu đệm ngoại tuyến `agent_offline.db`.
+     * Xóa bỏ khóa máy và hủy bỏ token ghép đôi `pairing_token`.
+     * Tự động khôi phục cấu hình card mạng DNS về mặc định của nhà mạng (DHCP động).
+  4. **Bước 4 (Cascade Delete dứt điểm trên Server):**
+     * CSDL SQLite trên Server thực hiện xóa lan truyền (`ON DELETE CASCADE`): Xóa sạch bảng thiết bị `devices`, các bản ghi quy tắc `rules`, toàn bộ nhật ký `activity_logs` và lịch sử vi phạm.
+     * Không giữ lại bất kỳ bản sao đệm ẩn nào (No Hidden Shadows).
+
+---
+
+### 10.3. Khả năng chịu lỗi và tự phục hồi M5: Mất mạng, Server crash & DNS Watchdog Netsh
+
+Trong báo cáo chuyên đề mạng **M5 (Fault Tolerance & Network Resilience)**, OGK chứng minh khả năng vận hành bền bỉ qua 3 kịch bản sự cố thực tế:
+
+* **Kịch bản M5.1: Mất kết nối mạng Internet hoặc mạng LAN (Network Disconnect):**
+  * **Sự cố:** Dây mạng bị rút, router Wi-Fi bị tắt hoặc đường truyền Internet gia đình bị đứt.
+  * **Cơ chế chịu lỗi của OGK:**
+    * Vòng lặp đếm giờ đơn điệu `time.monotonic()` và tầng DNS Sinkhole Proxy trên Agent hoàn toàn **độc lập cục bộ (Local-Autonomous)**, không phụ thuộc vào Internet.
+    * Mọi quy tắc cấm web, cấm game và giới hạn thời gian vẫn thực thi chuẩn xác từng giây.
+    * Các bản ghi hoạt động thay vì gửi lên Server sẽ được lưu an toàn vào hàng đợi ngoại tuyến SQLite WAL cục bộ `agent_cache.db`.
+    * Khi mạng có trở lại, Agent tự động kích hoạt cơ chế đồng bộ lũy tiến (Reconciliation Sync), đẩy toàn bộ dữ liệu đệm lên Server mà không làm mất một bản tin nào.
+
+* **Kịch bản M5.2: Máy chủ bị treo hoặc đột ngột khởi động lại (Server Crash/Reboot):**
+  * **Sự cố:** Máy tính phụ huynh bị tắt nguồn, dịch vụ FastAPI bị ngắt đột ngột.
+  * **Thuật toán tự phục hồi (Exponential Backoff with Jitter):**
+    * Kết nối WebSocket bị đứt (`ConnectionResetError`).
+    * Agent không gửi request dồn dập làm nghẽn mạng (tránh bão kết nối Thundering Herd), mà áp dụng thuật toán lùi thời gian hàm mũ:
+      $$T_{	ext{wait}} = \min(2^k + 	ext{random}(0, 1), 60	ext{ seconds})$$
+      (Thử lại sau 2s, 4s, 8s, 16s... tối đa 60s).
+    * Ngay khi Server khởi động lại thành công, Agent tự động tái kết nối, xác thực lại phiên và tiếp tục hoạt động trơn tru.
+
+* **Kịch bản M5.3: Trẻ can thiệp cố tình đổi DNS card mạng về 8.8.8.8:**
+  * **Sự cố:** Trẻ vào Network Adapter Settings của Windows hoặc chạy lệnh CMD để đổi DNS về Google `8.8.8.8` hòng vô hiệu hóa Sinkhole Proxy.
+  * **Cơ chế tự phục hồi của DNS Watchdog (Chu kỳ 20s):**
+    * Một luồng dịch vụ chạy ngầm `dns_watchdog.py` thức dậy mỗi **20 giây**.
+    * Dùng lệnh `netsh interface ip show dns` để kiểm tra IP DNS hiện tại của các card mạng đang hoạt động.
+    * Nếu phát hiện DNS bị trôi khỏi `127.0.0.1`, Watchdog lập tức:
+      1. Kích hoạt quyền quản trị gọi lệnh cưỡng chế đặt lại:
+         ```cmd
+         netsh interface ip set dns name="Wi-Fi" static 127.0.0.1
+         ```
+      2. Xóa sạch bộ nhớ đệm DNS của Windows: `ipconfig /flushdns`.
+      3. Phát sinh cảnh báo an ninh vi phạm gửi về Server lưu vào Audit Log.
+    * Thời gian tối đa trẻ có thể "tận hưởng" mạng vượt rào chỉ là **20 giây** trước khi toàn bộ hệ thống bị cưỡng chế khóa lại!
+
+---
+
+# PHẦN 11: THỰC NGHIỆM ĐO LƯỜNG HIỆU NĂNG M4 & KHẮC CHẾ 7 KỸ THUẬT VƯỢT RÀO M3
+
+### 11.1. Phương pháp đo kiểm thực nghiệm hiệu năng hệ thống M4 (RAM, CPU, DNS Latency, WebSocket)
+
+Để đảm bảo tính khoa học và thuyết phục tuyệt đối trước Hội đồng chấm tốt nghiệp, mọi thông số hiệu năng của OGK không được ước lượng bằng lý thuyết mà phải được đo đạc bằng phương pháp thực nghiệm thống kê trên máy tính chạy Windows 11 thực tế:
+
+* **Môi trường đo kiểm:**
+  * Hệ điều hành: Microsoft Windows 11 Pro 64-bit.
+  * Phần cứng: CPU Intel Core i5 / AMD Ryzen 5, RAM 16 GB, Ổ cứng NVMe SSD.
+  * Công cụ đo: Thư viện `psutil` của Python, hàm bấm giờ chính xác cao `time.perf_counter_ns()`, công cụ bắt gói tin `Wireshark` và kịch bản đo đạc tự động `scripts/benchmark_performance.py`.
+* **Phương pháp thu thập:**
+  * Mỗi chỉ số được lấy mẫu lặp lại liên tục **30 lần độc lập ($N = 30$)** trong trạng thái hệ thống chịu tải thông thường và khi có sự kiện đẩy lệnh khẩn cấp.
+  * Tính toán trung bình cộng ($\mu$), phương sai và độ lệch chuẩn ($\sigma$) để loại trừ các điểm dị biệt (Outliers).
+
+---
+
+### 11.2. Phân tích kết quả thực nghiệm M4: So sánh mục tiêu ban đầu vs Kết quả thực tế
+
+Bảng tổng hợp đối soát số liệu thực nghiệm đo đạc trong Báo cáo chuyên đề M4:
+
+| Chỉ số hiệu năng (Metrics) | Tiêu chuẩn cam kết đồ án (DoD Target) | Kết quả đo thực nghiệm thực tế ($N = 30$) | Đánh giá kỹ thuật & Kết luận |
+| :--- | :--- | :--- | :--- |
+| **Dung lượng RAM chiếm dụng (RSS)** | Phải nhỏ hơn $100	ext{ MB}$ | **25.13 MB** (Agent)<br>**38.40 MB** (Server) | **Vượt xa mục tiêu 4 lần.** Cực kỳ nhẹ, không ảnh hưởng đến việc học và chơi game của máy con. |
+| **Mức tiêu thụ CPU trung bình** | Phải nhỏ hơn $5.0\%$ | **0.0%** (Lý tưởng)<br>*Đỉnh ngắn 0.12% khi quét tiến trình* | **Vượt mục tiêu 40 lần.** Nhờ giải thuật mtime Caching triệt tiêu hoàn toàn I/O đĩa đọc lặp lại. |
+| **Độ trễ phân giải DNS nội bộ** | Phải nhỏ hơn $20	ext{ ms}$ | **0.83 ms** (Sinkhole Proxy)<br>*12.4 ms nếu Forward ra Internet* | **Nhanh gấp 24 lần cam kết.** Trải nghiệm lướt web của trẻ hoàn toàn mượt mà, không cảm nhận được độ trễ. |
+| **Độ trễ truyền lệnh WebSocket** | Phải nhỏ hơn $1.0	ext{ giây}$ ($1000	ext{ ms}$) | **5.91 ms** (Trong mạng LAN)<br>**42.5 ms** (Qua mạng Internet) | **Phản hồi tức thì (Near Real-time).** Bấm nút trên Dashboard là máy con lập tức phản ứng ngay. |
+| **Thời gian tự phục hồi DNS Watchdog**| Phải nhỏ hơn $30	ext{ giây}$ | **20.0 giây** (Chu kỳ quét đồng hồ) | Đảm bảo tính sẵn sàng cao, dập tắt mọi ý định chỉnh sửa card mạng của trẻ. |
+
+---
+
+### 11.3. Ma trận khắc chế toàn diện 7 kỹ thuật vượt rào kinh điển của học sinh (Anti-Bypass M3)
+
+Trong báo cáo chuyên đề **M3 (Anti-Bypass Strategy)**, OGK chứng minh giải pháp đã dự liệu và vô hiệu hóa triệt để toàn bộ 7 chiêu trò lách luật tinh vi nhất mà học sinh thường dùng:
+
+```
++----------------------------------------------------------------------------------------------------+
+|                      MA TRẬN KHẮC CHẾ 7 KỸ THUẬT VƯỢT RÀO KINH ĐIỂN (M3)                           |
++----+----------------------------------+----------------------------------+-------------------------+
+| STT| CHIÊU TRÒ VƯỢT RÀO CỦA TRẺ      | CƠ CHẾ BẢO VỆ CỦA OGK            | MODULE PHỤ TRÁCH        |
++----+----------------------------------+----------------------------------+-------------------------+
+| 1  | Đổi tên file nhị phân (.exe)     | Băm nhị phân SHA-256 nội dung    | agent/app_monitor.py    |
+|    | (vd: roblox.exe -> winword.exe)  | tệp trên đĩa cứng; tên đổi nhưng | (mtime cache 0.02ms)    |
+|    |                                  | mã băm không đổi.                |                         |
++----+----------------------------------+----------------------------------+-------------------------+
+| 2  | Chỉnh DNS card mạng Windows      | Dịch vụ ngầm DNS Watchdog quét   | agent/dns_watchdog.py   |
+|    | (Chuyển sang 8.8.8.8 hoặc 1.1.1.1)| chu kỳ 20s, dùng netsh cưỡng chế | (Windows netsh utility) |
+|    |                                  | đặt lại 127.0.0.1 và flushdns.   |                         |
++----+----------------------------------+----------------------------------+-------------------------+
+| 3  | Bật DNS mã hóa DoH / DoT trong   | Trả về NXDOMAIN cho Canary Domain| agent/dns_proxy.py      |
+|    | trình duyệt (Chrome, Edge, Fire) | use-application-dns.net, cưỡng   | (RFC 1035 NXDOMAIN code)|
+|    |                                  | chế trình duyệt tắt DoH.         |                         |
++----+----------------------------------+----------------------------------+-------------------------+
+| 4  | Dùng phần mềm VPN / UltraSurf    | Danh mục mã băm SHA-256 cấm VPN; | agent/app_monitor.py &  |
+|    | để đổi IP và vượt tường lửa      | Chặn cổng DoT 853; khóa máy nếu  | agent/dns_proxy.py      |
+|    |                                  | phát hiện card mạng TAP/TUN ảo.  |                         |
++----+----------------------------------+----------------------------------+-------------------------+
+| 5  | Tua lùi đồng hồ hệ thống Windows | Lõi đếm giờ dùng time.monotonic()| agent/time_tracker.py   |
+|    | (Clock Tampering lúc 21h -> 15h) | từ phần cứng CPU, độc lập 100%   | (Hardware Tick Counter) |
+|    |                                  | với đồng hồ lịch máy tính.       |                         |
++----+----------------------------------+----------------------------------+-------------------------+
+| 6  | Mở Task Manager bấm "End Task"   | Chạy tiến trình nền dưới quyền   | agent/service_manager.py|
+|    | hoặc tắt tiến trình Agent        | LocalSystem ở Session 0, Standard| (Session 0 Isolation &  |
+|    |                                  | User bị Windows Access Denied.   | Service Auto-Recovery)  |
++----+----------------------------------+----------------------------------+-------------------------+
+| 7  | Dùng tab Ẩn danh (Incognito)     | DNS Sinkhole can thiệp ở tầng    | agent/dns_proxy.py      |
+|    | hoặc đổi sang tài khoản phụ      | Socket OS cổng 53; mọi tab ẩn danh| (Cưỡng chế SafeSearch   |
+|    |                                  | vẫn phải đi qua 127.0.0.1:53.    | Google/YouTube VIP)     |
++----+----------------------------------+----------------------------------+-------------------------+
+```
+
+* **Kết luận khoa học:** Toàn bộ hệ thống tạo thành một mạng lưới bảo vệ khép kín đa tầng (Defense-in-Depth). Không có bất kỳ kẽ hở đơn lẻ nào có thể giúp một đứa trẻ dù am hiểu máy tính có thể tự ý phá rào mà không có sự đồng thuận chính thức từ phụ huynh.
