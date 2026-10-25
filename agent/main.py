@@ -69,8 +69,8 @@ def print_banner():
     print("=" * 65)
 
 
-def prompt_enrollment(server_url: str = SERVER_URL) -> bool:
-    """Guide child or parent through pairing device to parent account."""
+def prompt_enrollment_cli(server_url: str = SERVER_URL) -> bool:
+    """Guide child or parent through pairing device via CLI input."""
     fingerprint = get_device_fingerprint()
     print("\n [!] Máy tính này chưa được ghép đôi với tài khoản phụ huynh.")
     print(f"     Mã nhận diện máy (Fingerprint): {fingerprint}")
@@ -103,11 +103,32 @@ def prompt_enrollment(server_url: str = SERVER_URL) -> bool:
             print(" Vui lòng kiểm tra lại mã trên Dashboard hoặc tạo mã mới nếu mã cũ đã hết hạn.")
 
 
+def prompt_enrollment(server_url: str = SERVER_URL, use_gui: bool = True) -> bool:
+    """Guide child or parent through pairing device to parent account via GUI (or CLI fallback)."""
+    if use_gui:
+        try:
+            try:
+                from agent.pairing_gui import prompt_pairing_gui
+            except ImportError:
+                from pairing_gui import prompt_pairing_gui
+
+            print("\n [*] Đang mở giao diện kết nối thân thiện cho trẻ và phụ huynh...")
+            success = prompt_pairing_gui(server_url=server_url, default_device_name=DEVICE_NAME)
+            if success:
+                return True
+            print(" [i] Đã đóng giao diện ghép đôi. Chuyển sang chế độ dòng lệnh...")
+        except Exception as e:
+            print(f" [!] Không thể khởi động giao diện đồ họa ({e}), chuyển sang dòng lệnh...")
+
+    return prompt_enrollment_cli(server_url=server_url)
+
+
 def main():
     parser = argparse.ArgumentParser(description=f"{APP_TITLE} Client Agent")
     parser.add_argument("--pair-code", type=str, help="Auto-pair using provided 8-char code")
     parser.add_argument("--re-pair", action="store_true", help="Xóa thông tin cũ và ghép đôi lại với máy chủ mới")
     parser.add_argument("--headless", action="store_true", help="Run without system tray GUI")
+    parser.add_argument("--cli", action="store_true", help="Sử dụng chế độ dòng lệnh (CLI) thay vì giao diện đồ họa")
     args = parser.parse_args()
 
     print_banner()
@@ -147,7 +168,8 @@ def main():
                 sys.exit(1)
             creds = load_credentials()
         else:
-            enrolled = prompt_enrollment()
+            use_gui = not (args.headless or args.cli)
+            enrolled = prompt_enrollment(use_gui=use_gui)
             if not enrolled:
                 print(" [x] Chưa ghép đôi. Tác tử tạm dừng.")
                 sys.exit(0)

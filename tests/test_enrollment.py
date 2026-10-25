@@ -186,3 +186,37 @@ def test_claim_device_expired_code_rejected(client):
     )
     assert response.status_code == 400
     assert "Mã ghép đôi đã hết hạn" in response.json()["detail"]
+
+
+def test_pairing_window_input_sanitization():
+    """Test that PairingWindow correctly sanitizes, capitalizes, and limits pairing codes."""
+    import tkinter as tk
+    from agent.pairing_gui import PairingWindow
+
+    root = tk.Tk()
+    root.withdraw()
+    try:
+        app = PairingWindow()
+        app.root = root
+        app._build_ui()
+
+        # Test lowercase and non-alphanumeric filtering
+        app.code_var.set("a1-b2 c3*d4")
+        assert app.code_var.get() == "A1B2C3D4"
+        assert len(app.code_var.get()) == 8
+        assert "Sẵn sàng" in app.counter_lbl.cget("text")
+
+        # Test length truncation at 8
+        app.code_var.set("1234567890EXTRA")
+        assert app.code_var.get() == "12345678"
+
+        # Test result handling
+        app._handle_result(False, "Mã không hợp lệ")
+        assert "Mã không hợp lệ" in app.status_box.cget("text")
+        assert app.success is False
+
+        app._handle_result(True, "Ghép đôi thành công!")
+        assert "thành công" in app.status_box.cget("text").lower()
+        assert app.success is True
+    finally:
+        root.destroy()

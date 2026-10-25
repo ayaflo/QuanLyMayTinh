@@ -92,6 +92,20 @@ def on_transparency_view(icon, item):
     open_child_view()
 
 
+def open_pairing_dialog():
+    """Launch friendly Pairing GUI window from tray icon."""
+    import threading
+    try:
+        from .pairing_gui import prompt_pairing_gui
+    except ImportError:
+        from pairing_gui import prompt_pairing_gui
+
+    def _run():
+        prompt_pairing_gui()
+
+    t = threading.Thread(target=_run, daemon=True, name="OGK_PairingDialog")
+    t.start()
+
 
 def show_tray_notification(icon: Optional[pystray.Icon], title: str, message: str) -> None:
     """Show a balloon notification popup on Windows."""
@@ -140,6 +154,7 @@ def init_tray_icon(
         item("⏱️ Xem thời gian còn lại hôm nay", on_check_time),
         item("⏳ Xin thêm giờ... (NT3)", on_request_more_time),
         item("📖 Minh bạch bảo mật... (NT5)", on_transparency_view),
+        item("🔗 Ghép đôi lại thiết bị...", lambda icon, item: open_pairing_dialog()),
         Menu.SEPARATOR,
         item("Thoát", on_exit)
     )
