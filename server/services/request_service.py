@@ -87,7 +87,14 @@ async def review_request(
                 parent_id=parent_id,
                 command_type="add_time",
                 minutes=minutes,
-                ip_address=ip_address
+                ip_address=ip_address,
+                extra_payload={
+                    "request_id": req.id,
+                    "request_type": "add_time",
+                    "status": "approved",
+                    "minutes": minutes,
+                    "parent_response": review_in.parent_response or ""
+                }
             )
         elif req.request_type == "unblock_domain" and req.target:
             target_domain = req.target.strip().lower()
@@ -95,6 +102,20 @@ async def review_request(
             if rule:
                 rule.action = "allow"
                 db.commit()
+            await dispatch_command(
+                db=db,
+                device_id=req.device_id,
+                parent_id=parent_id,
+                command_type="request_reviewed",
+                ip_address=ip_address,
+                extra_payload={
+                    "request_id": req.id,
+                    "request_type": "unblock_domain",
+                    "status": "approved",
+                    "target": req.target,
+                    "parent_response": review_in.parent_response or ""
+                }
+            )
         elif req.request_type == "unblock_app" and req.target:
             rule = db.query(AppRule).filter(
                 (AppRule.app_name == req.target) | (AppRule.sha256_hash == req.target.lower())
@@ -102,5 +123,35 @@ async def review_request(
             if rule:
                 rule.action = "allow"
                 db.commit()
+            await dispatch_command(
+                db=db,
+                device_id=req.device_id,
+                parent_id=parent_id,
+                command_type="request_reviewed",
+                ip_address=ip_address,
+                extra_payload={
+                    "request_id": req.id,
+                    "request_type": "unblock_app",
+                    "status": "approved",
+                    "target": req.target,
+                    "parent_response": review_in.parent_response or ""
+                }
+            )
+    elif review_in.status == "rejected":
+        # Dispatch rejection notification to child agent
+        await dispatch_command(
+            db=db,
+            device_id=req.device_id,
+            parent_id=parent_id,
+            command_type="request_reviewed",
+            ip_address=ip_address,
+            extra_payload={
+                "request_id": req.id,
+                "request_type": req.request_type,
+                "status": "rejected",
+                "target": req.target,
+                "parent_response": review_in.parent_response or ""
+            }
+        )
 
     return req

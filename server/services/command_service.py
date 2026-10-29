@@ -27,7 +27,8 @@ async def dispatch_command(
     command_type: str,
     minutes: Optional[int] = 15,
     countdown: Optional[int] = 30,
-    ip_address: Optional[str] = None
+    ip_address: Optional[str] = None,
+    extra_payload: Optional[Dict[str, Any]] = None
 ) -> DeviceCommand:
     """Create, persist, and dispatch an emergency command via WebSocket (< 5s)."""
     payload_dict: Dict[str, Any] = {}
@@ -35,6 +36,9 @@ async def dispatch_command(
         payload_dict["minutes"] = minutes or 15
     elif command_type == "lock_now":
         payload_dict["countdown"] = countdown if countdown is not None else 30
+
+    if extra_payload:
+        payload_dict.update(extra_payload)
 
     payload_json = json.dumps(payload_dict) if payload_dict else None
 

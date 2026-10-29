@@ -262,10 +262,6 @@
                                 ❌ Từ chối
                             </button>
                         </div>
-                    {% elif req.parent_response %}
-                        <div style="font-size: 0.75rem; color: var(--text-muted); background: rgba(255,255,255,0.04); padding: 0.35rem 0.5rem; border-radius: 4px;">
-                            💬 Phản hồi: {{ req.parent_response }}
-                        </div>
                     {% endif %}
                 </div>
             {% endfor %}

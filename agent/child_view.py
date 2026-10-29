@@ -26,6 +26,7 @@ class ChildViewWindow:
     def __init__(self, server_url: str = SERVER_URL):
         self.server_url = server_url.rstrip("/")
         self.root = None
+        self.notified_req_ids = set()
 
     def show(self):
         """Display the child transparency window."""
@@ -225,7 +226,7 @@ class ChildViewWindow:
             self.root.after(2500, self._schedule_periodic_refresh)
 
     def _check_server_requests(self):
-        """Check if pending request was approved and apply bonus if needed."""
+        """Check if pending request was reviewed and alert the child."""
         try:
             creds = load_credentials()
             if not creds:
@@ -237,22 +238,57 @@ class ChildViewWindow:
             if res.status_code == 200:
                 requests_data = res.json()
                 for req in requests_data:
-                    if req.get("status") == "approved" and req.get("request_type") == "add_time":
-                        # Check local bonus
-                        usage = get_daily_usage(self.today_str)
-                        current_bonus = usage.get("bonus_minutes", 0)
-                        if current_bonus == 0:
-                            # Auto apply 15 minutes locally as sync safeguard
-                            from .storage import update_daily_usage
-                            update_daily_usage(
-                                date_str=self.today_str,
-                                used_seconds=usage.get("used_seconds", 0),
-                                bonus_minutes=15,
-                                is_locked=0
+                    req_id = req.get("id")
+                    status = req.get("status")
+                    req_type = req.get("request_type")
+                    target = req.get("target")
+
+                    if req_id and req_id in self.notified_req_ids:
+                        continue
+
+                    if status == "rejected":
+                        if req_id:
+                            self.notified_req_ids.add(req_id)
+                        if req_type == "unblock_domain":
+                            messagebox.showwarning(
+                                "Thông Báo Từ Phụ Huynh",
+                                f"Phụ huynh chưa đồng ý mở trang web '{target}'. Hãy tập trung học tập con nhé!"
                             )
-                            self._update_usage_display()
-                            messagebox.showinfo("Tuyệt Vời!", "Cha mẹ đã đồng ý thưởng thêm 15 phút cho em học tập!")
-                            break
+                        elif req_type == "unblock_app":
+                            messagebox.showwarning(
+                                "Thông Báo Từ Phụ Huynh",
+                                f"Phụ huynh chưa đồng ý mở ứng dụng '{target}'. Hãy tập trung học tập con nhé!"
+                            )
+                        elif req_type == "add_time":
+                            messagebox.showwarning(
+                                "Thông Báo Từ Phụ Huynh",
+                                "Phụ huynh chưa đồng ý cộng thêm giờ sử dụng máy tính."
+                            )
+
+                    elif status == "approved":
+                        if req_type == "add_time":
+                            usage = get_daily_usage(self.today_str)
+                            current_bonus = usage.get("bonus_minutes", 0)
+                            if current_bonus == 0:
+                                from .storage import update_daily_usage
+                                update_daily_usage(
+                                    date_str=self.today_str,
+                                    used_seconds=usage.get("used_seconds", 0),
+                                    bonus_minutes=15,
+                                    is_locked=0
+                                )
+                                self._update_usage_display()
+                                if req_id:
+                                    self.notified_req_ids.add(req_id)
+                                messagebox.showinfo("Tuyệt Vời!", "Cha mẹ đã đồng ý thưởng thêm 15 phút cho em học tập!")
+                        elif req_type in ("unblock_domain", "unblock_app"):
+                            if req_id:
+                                self.notified_req_ids.add(req_id)
+                            label = "trang web" if req_type == "unblock_domain" else "ứng dụng"
+                            messagebox.showinfo(
+                                "Đã Mở Chặn Thành Công",
+                                f"Ba mẹ đã đồng ý mở {label} '{target}'. Em có thể sử dụng được rồi nhé!"
+                            )
         except Exception:
             pass
 

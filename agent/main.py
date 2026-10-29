@@ -83,6 +83,27 @@ except ImportError:
 
 
 
+def show_child_alert_dialog(title: str, message: str, is_warning: bool = False):
+    """Display a non-blocking topmost dialog for the child."""
+    def _run():
+        try:
+            import tkinter as tk
+            from tkinter import messagebox
+            root = tk.Tk()
+            root.withdraw()
+            root.attributes("-topmost", True)
+            if is_warning:
+                messagebox.showwarning(title, message, parent=root)
+            else:
+                messagebox.showinfo(title, message, parent=root)
+            root.destroy()
+        except Exception:
+            pass
+
+    import threading
+    threading.Thread(target=_run, daemon=True, name="OGK_ChildAlert").start()
+
+
 def print_banner():
     """Print standard ethical banner on startup."""
     print("=" * 65)
@@ -291,6 +312,58 @@ def main():
         elif action == "policy_updated":
             sync_policy_from_server()
             sync_filtering_rules()
+        elif action == "request_reviewed":
+            status = payload.get("status", "") if payload else ""
+            req_type = payload.get("request_type", "") if payload else ""
+            target = payload.get("target", "") if payload else ""
+            parent_resp = payload.get("parent_response", "") if payload else ""
+
+            if status == "rejected":
+                if req_type == "unblock_domain":
+                    title = "Thông Báo Từ Phụ Huynh"
+                    msg = f"Phụ huynh chưa đồng ý mở trang web '{target}'. Hãy tập trung học tập con nhé!"
+                elif req_type == "unblock_app":
+                    title = "Thông Báo Từ Phụ Huynh"
+                    msg = f"Phụ huynh chưa đồng ý mở ứng dụng '{target}'. Hãy tập trung học tập con nhé!"
+                elif req_type == "add_time":
+                    title = "Thông Báo Từ Phụ Huynh"
+                    msg = "Phụ huynh chưa đồng ý cộng thêm giờ sử dụng máy tính."
+                else:
+                    title = "Thông Báo Từ Phụ Huynh"
+                    msg = "Yêu cầu của em chưa được cha mẹ chấp thuận."
+
+                if parent_resp and parent_resp != "Cha mẹ chưa đồng ý yêu cầu này.":
+                    msg += f"\n\nLời nhắn từ cha mẹ: {parent_resp}"
+
+                print(f" [!] {title}: {msg}")
+                if tray_icon_holder[0]:
+                    show_tray_notification(tray_icon_holder[0], title, msg)
+                show_child_alert_dialog(title, msg, is_warning=True)
+
+            elif status == "approved":
+                if req_type == "unblock_domain":
+                    title = "Đã Mở Chặn Trang Web"
+                    msg = f"Ba mẹ đã đồng ý mở chặn trang web '{target}'. Em có thể truy cập được rồi nhé!"
+                    sync_filtering_rules()
+                elif req_type == "unblock_app":
+                    title = "Đã Mở Khóa Ứng Dụng"
+                    msg = f"Ba mẹ đã đồng ý mở khóa ứng dụng '{target}'. Em có thể sử dụng được rồi nhé!"
+                    sync_filtering_rules()
+                elif req_type == "add_time":
+                    title = "Thưởng Thời Gian"
+                    mins = payload.get("minutes", 15) if payload else 15
+                    msg = f"Phụ huynh đã cộng thêm {mins} phút sử dụng!"
+                else:
+                    title = "Yêu Cầu Đã Được Duyệt"
+                    msg = "Phụ huynh đã chấp thuận yêu cầu của em."
+
+                if parent_resp:
+                    msg += f"\n\nLời nhắn từ cha mẹ: {parent_resp}"
+
+                print(f" [✓] {title}: {msg}")
+                if tray_icon_holder[0]:
+                    show_tray_notification(tray_icon_holder[0], title, msg)
+                show_child_alert_dialog(title, msg, is_warning=False)
         elif action == "purge_local_data":
             print(" [!] Nhận lệnh từ phụ huynh: Xóa toàn bộ dữ liệu máy tính (Nghị định 13/2023)...")
             purge_local_data()

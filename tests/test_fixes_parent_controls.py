@@ -385,4 +385,96 @@ def test_clean_10_domains_and_notepad_blocking(client, monkeypatch):
     assert proc_notepad.killed is True
 
 
+def test_child_request_reviewed_dispatches_notification_and_web_clean(client):
+    """Verify:
+    1. Web template does not render parent_response text bubble.
+    2. Reviewing request as 'rejected' dispatches 'request_reviewed' command to agent.
+    3. Reviewing request as 'approved' for unblocking dispatches 'request_reviewed' command.
+    """
+    import os
+    # 1. Template check
+    template_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "dashboard", "templates", "devices.html")
+    with open(template_path, "r", encoding="utf-8") as f:
+        content = f.read()
+    assert "💬 Phản hồi:" not in content
+
+    # 2. Setup DB data
+    db = TestingSessionLocal()
+    parent = Parent(username="parent_req_test", password_hash=hash_password("Pass@123"))
+    db.add(parent)
+    db.commit()
+
+    device = Device(parent_id=parent.id, device_fingerprint="DEV-REQ-001", device_name="Kid PC")
+    db.add(device)
+    db.commit()
+
+    req_reject = AccessRequest(
+        device_id=device.id,
+        request_type="unblock_domain",
+        target="roblox.com",
+        reason="Em muốn chơi game một chút",
+        status="pending"
+    )
+    req_approve = AccessRequest(
+        device_id=device.id,
+        request_type="unblock_domain",
+        target="scratch.mit.edu",
+        reason="Em học lập trình Scratch",
+        status="pending"
+    )
+    db.add_all([req_reject, req_approve])
+    db.commit()
+    req_reject_id = req_reject.id
+    req_approve_id = req_approve.id
+    dev_id = device.id
+    db.close()
+
+    # 3. Parent rejects unblock request
+    token = create_access_token({"sub": "parent_req_test", "role": "parent"})
+    res = client.put(
+        f"/api/v1/requests/{req_reject_id}/review",
+        json={
+            "status": "rejected",
+            "parent_response": "Chưa học xong bài tập con nhé"
+        },
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    assert res.status_code == 200
+
+    # Verify DeviceCommand was created for rejection
+    db = TestingSessionLocal()
+    reject_cmd = db.query(DeviceCommand).filter(
+        DeviceCommand.device_id == dev_id,
+        DeviceCommand.command_type == "request_reviewed"
+    ).order_by(DeviceCommand.id.desc()).first()
+    assert reject_cmd is not None
+    payload = json.loads(reject_cmd.payload)
+    assert payload["status"] == "rejected"
+    assert payload["request_type"] == "unblock_domain"
+    assert payload["target"] == "roblox.com"
+
+    # 4. Parent approves unblock request
+    res2 = client.put(
+        f"/api/v1/requests/{req_approve_id}/review",
+        json={
+            "status": "approved",
+            "parent_response": "Đồng ý để con học"
+        },
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    assert res2.status_code == 200
+
+    approve_cmd = db.query(DeviceCommand).filter(
+        DeviceCommand.device_id == dev_id,
+        DeviceCommand.command_type == "request_reviewed"
+    ).order_by(DeviceCommand.id.desc()).first()
+    assert approve_cmd is not None
+    payload2 = json.loads(approve_cmd.payload)
+    assert payload2["status"] == "approved"
+    assert payload2["request_type"] == "unblock_domain"
+    assert payload2["target"] == "scratch.mit.edu"
+    db.close()
+
+
+
 
