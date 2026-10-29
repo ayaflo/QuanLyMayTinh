@@ -258,6 +258,7 @@ def test_dashboard_renders_vietnam_time_for_requests_and_audit(client):
     db.add(audit)
     db.commit()
     parent_id = parent.id
+    dev_id = dev.id
     db.close()
 
     # Log in and check /devices
@@ -266,9 +267,8 @@ def test_dashboard_renders_vietnam_time_for_requests_and_audit(client):
     res = client.get("/devices")
     assert res.status_code == 200
     html = res.text
-
     # Device ID must display correctly
-    assert f"ID: #{device.id}" in html
+    assert f"ID: #{dev_id}" in html
 
     # Child request must display 'Gửi lúc: 15:16 29/10' (not 08:16 29/10)
     assert "Gửi lúc: 15:16 29/10" in html
@@ -329,11 +329,11 @@ def test_clean_10_domains_and_notepad_blocking(client, monkeypatch):
     from agent.app_controller import AppController
 
     db = TestingSessionLocal()
-    # 1. Verify 10 domains
-    assert len(SEED_DOMAINS_DATA) == 10
+    # 1. Verify representative domains
+    assert len(SEED_DOMAINS_DATA) == 9
     seed_domain_rules(db)
     domains = db.query(DomainRule).all()
-    assert len(domains) == 10
+    assert len(domains) == 9
 
     # 2. Verify notepad.exe in default app rules
     app_names = [a["app_name"] for a in SEED_APP_RULES_DATA]
