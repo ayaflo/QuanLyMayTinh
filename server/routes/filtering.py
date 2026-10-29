@@ -58,11 +58,32 @@ except (ImportError, ValueError):
 router = APIRouter(prefix="/api/v1/filtering", tags=["Filtering"])
 
 
-async def _notify_devices_rules_updated():
-    """Notify all connected devices in real-time via WebSocket to re-sync rules."""
-    for dev_id in list(ws_manager.active_connections.keys()):
+async def _notify_devices_rules_updated(db: Optional[Session] = None):
+    """Notify all connected devices in real-time via WebSocket to re-sync rules,
+    and persist pending commands for offline devices.
+    """
+    active_ids = set(ws_manager.active_connections.keys())
+    for dev_id in list(active_ids):
         try:
             await ws_manager.send_command(dev_id, {"action": "policy_updated"})
+        except Exception:
+            pass
+
+    if db:
+        try:
+            import json
+            from server.models import Device, DeviceCommand
+            devices = db.query(Device).filter(Device.status == "online").all()
+            for dev in devices:
+                if dev.id not in active_ids:
+                    cmd = DeviceCommand(
+                        device_id=dev.id,
+                        command_type="policy_updated",
+                        payload=json.dumps({"action": "policy_updated"}),
+                        status="pending"
+                    )
+                    db.add(cmd)
+            db.commit()
         except Exception:
             pass
 
@@ -91,7 +112,7 @@ async def add_domain_rule(
     """Create or update domain rule. Enforces NT6 permanent whitelist protection."""
     try:
         rule = create_domain_rule(db, rule_in)
-        await _notify_devices_rules_updated()
+        await _notify_devices_rules_updated(db)
         return DomainRuleResponse.model_validate(rule)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
@@ -104,7 +125,7 @@ async def remove_domain_rule(rule_id: int, force: bool = Query(False), db: Sessi
         success = delete_domain_rule(db, rule_id, force=force)
         if not success:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Không tìm thấy quy tắc tên miền.")
-        await _notify_devices_rules_updated()
+        await _notify_devices_rules_updated(db)
         return {"status": "success", "message": f"Đã xóa quy tắc #{rule_id}"}
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
@@ -117,7 +138,7 @@ async def toggle_domain_rule_action(rule_id: int, db: Session = Depends(get_db))
         rule = toggle_domain_rule(db, rule_id)
         if not rule:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Không tìm thấy quy tắc tên miền.")
-        await _notify_devices_rules_updated()
+        await _notify_devices_rules_updated(db)
         return DomainRuleResponse.model_validate(rule)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
@@ -139,7 +160,7 @@ async def add_app_rule(
 ) -> AppRuleResponse:
     """Create or update executable SHA-256 application control rule."""
     rule = create_app_rule(db, rule_in)
-    await _notify_devices_rules_updated()
+    await _notify_devices_rules_updated(db)
     return AppRuleResponse.model_validate(rule)
 
 
@@ -149,7 +170,7 @@ async def toggle_app_rule_action(rule_id: int, db: Session = Depends(get_db)) ->
     rule = toggle_app_rule(db, rule_id)
     if not rule:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Không tìm thấy quy tắc ứng dụng.")
-    await _notify_devices_rules_updated()
+    await _notify_devices_rules_updated(db)
     return AppRuleResponse.model_validate(rule)
 
 
@@ -159,7 +180,7 @@ async def remove_app_rule(rule_id: int, db: Session = Depends(get_db)):
     success = delete_app_rule(db, rule_id)
     if not success:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Không tìm thấy quy tắc ứng dụng.")
-    await _notify_devices_rules_updated()
+    await _notify_devices_rules_updated(db)
     return {"status": "success", "message": f"Đã xóa quy tắc #{rule_id}"}
 
 

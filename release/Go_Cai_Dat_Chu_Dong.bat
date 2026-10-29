@@ -97,12 +97,18 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command "$p = 'C:\Windows\System3
 echo       -> [OK] Da xoa danh sach ten mien chan khoi hosts file.
 
 echo.
-echo  [4/6] Go bo chinh sach DoH trinh duyet tren Windows Registry...
-reg delete "HKLM\SOFTWARE\Policies\Google\Chrome" /v DnsOverHttpsMode /f >nul 2>&1
-reg delete "HKLM\SOFTWARE\Policies\Google\Chrome" /v IncognitoModeAvailability /f >nul 2>&1
-reg delete "HKLM\SOFTWARE\Policies\Microsoft\Edge" /v DnsOverHttpsMode /f >nul 2>&1
-reg delete "HKLM\SOFTWARE\Policies\BraveSoftware\Brave" /v DnsOverHttpsMode /f >nul 2>&1
-echo       -> [OK] Da go bo chinh sach ep DNS tren cac trinh duyet.
+echo  [4/6] Go bo chinh sach chan An danh (Incognito) va DoH tren moi trinh duyet...
+reg delete "HKLM\SOFTWARE\Policies\Google\Chrome" /f >nul 2>&1
+reg delete "HKCU\SOFTWARE\Policies\Google\Chrome" /f >nul 2>&1
+reg delete "HKLM\SOFTWARE\Policies\Microsoft\Edge" /f >nul 2>&1
+reg delete "HKCU\SOFTWARE\Policies\Microsoft\Edge" /f >nul 2>&1
+reg delete "HKLM\SOFTWARE\Policies\BraveSoftware\Brave" /f >nul 2>&1
+reg delete "HKCU\SOFTWARE\Policies\BraveSoftware\Brave" /f >nul 2>&1
+reg delete "HKLM\SOFTWARE\Policies\Mozilla\Firefox" /f >nul 2>&1
+reg delete "HKCU\SOFTWARE\Policies\Mozilla\Firefox" /f >nul 2>&1
+reg delete "HKLM\SOFTWARE\Policies\CocCoc\Browser" /f >nul 2>&1
+reg delete "HKCU\SOFTWARE\Policies\CocCoc\Browser" /f >nul 2>&1
+echo       -> [OK] Da mo khoa lai che do An danh (Incognito/InPrivate) tren Chrome, Edge, Brave, CocCoc!
 
 echo.
 echo  [5/6] Xoa dang ky tu khoi dong cung Windows...

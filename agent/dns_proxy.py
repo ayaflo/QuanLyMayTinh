@@ -152,7 +152,7 @@ class DNSProxyServer:
 
             reply.header.rcode = RCODE.NOERROR
             if qtype in (QTYPE.A, QTYPE.ANY):
-                reply.add_answer(RR(request.q.qname, QTYPE.A, rdata=A("0.0.0.0"), ttl=60))
+                reply.add_answer(RR(request.q.qname, QTYPE.A, rdata=A("0.0.0.0"), ttl=1))
             return reply.pack()
 
         # 4. SafeSearch DNS Rewrite (T3_032 - Enforce both IPv4 & IPv6 SafeSearch VIPs)

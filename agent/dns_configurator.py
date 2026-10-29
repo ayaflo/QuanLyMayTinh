@@ -67,6 +67,71 @@ def flush_dns_cache() -> bool:
         return False
 
 
+def reset_browser_connections() -> int:
+    """Reset active HTTP/HTTPS browser sockets (TCP RST) using Windows iphlpapi.SetTcpEntry.
+    
+    When parent updates domain blocklist while a child has a site open, browsers (Chrome, Edge,
+    Brave, Firefox, CocCoc) keep open keep-alive HTTP/2/TLS sockets. Resetting these sockets
+    ensures that on the very next refresh (F5), the browser is forced to perform a new DNS lookup
+    and immediately hits the DNS sinkhole / hosts file without needing to restart the browser.
+    """
+    if sys.platform != "win32":
+        return 0
+
+    count = 0
+    try:
+        import ctypes
+        import socket
+        from ctypes import wintypes
+
+        class MIB_TCPROW(ctypes.Structure):
+            _fields_ = [
+                ("dwState", wintypes.DWORD),
+                ("dwLocalAddr", wintypes.DWORD),
+                ("dwLocalPort", wintypes.DWORD),
+                ("dwRemoteAddr", wintypes.DWORD),
+                ("dwRemotePort", wintypes.DWORD),
+            ]
+
+        MIB_TCP_STATE_DELETE_TCB = 12
+        set_tcp_entry = ctypes.windll.iphlpapi.SetTcpEntry
+
+        browser_names = ("chrome", "msedge", "brave", "firefox", "coccoc", "opera")
+        browser_pids = set()
+
+        try:
+            import psutil
+            for proc in psutil.process_iter(['pid', 'name']):
+                name = (proc.info.get('name') or '').lower()
+                if any(b in name for b in browser_names):
+                    browser_pids.add(proc.info['pid'])
+
+            for conn in psutil.net_connections(kind='tcp'):
+                if conn.pid in browser_pids and conn.status == 'ESTABLISHED' and conn.raddr:
+                    if conn.raddr.port in (80, 443, 8080, 8443):
+                        try:
+                            row = MIB_TCPROW(
+                                dwState=MIB_TCP_STATE_DELETE_TCB,
+                                dwLocalAddr=int.from_bytes(socket.inet_aton(conn.laddr.ip), 'little'),
+                                dwLocalPort=socket.htons(conn.laddr.port),
+                                dwRemoteAddr=int.from_bytes(socket.inet_aton(conn.raddr.ip), 'little'),
+                                dwRemotePort=socket.htons(conn.raddr.port)
+                            )
+                            if set_tcp_entry(ctypes.byref(row)) == 0:
+                                count += 1
+                        except Exception:
+                            pass
+        except Exception:
+            pass
+
+        if count > 0:
+            logger.info(f"[DNS] Đã làm mới {count} kết nối socket trình duyệt để áp dụng chặn tức thì.")
+    except Exception as e:
+        logger.debug(f"[DNS] Không thể reset socket trình duyệt: {e}")
+
+    return count
+
+
 def set_dns_to_localhost(interface_name: Optional[str] = None) -> bool:
     """Configure network adapter DNS to 127.0.0.1 (IPv4) and ::1 (IPv6) (T3_036)."""
     if sys.platform != "win32":
@@ -268,8 +333,10 @@ def sync_hosts_file(blocked_domains: Iterable[str], hosts_path: str = WINDOWS_HO
         block_lines = [HOSTS_MARKER_START]
         for d in unique_domains:
             block_lines.append(f"0.0.0.0 {d}")
+            block_lines.append(f"::1 {d}")
             if not d.startswith("www."):
                 block_lines.append(f"0.0.0.0 www.{d}")
+                block_lines.append(f"::1 www.{d}")
         block_lines.append(HOSTS_MARKER_END)
 
         new_content = clean_content + "\n\n" + "\n".join(block_lines) + "\n"

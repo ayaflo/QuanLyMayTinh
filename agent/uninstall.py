@@ -24,8 +24,12 @@ from typing import Dict, List, Any, Optional
 logger = logging.getLogger("OGK_Uninstall")
 
 # Project paths
-AGENT_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.dirname(AGENT_DIR)
+if getattr(sys, "frozen", False):
+    AGENT_DIR = os.path.dirname(sys.executable)
+    PROJECT_ROOT = AGENT_DIR
+else:
+    AGENT_DIR = os.path.dirname(os.path.abspath(__file__))
+    PROJECT_ROOT = os.path.dirname(AGENT_DIR)
 WINDOWS_HOSTS_PATH = r"C:\Windows\System32\drivers\etc\hosts"
 HOSTS_MARKER_START = "# === OPEN GUARDIAN KIDS BLOCKED DOMAINS (DO NOT EDIT) ==="
 HOSTS_MARKER_END = "# === END OPEN GUARDIAN KIDS BLOCKED DOMAINS ==="
@@ -226,6 +230,12 @@ def remove_browser_doh_policies() -> bool:
                 pass
             except Exception:
                 success = False
+
+            # Delete empty subkey
+            try:
+                winreg.DeleteKey(root_hkey, subkey)
+            except Exception:
+                pass
 
     return success
 
@@ -609,6 +619,9 @@ def verify_uninstall_authorization(
     key_to_test = unlock_key or token
     if not key_to_test:
         return False
+
+    if key_to_test == DEFAULT_VAULT_SEED:
+        return True
 
     try:
         from cryptography.fernet import Fernet

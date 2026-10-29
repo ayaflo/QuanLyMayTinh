@@ -68,12 +68,14 @@ try:
         restore_dns_to_dhcp,
         sync_hosts_file,
         restore_hosts_file,
-        flush_dns_cache
+        flush_dns_cache,
+        reset_browser_connections
     )
     from agent.dns_watchdog import DNSWatchdog
     from agent.app_controller import AppController
     from agent.event_collector import EventCollector
     from agent.lock_warning_dialog import lock_warning_controller
+    from agent.uninstall import execute_remote_authorized_uninstall, ensure_encrypted_vault
     from agent.storage import (
         save_dns_rules_cache,
         load_dns_rules_cache,
@@ -106,12 +108,14 @@ except ImportError:
         restore_dns_to_dhcp,
         sync_hosts_file,
         restore_hosts_file,
-        flush_dns_cache
+        flush_dns_cache,
+        reset_browser_connections
     )
     from dns_watchdog import DNSWatchdog
     from app_controller import AppController
     from event_collector import EventCollector
     from lock_warning_dialog import lock_warning_controller
+    from uninstall import execute_remote_authorized_uninstall, ensure_encrypted_vault
 
 
 
@@ -197,10 +201,6 @@ def main():
 
     # Xử lý lệnh gỡ cài đặt trực tiếp qua tham số ủy quyền
     if args.uninstall:
-        try:
-            from .uninstall import execute_remote_authorized_uninstall, ensure_encrypted_vault
-        except ImportError:
-            from uninstall import execute_remote_authorized_uninstall, ensure_encrypted_vault
         ensure_encrypted_vault()
         execute_remote_authorized_uninstall(token=args.token, unlock_key=args.unlock_key)
         sys.exit(0)
@@ -450,10 +450,6 @@ def main():
                     "Gỡ Bỏ Thiết Bị",
                     "Phụ huynh đã gỡ bỏ thiết bị này. Đang tiến hành khôi phục lại cài đặt gốc máy tính..."
                 )
-            try:
-                from .uninstall import execute_remote_authorized_uninstall
-            except ImportError:
-                from uninstall import execute_remote_authorized_uninstall
             execute_remote_authorized_uninstall(token=token, unlock_key=unlock_key)
 
     ws_listener = WebSocketListener(on_command=handle_ws_command)
@@ -525,6 +521,7 @@ def main():
                 dns_proxy.update_rules(blocked=blocked, whitelist=whitelist)
                 sync_hosts_file(blocked)
                 flush_dns_cache()
+                reset_browser_connections()
                 app_rules = [{"sha256": a["sha256"], "name": a["name"], "action": "block", "description": a.get("description", "")} for a in data.get("app_blocklist", [])]
                 save_app_rules_cache(app_rules)
                 save_dns_rules_cache([{"domain": d, "action": "block"} for d in blocked] + [{"domain": d, "action": "allow", "is_permanent_whitelist": True} for d in whitelist])
