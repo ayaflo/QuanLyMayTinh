@@ -548,18 +548,6 @@ def print_cli_summary(summary: Dict[str, Any]):
     print(" [⭐] TRẠNG THÁI: HỆ THỐNG ĐÃ TRỞ VỀ 100% NGUYÊN BẢN BAN ĐẦU!")
     print("-" * 70)
     print("\n" + "=" * 70)
-    print("   HƯỚNG DẪN CÁC BƯỚC ĐỂ BẮT ĐẦU BUỔI BÁO CÁO / DEMO CHO THẦY:")
-    print("=" * 70)
-    print("  Bước 1: Mở trình duyệt, đăng nhập Web Dashboard của phụ huynh.")
-    print("          (Địa chỉ cục bộ http://127.0.0.1:8000 hoặc máy chủ Cloud)")
-    print("  Bước 2: Vào menu 'Thiết Bị' -> Bấm '+ Thêm Thiết Bị Mới' để lấy")
-    print("          mã ghép đôi 8 ký tự mới (ví dụ: 'A7B2X9Y4').")
-    print("  Bước 3: Nhấp đúp vào tệp 'chay_agent.bat' (Run as Administrator).")
-    print("  Bước 4: Màn hình kết nối ghép đôi đồ họa thân thiện sẽ hiện lên!")
-    print("          Nhập mã 8 ký tự và bấm 'KẾT NỐI NGAY'.")
-    print("  Bước 5: Thầy sẽ thấy thiết bị xuất hiện trực tiếp trên Web Dashboard,")
-    print("          biểu tượng khay hệ thống (System Tray) hiện thông báo chào em,")
-    print("          và toàn bộ quy tắc quản lý mạng, thời gian bắt đầu có hiệu lực!")
     print("=" * 70 + "\n")
 
 

@@ -91,21 +91,8 @@
                             </div>
                         </div>
 
-                        <!-- Quick Emergency Actions -->
-                        <div style="display: flex; gap: 0.45rem; flex-wrap: wrap;" onclick="event.stopPropagation();">
-                            <button class="btn-pill-danger" style="flex: 1;" onclick="sendEmergencyCommand({{ dev.id }}, 'lock_now')" title="Khóa màn hình máy tính con ngay lập tức">
-                                🔒 Khóa Ngay
-                            </button>
-                            <button class="btn-pill-success" style="flex: 1;" onclick="sendEmergencyCommand({{ dev.id }}, 'unlock')" title="Mở khóa màn hình máy con">
-                                🔓 Mở Khóa
-                            </button>
-                            <button class="btn-pill-amber" style="flex: 1;" onclick="sendEmergencyCommand({{ dev.id }}, 'add_time', 15)" title="Thưởng thêm 15 phút sử dụng">
-                                ⏳ +15 Phút
-                            </button>
-                        </div>
-
                         <!-- Prominent White Pill Action CTA -->
-                        <button class="btn-pill-white" style="width: 100%; margin-top: 0.25rem;">
+                        <button class="btn-pill-white" style="width: 100%; margin-top: 0.5rem;" onclick="openDeviceCockpit({{ dev.id }})">
                             <span>⚡ Quản Lý Máy Tính Này</span>
                             <span>➜</span>
                         </button>
@@ -149,6 +136,19 @@
                     <div id="cockpitDeviceIdHeartbeat" style="font-size: 0.775rem; color: var(--text-dim); font-family: 'Geist Mono', monospace; margin-top: 2px;"></div>
                 </div>
             </div>
+        </div>
+
+        <!-- Cockpit Emergency Actions for Selected PC -->
+        <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+            <button class="btn-pill-danger" onclick="triggerCockpitEmergency('lock_now')" title="Khóa màn hình máy tính này ngay lập tức">
+                🔒 Khóa Ngay
+            </button>
+            <button class="btn-pill-success" onclick="triggerCockpitEmergency('unlock')" title="Mở khóa màn hình máy tính này">
+                🔓 Mở Khóa
+            </button>
+            <button class="btn-pill-amber" onclick="triggerCockpitEmergency('add_time', 15)" title="Thưởng thêm 15 phút sử dụng">
+                ⏳ +15 Phút
+            </button>
         </div>
 
         <!-- Switcher between PCs -->
@@ -411,10 +411,11 @@
                                             <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.55rem 0.85rem; background: rgba(255,255,255,0.03); border-radius: 10px;">
                                                 <div style="display: flex; align-items: center; gap: 0.6rem;">
                                                     <span>📦</span>
-                                                    <span style="font-family: 'Geist Mono', monospace; font-size: 0.85rem; color: #fff;">{{ app.name }}</span>
+                                                    <span style="font-family: 'Geist Mono', monospace; font-size: 0.85rem; color: #fff;">{{ app.subject or app.name }}</span>
                                                 </div>
                                                 <span style="font-family: 'Geist Mono', monospace; font-size: 0.825rem; color: #fff; font-weight: 600;">
-                                                    {{ app.minutes }} phút
+                                                    {% set app_min = ((app.total_duration_sec / 60)|round|int) if app.total_duration_sec is defined and app.total_duration_sec is not none else (app.minutes|default(0)) %}
+                                                    {{ app_min }} phút
                                                 </span>
                                             </div>
                                         {% endfor %}
@@ -437,7 +438,7 @@
                                             <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.55rem 0.85rem; background: rgba(255,255,255,0.03); border-radius: 10px;">
                                                 <div style="display: flex; align-items: center; gap: 0.6rem;">
                                                     <span>🌐</span>
-                                                    <span style="font-family: 'Geist Mono', monospace; font-size: 0.85rem; color: #fff;">{{ dom.domain }}</span>
+                                                    <span style="font-family: 'Geist Mono', monospace; font-size: 0.85rem; color: #fff;">{{ dom.subject or dom.domain }}</span>
                                                 </div>
                                                 <span style="font-family: 'Geist Mono', monospace; font-size: 0.825rem; color: #fff; font-weight: 600;">
                                                     {{ dom.count }} lượt
@@ -782,6 +783,8 @@
 
 <!-- Toast Container -->
 <div id="toastContainer" class="toast-container"></div>
+<!-- Top-Right Child Message Notification Container -->
+<div id="childNoticeContainer" class="child-notice-container"></div>
 {% endblock %}
 
 {% block scripts %}
@@ -797,10 +800,154 @@
             }{% if not loop.last %},{% endif %}
         {% endfor %}
     };
+    const devicesMap = {
+        {% for dev in devices %}
+            {{ dev.id }}: {{ dev.device_name | tojson | safe }}{% if not loop.last %},{% endif %}
+        {% endfor %}
+    };
+    const knownPendingRequestIds = new Set([
+        {% for req in all_requests %}
+            {% if req.status == 'pending' %}
+                {{ req.id }},{% endif %}
+        {% endfor %}
+    ]);
     const chartInstances = {};
     let activeCockpitDevId = null;
     let countdownInterval = null;
     let currentCode = null;
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function playNotificationSound() {
+        try {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (!AudioCtx) return;
+            const ctx = new AudioCtx();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
+            osc.frequency.setValueAtTime(880, ctx.currentTime + 0.08); // A5
+            gain.gain.setValueAtTime(0.12, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.35);
+        } catch (e) {
+            // Audio context might require initial click
+        }
+    }
+
+    function showChildMessageNotification(requestItem) {
+        const container = document.getElementById('childNoticeContainer');
+        if (!container) return;
+
+        const devName = devicesMap[requestItem.device_id] || `Máy tính #${requestItem.device_id}`;
+        const typeText = requestItem.request_type === 'add_time' ? '⏳ Xin thêm thời gian sử dụng' : '🌐 Xin mở chặn truy cập';
+        const reasonText = requestItem.reason || requestItem.target || '';
+
+        const card = document.createElement('div');
+        card.className = 'child-notice-card';
+        card.id = `child-notice-${requestItem.id}`;
+        card.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem;">
+                <div style="display: flex; align-items: center; gap: 0.6rem;">
+                    <span style="font-size: 1.35rem;">📩</span>
+                    <div>
+                        <div style="font-weight: 800; font-size: 0.95rem; color: #fff;">Có tin nhắn từ máy tính "${escapeHtml(devName)}"</div>
+                        <div style="font-size: 0.775rem; color: #60a5fa; font-family: 'Geist Mono', monospace; font-weight: 600;">${typeText}</div>
+                    </div>
+                </div>
+                <button type="button" onclick="this.closest('.child-notice-card').remove()" style="background: none; border: none; color: #94a3b8; font-size: 1.15rem; cursor: pointer; padding: 2px 6px; line-height: 1;">✕</button>
+            </div>
+            ${reasonText ? `<div style="font-size: 0.835rem; color: #e2e8f0; background: rgba(255,255,255,0.05); padding: 0.55rem 0.85rem; border-radius: 10px; border-left: 3px solid #3b82f6;">Lời nhắn: <em>${escapeHtml(reasonText)}</em></div>` : ''}
+            <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.25rem;">
+                <button class="btn-pill-white" style="padding: 0.45rem 1rem; font-size: 0.825rem; width: 100%; justify-content: center;" onclick="navigateToChildRequest(${requestItem.device_id}, ${requestItem.id})">
+                    <span>⚡ Mở Hộp Thư & Phản Hồi</span>
+                    <span>➜</span>
+                </button>
+            </div>
+        `;
+        container.appendChild(card);
+        playNotificationSound();
+
+        setTimeout(() => {
+            if (card.parentNode) {
+                card.style.opacity = '0';
+                card.style.transform = 'translateX(60px)';
+                card.style.transition = 'all 0.4s ease';
+                setTimeout(() => card.remove(), 400);
+            }
+        }, 16000);
+    }
+
+    function navigateToChildRequest(deviceId, requestId) {
+        document.getElementById(`child-notice-${requestId}`)?.remove();
+        openDeviceCockpit(deviceId);
+        switchCockpitTab('requests', deviceId);
+    }
+
+    function updateRequestBadges(pendingList) {
+        const countMap = {};
+        pendingList.forEach(r => {
+            countMap[r.device_id] = (countMap[r.device_id] || 0) + 1;
+        });
+
+        document.querySelectorAll('.cockpit-tab-pill').forEach(btn => {
+            if (btn.textContent.includes('Hộp Thư Yêu Cầu')) {
+                const devIdMatch = btn.getAttribute('onclick')?.match(/switchCockpitTab\('requests',\s*(\d+)\)/);
+                if (devIdMatch) {
+                    const devId = parseInt(devIdMatch[1], 10);
+                    const cnt = countMap[devId] || 0;
+                    let badge = btn.querySelector('.badge-amber');
+                    if (cnt > 0) {
+                        if (!badge) {
+                            badge = document.createElement('span');
+                            badge.className = 'badge-amber';
+                            badge.style.marginLeft = '4px';
+                            badge.style.padding = '0.15rem 0.45rem';
+                            badge.style.borderRadius = '9999px';
+                            btn.appendChild(badge);
+                        }
+                        badge.textContent = cnt;
+                    } else if (badge) {
+                        badge.remove();
+                    }
+                }
+            }
+        });
+    }
+
+    async function pollChildRequests() {
+        try {
+            const res = await fetch('/api/v1/requests?status=pending');
+            if (!res.ok) return;
+            const pendingList = await res.json();
+            if (Array.isArray(pendingList)) {
+                let hasNew = false;
+                pendingList.forEach(req => {
+                    if (!knownPendingRequestIds.has(req.id)) {
+                        knownPendingRequestIds.add(req.id);
+                        showChildMessageNotification(req);
+                        hasNew = true;
+                    }
+                });
+                if (hasNew) {
+                    updateRequestBadges(pendingList);
+                }
+            }
+        } catch (e) {
+            // Polling error ignored
+        }
+    }
+
+    setInterval(pollChildRequests, 4000);
 
     // Toast Notification Utility
     function showToast(message, isSuccess = true) {
@@ -1034,10 +1181,21 @@
     // ========================================================================
     // Emergency Commands
     // ========================================================================
+    function triggerCockpitEmergency(action, extra = null) {
+        if (!activeCockpitDevId) {
+            showToast('Vui lòng chọn máy tính cần điều khiển.', false);
+            return;
+        }
+        sendEmergencyCommand(activeCockpitDevId, action, extra);
+    }
+
     async function sendEmergencyCommand(deviceId, action, extra = null) {
-        const payload = { action };
-        if (action === 'add_time' && extra) {
-            payload.minutes = parseInt(extra, 10);
+        const payload = {
+            command_type: action,
+            action: action
+        };
+        if (action === 'add_time') {
+            payload.minutes = parseInt(extra || 15, 10);
         }
 
         try {
@@ -1049,10 +1207,18 @@
 
             if (!res.ok) {
                 const err = await res.json().catch(() => ({}));
-                throw new Error(err.detail || "Không thể gửi lệnh khẩn cấp.");
+                let errMsg = "Không thể gửi lệnh khẩn cấp.";
+                if (typeof err.detail === 'string') {
+                    errMsg = err.detail;
+                } else if (Array.isArray(err.detail)) {
+                    errMsg = err.detail.map(e => e.msg || e.detail || JSON.stringify(e)).join(', ');
+                } else if (err.detail && typeof err.detail === 'object') {
+                    errMsg = err.detail.msg || JSON.stringify(err.detail);
+                }
+                throw new Error(errMsg);
             }
 
-            const actionText = action === 'lock_now' ? 'Khóa màn hình' : action === 'unlock' ? 'Mở khóa' : `Cộng thêm ${extra} phút`;
+            const actionText = action === 'lock_now' ? 'Khóa màn hình' : action === 'unlock' ? 'Mở khóa' : `Cộng thêm ${extra || 15} phút`;
             showToast(`Đã gửi lệnh "${actionText}" xuống máy con!`);
         } catch (err) {
             showToast(`Lỗi: ${err.message}`, false);

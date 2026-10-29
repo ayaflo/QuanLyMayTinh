@@ -4,7 +4,7 @@ Includes authentication, device enrollment, and heartbeat schemas.
 
 from datetime import datetime, timezone
 from typing import Optional, Dict, Any
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, model_validator
 
 
 def utc_now():
@@ -134,9 +134,20 @@ class AuditLogResponse(BaseModel):
 
 class CommandCreateRequest(BaseModel):
     """Schema for creating an emergency command from Dashboard."""
-    command_type: str = Field(..., description="Action: 'lock_now', 'unlock', 'add_time'")
+    command_type: Optional[str] = Field(None, description="Action: 'lock_now', 'unlock', 'add_time'")
+    action: Optional[str] = Field(None, description="Alias for command_type")
     minutes: Optional[int] = Field(15, ge=1, le=180, description="Additional minutes if command_type is 'add_time'")
     countdown: Optional[int] = Field(30, ge=0, le=300, description="Countdown seconds before locking for 'lock_now'")
+
+    @model_validator(mode="before")
+    @classmethod
+    def resolve_action_alias(cls, values):
+        if isinstance(values, dict):
+            cmd = values.get("command_type") or values.get("action")
+            if cmd:
+                values["command_type"] = cmd
+                values["action"] = cmd
+        return values
 
 
 class CommandResponse(BaseModel):

@@ -662,23 +662,65 @@ html, body {
 }
 
 /* Forms & Inputs */
-.form-input-xai {
+.form-input-xai, select.form-input-xai, select {
   width: 100%;
   padding: 0.75rem 1.15rem;
-  background: rgba(255, 255, 255, 0.035);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: #0d0e14;
+  background: #0d0e14;
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 12px;
-  color: #fff;
+  color: #ffffff;
+  color-scheme: dark;
   font-family: inherit;
   font-size: 0.925rem;
   transition: all 0.2s ease;
 }
 
-.form-input-xai:focus {
+.form-input-xai:focus, select.form-input-xai:focus, select:focus {
   border-color: #ffffff;
-  background: rgba(255, 255, 255, 0.06);
+  background-color: #14151e;
   box-shadow: 0 0 16px rgba(255, 255, 255, 0.2);
   outline: none;
+}
+
+select option, option, optgroup {
+  background-color: #0d0e14;
+  color: #ffffff;
+  padding: 0.6rem 1rem;
+}
+
+select option:checked, select option:hover {
+  background-color: #2563eb;
+  color: #ffffff;
+}
+
+.child-notice-container {
+  position: fixed;
+  top: 1.5rem;
+  right: 1.5rem;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 420px;
+  width: calc(100vw - 3rem);
+  pointer-events: none;
+}
+
+.child-notice-card {
+  pointer-events: auto;
+  background: rgba(13, 14, 20, 0.96);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(59, 130, 246, 0.45);
+  box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.9), 0 0 25px rgba(59, 130, 246, 0.25);
+  border-radius: 16px;
+  padding: 1.15rem 1.25rem;
+  animation: slideInTopRight 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  color: #ffffff;
 }
 
 /* Tables */

@@ -76,8 +76,9 @@ async def send_emergency_command(
             detail="Bạn không có quyền quản lý thiết bị này"
         )
 
+    command_type = cmd_req.command_type or cmd_req.action
     valid_commands = {"lock_now", "unlock", "add_time"}
-    if cmd_req.command_type not in valid_commands:
+    if not command_type or command_type not in valid_commands:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Lệnh không hợp lệ. Chỉ chấp nhận: {', '.join(valid_commands)}"
@@ -88,7 +89,7 @@ async def send_emergency_command(
         db=db,
         device_id=device.id,
         parent_id=parent.id,
-        command_type=cmd_req.command_type,
+        command_type=command_type,
         minutes=cmd_req.minutes,
         countdown=cmd_req.countdown,
         ip_address=client_ip

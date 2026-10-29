@@ -17,6 +17,7 @@
     <!-- Embedded Core xai247 Design System (Bulletproof: Immune to browser static cache issues) -->
     <style>
         :root {
+            color-scheme: dark !important;
             --bg-black: #000000;
             --bg-surface: #0a0a0e;
             --bg-card: #0d0e13;
@@ -34,6 +35,7 @@
         }
 
         html, body {
+            color-scheme: dark !important;
             background-color: #000000 !important;
             color: #ffffff !important;
             font-family: 'Be Vietnam Pro', 'Hanken Grotesk', -apple-system, sans-serif !important;
@@ -536,24 +538,79 @@
             box-shadow: 0 0 18px rgba(255, 255, 255, 0.3) !important;
         }
 
-        /* Inputs */
-        .form-input-xai {
+        /* Inputs & Selects */
+        .form-input-xai, select.form-input-xai, select {
             width: 100% !important;
             padding: 0.75rem 1.15rem !important;
-            background: rgba(255, 255, 255, 0.035) !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            background-color: #0d0e14 !important;
+            background: #0d0e14 !important;
+            border: 1px solid rgba(255, 255, 255, 0.12) !important;
             border-radius: 12px !important;
-            color: #fff !important;
+            color: #ffffff !important;
+            color-scheme: dark !important;
             font-family: inherit !important;
             font-size: 0.925rem !important;
             transition: all 0.2s ease !important;
         }
 
-        .form-input-xai:focus {
+        .form-input-xai:focus, select.form-input-xai:focus, select:focus {
             border-color: #ffffff !important;
-            background: rgba(255, 255, 255, 0.06) !important;
+            background-color: #14151e !important;
             box-shadow: 0 0 16px rgba(255, 255, 255, 0.2) !important;
             outline: none !important;
+        }
+
+        /* Native Dropdown Options dark theme override */
+        select option, option, optgroup {
+            background-color: #0d0e14 !important;
+            color: #ffffff !important;
+            padding: 0.6rem 1rem !important;
+        }
+
+        select option:checked, select option:hover {
+            background-color: #2563eb !important;
+            color: #ffffff !important;
+        }
+
+        /* Top-Right Notification Container for Child Requests */
+        .child-notice-container {
+            position: fixed !important;
+            top: 1.5rem !important;
+            right: 1.5rem !important;
+            z-index: 99999 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 0.75rem !important;
+            max-width: 420px !important;
+            width: calc(100vw - 3rem) !important;
+            pointer-events: none !important;
+        }
+
+        .child-notice-card {
+            pointer-events: auto !important;
+            background: rgba(13, 14, 20, 0.96) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(59, 130, 246, 0.45) !important;
+            box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.9), 0 0 25px rgba(59, 130, 246, 0.25) !important;
+            border-radius: 16px !important;
+            padding: 1.15rem 1.25rem !important;
+            animation: slideInTopRight 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 0.65rem !important;
+            color: #ffffff !important;
+        }
+
+        @keyframes slideInTopRight {
+            from {
+                opacity: 0;
+                transform: translateX(60px) translateY(-10px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0) translateY(0) scale(1);
+            }
         }
 
         /* Table */
