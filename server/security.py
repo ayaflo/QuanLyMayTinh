@@ -14,6 +14,7 @@ from typing import Optional, Dict, Any, List, Set
 from passlib.context import CryptContext
 
 SECRET_KEY = os.getenv("SECRET_KEY", "change-this-secret-key-in-production")
+UNINSTALL_MASTER_KEY = os.getenv("UNINSTALL_MASTER_KEY", "OGK_STATIC_MASTER_UNINSTALL_KEY_2026")
 ACCESS_TOKEN_EXPIRE_MINUTES = 15
 
 # Password hashing context configured with Argon2id

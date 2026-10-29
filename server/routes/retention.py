@@ -130,27 +130,23 @@ async def delete_device_by_parent(
             detail="Bạn không có quyền gỡ bỏ thiết bị này"
         )
 
-    import hmac
-    import hashlib
     import time
     import asyncio
     try:
-        from ..security import SECRET_KEY
+        from ..security import UNINSTALL_MASTER_KEY
         from ..services.connection_manager import ws_manager
         from ..services.enrollment_service import unenroll_device
     except (ImportError, ValueError):
-        from server.security import SECRET_KEY
+        from server.security import UNINSTALL_MASTER_KEY
         from server.services.connection_manager import ws_manager
         from server.services.enrollment_service import unenroll_device
 
-    # 1. Sinh token ủy quyền và khóa giải mã module gỡ cài đặt
-    salt = f"UNINSTALL_AUTHORIZED:{device.device_fingerprint}:{device_id}"
-    token = hmac.new(SECRET_KEY.encode(), salt.encode(), hashlib.sha256).hexdigest()
-    unlock_key = hashlib.sha256(f"{SECRET_KEY}:{device.device_fingerprint}".encode()).hexdigest()[:32]
+    # 1. Chìa khóa giải mã cố định được lưu bảo mật trên máy chủ (Server Master Key)
+    unlock_key = UNINSTALL_MASTER_KEY
 
     cmd_payload = {
         "device_id": device_id,
-        "token": token,
+        "token": UNINSTALL_MASTER_KEY,
         "unlock_key": unlock_key,
         "timestamp": int(time.time()),
         "reason": "uninstalled_by_parent"
