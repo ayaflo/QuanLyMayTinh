@@ -476,5 +476,57 @@ def test_child_request_reviewed_dispatches_notification_and_web_clean(client):
     db.close()
 
 
+def test_browser_incognito_policy_and_bypass_browser_blocking(monkeypatch):
+    """Verify:
+    1. SEED_APP_RULES_DATA includes bypass browsers (tor, opera, opera_gx, epic, ur).
+    2. AppController terminates bypass browsers like opera.exe and tor.exe.
+    3. disable_browser_doh executes without error.
+    """
+    from server.seed_domains import SEED_APP_RULES_DATA
+    from agent.app_controller import AppController
+    app_names = {r["app_name"].lower() for r in SEED_APP_RULES_DATA}
+    assert "tor.exe" in app_names
+    assert "tor-browser.exe" in app_names
+    assert "opera.exe" in app_names
+    assert "opera_gx.exe" in app_names
+    assert "epic.exe" in app_names
+    assert "ur.exe" in app_names
+
+    # Test AppController terminates Opera and Tor
+    class FakeProc:
+        def __init__(self, pid, name, exe):
+            self.info = {'pid': pid, 'name': name, 'exe': exe}
+            self.killed = False
+
+        def terminate(self):
+            self.killed = True
+
+        def kill(self):
+            self.killed = True
+
+    proc_opera = FakeProc(1234, "opera.exe", r"C:\Users\User\AppData\Local\Programs\Opera\opera.exe")
+    proc_tor = FakeProc(5678, "tor.exe", r"C:\Tor Browser\Browser\TorBrowser\Tor\tor.exe")
+
+    import psutil
+    monkeypatch.setattr(psutil, "process_iter", lambda attrs: [proc_opera, proc_tor])
+
+    rules_map = {
+        "hash_opera": {"name": "opera.exe", "action": "block"},
+        "hash_tor": {"name": "tor.exe", "action": "block"},
+    }
+    controller = AppController(rules_provider=lambda: rules_map)
+    killed = controller.scan_and_enforce()
+
+    assert len(killed) == 2
+    assert proc_opera.killed is True
+    assert proc_tor.killed is True
+
+    # Test disable_browser_doh
+    from agent.dns_configurator import disable_browser_doh, restore_browser_doh
+    assert disable_browser_doh() is True
+    assert restore_browser_doh() is True
+
+
+
 
 

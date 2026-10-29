@@ -137,51 +137,100 @@ def restore_dns_to_dhcp(interface_name: Optional[str] = None) -> bool:
 
 
 def disable_browser_doh() -> bool:
-    """Disable DNS-over-HTTPS in Chrome, Edge, and Brave via Windows Registry policies.
-    Forces browsers to use system DNS (127.0.0.1) instead of bypassing to Cloudflare/Google DoH.
+    """Apply browser protective policies (Disable Incognito, Disable Tor, Disable DoH, Enforce SafeSearch).
+    Enforces policies across Chrome, Edge, Brave, Firefox, and CocCoc in both HKLM and HKCU.
     """
     if sys.platform != "win32":
         return True
 
     try:
         import winreg
-        policies = [
-            r"SOFTWARE\Policies\Google\Chrome",
-            r"SOFTWARE\Policies\Microsoft\Edge",
-            r"SOFTWARE\Policies\BraveSoftware\Brave"
-        ]
-        for subkey in policies:
-            try:
-                key = winreg.CreateKeyEx(winreg.HKEY_LOCAL_MACHINE, subkey, 0, winreg.KEY_SET_VALUE)
-                winreg.SetValueEx(key, "DnsOverHttpsMode", 0, winreg.REG_SZ, "off")
-                winreg.CloseKey(key)
-            except Exception:
-                pass
+
+        browser_policies = {
+            r"SOFTWARE\Policies\Google\Chrome": {
+                ("DnsOverHttpsMode", winreg.REG_SZ): "off",
+                ("IncognitoModeAvailability", winreg.REG_DWORD): 1,  # 1 = Disabled
+                ("ForceGoogleSafeSearch", winreg.REG_DWORD): 1,
+                ("ForceYouTubeSafetyMode", winreg.REG_DWORD): 2,
+            },
+            r"SOFTWARE\Policies\Microsoft\Edge": {
+                ("DnsOverHttpsMode", winreg.REG_SZ): "off",
+                ("InPrivateModeAvailability", winreg.REG_DWORD): 1,  # 1 = Disabled
+                ("ForceGoogleSafeSearch", winreg.REG_DWORD): 1,
+                ("ForceBingSafeSearch", winreg.REG_DWORD): 1,
+                ("ForceYouTubeSafetyMode", winreg.REG_DWORD): 2,
+            },
+            r"SOFTWARE\Policies\BraveSoftware\Brave": {
+                ("DnsOverHttpsMode", winreg.REG_SZ): "off",
+                ("IncognitoModeAvailability", winreg.REG_DWORD): 1,  # 1 = Disabled
+                ("TorDisabled", winreg.REG_DWORD): 1,               # 1 = Disable Tor Window
+                ("ForceGoogleSafeSearch", winreg.REG_DWORD): 1,
+                ("ForceYouTubeSafetyMode", winreg.REG_DWORD): 2,
+            },
+            r"SOFTWARE\Policies\Mozilla\Firefox": {
+                ("DisablePrivateBrowsing", winreg.REG_DWORD): 1,
+            },
+            r"SOFTWARE\Policies\CocCoc\Browser": {
+                ("DnsOverHttpsMode", winreg.REG_SZ): "off",
+                ("IncognitoModeAvailability", winreg.REG_DWORD): 1,
+                ("ForceGoogleSafeSearch", winreg.REG_DWORD): 1,
+            }
+        }
+
+        for root_hkey in (winreg.HKEY_LOCAL_MACHINE, winreg.HKEY_CURRENT_USER):
+            for subkey, values in browser_policies.items():
+                try:
+                    key = winreg.CreateKeyEx(root_hkey, subkey, 0, winreg.KEY_SET_VALUE)
+                    for (val_name, val_type), val_data in values.items():
+                        try:
+                            winreg.SetValueEx(key, val_name, 0, val_type, val_data)
+                        except Exception:
+                            pass
+                    winreg.CloseKey(key)
+                except Exception:
+                    pass
         return True
     except Exception as e:
-        logger.debug(f"[DNS] Could not write DoH policy to registry: {e}")
+        logger.debug(f"[DNS] Could not write browser protective policies: {e}")
         return False
 
 
 def restore_browser_doh() -> bool:
-    """Remove DnsOverHttpsMode policy override from Windows Registry upon agent shutdown."""
+    """Remove browser protective policy overrides from Windows Registry upon agent shutdown."""
     if sys.platform != "win32":
         return True
 
     try:
         import winreg
-        policies = [
-            r"SOFTWARE\Policies\Google\Chrome",
-            r"SOFTWARE\Policies\Microsoft\Edge",
-            r"SOFTWARE\Policies\BraveSoftware\Brave"
-        ]
-        for subkey in policies:
-            try:
-                key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, subkey, 0, winreg.KEY_SET_VALUE)
-                winreg.DeleteValue(key, "DnsOverHttpsMode")
-                winreg.CloseKey(key)
-            except Exception:
-                pass
+        browser_policies = {
+            r"SOFTWARE\Policies\Google\Chrome": [
+                "DnsOverHttpsMode", "IncognitoModeAvailability", "ForceGoogleSafeSearch", "ForceYouTubeSafetyMode"
+            ],
+            r"SOFTWARE\Policies\Microsoft\Edge": [
+                "DnsOverHttpsMode", "InPrivateModeAvailability", "ForceGoogleSafeSearch", "ForceBingSafeSearch", "ForceYouTubeSafetyMode"
+            ],
+            r"SOFTWARE\Policies\BraveSoftware\Brave": [
+                "DnsOverHttpsMode", "IncognitoModeAvailability", "TorDisabled", "ForceGoogleSafeSearch", "ForceYouTubeSafetyMode"
+            ],
+            r"SOFTWARE\Policies\Mozilla\Firefox": [
+                "DisablePrivateBrowsing"
+            ],
+            r"SOFTWARE\Policies\CocCoc\Browser": [
+                "DnsOverHttpsMode", "IncognitoModeAvailability", "ForceGoogleSafeSearch"
+            ]
+        }
+
+        for root_hkey in (winreg.HKEY_LOCAL_MACHINE, winreg.HKEY_CURRENT_USER):
+            for subkey, val_names in browser_policies.items():
+                try:
+                    with winreg.OpenKey(root_hkey, subkey, 0, winreg.KEY_SET_VALUE) as key:
+                        for val_name in val_names:
+                            try:
+                                winreg.DeleteValue(key, val_name)
+                            except Exception:
+                                pass
+                except Exception:
+                    pass
         return True
     except Exception as e:
         return False

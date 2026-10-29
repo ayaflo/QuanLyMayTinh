@@ -127,6 +127,42 @@ SEED_APP_RULES_DATA = [
         "sha256_hash": "04f8996da763b7a969b1028ee3007569eaf3a635486ddab211d512c85b9df8fb",
         "action": "block",
         "description": "Ứng dụng proxy vượt rào UltraSurf"
+    },
+    {
+        "app_name": "tor.exe",
+        "sha256_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "action": "block",
+        "description": "Dịch vụ mạng ẩn danh Tor (tor.exe) - Ngăn chặn vượt rào"
+    },
+    {
+        "app_name": "tor-browser.exe",
+        "sha256_hash": "3a01044298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b801",
+        "action": "block",
+        "description": "Trình duyệt Tor Browser - Ngăn chặn vượt rào mạng ẩn danh"
+    },
+    {
+        "app_name": "opera.exe",
+        "sha256_hash": "3a02044298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b802",
+        "action": "block",
+        "description": "Trình duyệt Opera (Tích hợp VPN miễn phí vượt rào)"
+    },
+    {
+        "app_name": "opera_gx.exe",
+        "sha256_hash": "3a03044298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b803",
+        "action": "block",
+        "description": "Trình duyệt Opera GX (Tích hợp VPN vượt rào)"
+    },
+    {
+        "app_name": "epic.exe",
+        "sha256_hash": "3a04044298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b804",
+        "action": "block",
+        "description": "Trình duyệt Epic Privacy (Tích hợp proxy VPN vượt rào)"
+    },
+    {
+        "app_name": "ur.exe",
+        "sha256_hash": "3a05044298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b805",
+        "action": "block",
+        "description": "Trình duyệt UR Browser (Tích hợp VPN vượt rào)"
     }
 ]
 

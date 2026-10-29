@@ -189,23 +189,39 @@ def restore_hosts_file_clean(hosts_path: str = WINDOWS_HOSTS_PATH) -> bool:
 
 
 def remove_browser_doh_policies() -> bool:
-    """Delete DnsOverHttpsMode policy override from Windows Registry for Chrome, Edge, and Brave."""
+    """Delete browser protective policies (DoH, Incognito, Tor, SafeSearch) from Windows Registry."""
     if sys.platform != "win32":
         return True
 
-    policies = [
-        r"SOFTWARE\Policies\Google\Chrome",
-        r"SOFTWARE\Policies\Microsoft\Edge",
-        r"SOFTWARE\Policies\BraveSoftware\Brave"
-    ]
+    policies = {
+        r"SOFTWARE\Policies\Google\Chrome": [
+            "DnsOverHttpsMode", "IncognitoModeAvailability", "ForceGoogleSafeSearch", "ForceYouTubeSafetyMode"
+        ],
+        r"SOFTWARE\Policies\Microsoft\Edge": [
+            "DnsOverHttpsMode", "InPrivateModeAvailability", "ForceGoogleSafeSearch", "ForceBingSafeSearch", "ForceYouTubeSafetyMode"
+        ],
+        r"SOFTWARE\Policies\BraveSoftware\Brave": [
+            "DnsOverHttpsMode", "IncognitoModeAvailability", "TorDisabled", "ForceGoogleSafeSearch", "ForceYouTubeSafetyMode"
+        ],
+        r"SOFTWARE\Policies\Mozilla\Firefox": [
+            "DisablePrivateBrowsing"
+        ],
+        r"SOFTWARE\Policies\CocCoc\Browser": [
+            "DnsOverHttpsMode", "IncognitoModeAvailability", "ForceGoogleSafeSearch"
+        ]
+    }
 
     import winreg
     success = True
     for root_hkey in (winreg.HKEY_LOCAL_MACHINE, winreg.HKEY_CURRENT_USER):
-        for subkey in policies:
+        for subkey, val_names in policies.items():
             try:
                 with winreg.OpenKey(root_hkey, subkey, 0, winreg.KEY_SET_VALUE) as key:
-                    winreg.DeleteValue(key, "DnsOverHttpsMode")
+                    for val_name in val_names:
+                        try:
+                            winreg.DeleteValue(key, val_name)
+                        except Exception:
+                            pass
             except FileNotFoundError:
                 pass
             except Exception:
