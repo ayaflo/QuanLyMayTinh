@@ -87,19 +87,18 @@ if defined AGENT_EXE (
     schtasks /create /tn "OpenGuardianKidsAgent" /tr "\"%AGENT_EXE%\"" /sc onlogon /rl highest /f >nul 2>&1
     reg add "HKLM\Software\Microsoft\Windows\CurrentVersion\Run" /v "OpenGuardianKidsAgent" /t REG_SZ /d "\"%AGENT_EXE%\"" /f >nul 2>&1
     reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Run" /v "OpenGuardianKidsAgent" /t REG_SZ /d "\"%AGENT_EXE%\"" /f >nul 2>&1
-    echo       - Da dang ky Task Scheduler & Registry Autostart thanh cong.
+    echo       - Da dang ky Task Scheduler va Registry Autostart thanh cong.
 ) else (
     echo       [!] Chua tim thay OGK_Agent.exe, se khoi dong qua moi truong Python.
 )
 
 :: ============================================================================
-:: BUOC 3: CAU HINH BAO VE MANG DNS LOOPBACK 127.0.0.1
+:: BUOC 3: CHUAN BI HE THONG BAO VE MANG
 :: ============================================================================
 echo.
-echo  [3/4] Dang kich hoat loc ten mien an toan qua DNS Proxy...
-powershell -NoProfile -ExecutionPolicy Bypass -Command "Get-NetAdapter | Where-Object { $_.Status -eq 'Up' } | ForEach-Object { Set-DnsClientServerAddress -InterfaceIndex $_.ifIndex -ServerAddresses ('127.0.0.1') }" >nul 2>&1
+echo  [3/4] Chuan bi co che loc ten mien an toan...
 ipconfig /flushdns >nul 2>&1
-echo       - Da kich hoat bao ve mang DNS thanh cong.
+echo       - He thong DNS san sang. Co che loc se tu dong kich hoat khi tac tu khoi chay.
 
 :: ============================================================================
 :: BUOC 4: KHOI DONG TAC TU VA MO GIAO DIEN NHAP MA GHEP DOI

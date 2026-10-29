@@ -14,6 +14,8 @@ REG_RUN_PATH = r"Software\Microsoft\Windows\CurrentVersion\Run"
 
 def get_agent_launch_command() -> str:
     """Construct the optimal silent launch command using pythonw.exe if available."""
+    if getattr(sys, "frozen", False):
+        return f'"{sys.executable}"'
     # Find pythonw.exe to avoid pop-up console window
     python_dir = os.path.dirname(sys.executable)
     pythonw = os.path.join(python_dir, "pythonw.exe")

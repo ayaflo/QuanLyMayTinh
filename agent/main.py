@@ -19,7 +19,10 @@ def _setup_crash_logger():
     try:
         import traceback
         from datetime import datetime
-        log_dir = os.path.dirname(os.path.abspath(__file__))
+        if getattr(sys, "frozen", False):
+            log_dir = os.path.dirname(sys.executable)
+        else:
+            log_dir = os.path.dirname(os.path.abspath(__file__))
         log_file = os.path.join(log_dir, "agent_error.log")
 
         def _handle_exception(exc_type, exc_value, exc_traceback):
@@ -41,7 +44,10 @@ def _setup_crash_logger():
 _setup_crash_logger()
 
 # Ensure project root is in sys.path
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if getattr(sys, "frozen", False):
+    PROJECT_ROOT = os.path.dirname(sys.executable)
+else:
+    PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 

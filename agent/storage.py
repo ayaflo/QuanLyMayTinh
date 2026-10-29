@@ -2,6 +2,7 @@
 Manages device_id, access_token, and refresh_token in agent_cache.db.
 """
 
+import os
 import sqlite3
 from datetime import datetime, timezone
 from typing import Optional, Dict, Any
@@ -14,6 +15,9 @@ except ImportError:
 
 def _get_connection(db_path: str = DB_PATH) -> sqlite3.Connection:
     """Initialize connection and credentials table if not exists."""
+    db_dir = os.path.dirname(os.path.abspath(db_path))
+    if db_dir:
+        os.makedirs(db_dir, exist_ok=True)
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     with conn:

@@ -3,16 +3,25 @@ Defines server endpoints, heartbeat intervals, and local storage paths.
 """
 
 import os
+import sys
 import platform
 from urllib.parse import urlparse
 
 
+def _get_base_dir() -> str:
+    """Get the appropriate base directory, handling PyInstaller frozen executables."""
+    if getattr(sys, "frozen", False):
+        return os.path.dirname(sys.executable)
+    return os.path.dirname(os.path.abspath(__file__))
+
+
 def _load_env_file():
     """Load configuration variables from .env file if available."""
+    base_dir = _get_base_dir()
     candidates = [
+        os.path.join(base_dir, ".env"),
         os.path.join(os.getcwd(), ".env"),
-        os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env"),
-        os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+        os.path.join(os.path.dirname(base_dir), ".env")
     ]
     for env_path in candidates:
         if os.path.isfile(env_path):
@@ -63,11 +72,12 @@ REQUEST_TIMEOUT = int(os.getenv("OGK_REQUEST_TIMEOUT", "30"))
 HEARTBEAT_INTERVAL = int(os.getenv("OGK_HEARTBEAT_INTERVAL", "60"))
 
 # Local SQLite cache database for storing paired credentials and policy cache
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = _get_base_dir()
 DB_PATH = os.getenv("OGK_AGENT_DB", os.path.join(BASE_DIR, "agent_cache.db"))
 
 # Device identification metadata
 DEVICE_NAME = os.getenv("OGK_DEVICE_NAME", platform.node() or "Windows PC")
 APP_TITLE = "Open Guardian Kids (OGK)"
 APP_VERSION = "0.4.0"
+
 
