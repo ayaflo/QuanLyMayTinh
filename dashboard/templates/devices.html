@@ -1,128 +1,130 @@
 {% extends "base.html" %}
 
-{% block title %}Quản lý Thiết bị & Thời gian - OGK{% endblock %}
+{% block title %}Quản Lý Thiết Bị Trẻ Em - OGK{% endblock %}
 
 {% block content %}
-<!-- Dashboard Header -->
-<div class="dashboard-header">
+<!-- Dashboard Header (xai247 Style Inspired) -->
+<div class="dashboard-header" style="margin-bottom: 2rem;">
     <div class="dashboard-title-group">
-        <h1>Quản Lý Thiết Bị Trẻ Em</h1>
-        <p>Theo dõi thời gian sử dụng, ma trận lịch tuần 7×48 và điều khiển lệnh khẩn cấp tức thời (< 5s)</p>
+        <h1 style="font-size: 2rem; font-weight: 700; letter-spacing: -0.03em; color: #fff;">Quản Lý Máy Tính Trẻ Em</h1>
+        <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 0.4rem;">
+            Giám sát thời lượng sử dụng, cài đặt giới hạn an toàn và quản lý máy tính của con
+        </p>
     </div>
-    <button id="btnOpenPairModal" class="btn btn-primary">
-        <span>➕</span> Thêm Thiết Bị Mới
+    <button id="btnOpenPairModal" class="btn btn-primary" style="box-shadow: 0 4px 20px -4px rgba(14, 165, 233, 0.5);">
+        <span>➕</span> Thêm Máy Tính Mới
     </button>
 </div>
 
 <!-- Quick Statistics Cards -->
-<div class="stats-grid">
-    <div class="stat-card">
-        <div class="stat-icon-wrapper stat-icon-blue">💻</div>
+<div class="stats-grid" style="margin-bottom: 2rem;">
+    <div class="stat-card" style="border-radius: 16px; background: rgba(18, 20, 26, 0.85); border: 1px solid rgba(255, 255, 255, 0.08);">
+        <div class="stat-icon-wrapper stat-icon-blue" style="border-radius: 12px;">💻</div>
         <div>
-            <div class="stat-value">{{ devices|length }}</div>
-            <div class="stat-label">Tổng Thiết Bị</div>
+            <div class="stat-value" style="font-family: 'Geist Mono', monospace; font-size: 1.8rem;">{{ devices|length }}</div>
+            <div class="stat-label" style="font-size: 0.825rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em;">Tổng Máy Tính</div>
         </div>
     </div>
-    <div class="stat-card">
-        <div class="stat-icon-wrapper stat-icon-green">🟢</div>
+    <div class="stat-card" style="border-radius: 16px; background: rgba(18, 20, 26, 0.85); border: 1px solid rgba(255, 255, 255, 0.08);">
+        <div class="stat-icon-wrapper stat-icon-green" style="border-radius: 12px;">
+            <span class="live-dot"></span>
+        </div>
         <div>
-            <div class="stat-value">{{ online_count|default(0) }}</div>
-            <div class="stat-label">Đang Hoạt Động (Online)</div>
+            <div class="stat-value" style="font-family: 'Geist Mono', monospace; font-size: 1.8rem; color: #10b981;">{{ online_count|default(0) }}</div>
+            <div class="stat-label" style="font-size: 0.825rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em;">Đang Hoạt Động</div>
         </div>
     </div>
-    <div class="stat-card">
-        <div class="stat-icon-wrapper stat-icon-gray">⚪</div>
+    <div class="stat-card" style="border-radius: 16px; background: rgba(18, 20, 26, 0.85); border: 1px solid rgba(255, 255, 255, 0.08);">
+        <div class="stat-icon-wrapper stat-icon-gray" style="border-radius: 12px;">⚪</div>
         <div>
-            <div class="stat-value">{{ offline_count|default(0) }}</div>
-            <div class="stat-label">Ngoại Tuyến (Offline)</div>
+            <div class="stat-value" style="font-family: 'Geist Mono', monospace; font-size: 1.8rem; color: var(--text-muted);">{{ offline_count|default(0) }}</div>
+            <div class="stat-label" style="font-size: 0.825rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em;">Ngoại Tuyến</div>
         </div>
     </div>
 </div>
 
-<!-- Devices Table Section (T027 & T2_022) -->
-<div class="section-card">
-    <div class="section-header">
-        <h2 class="section-title">Danh Sách Máy Tính & Điều Khiển Thời Gian</h2>
-        <span class="text-dim" style="font-size: 0.8125rem;">Trực tiếp đẩy lệnh qua WebSocket (< 5s)</span>
+<!-- ========================================================================
+     SECTION 1: Multi-Device Grid (Chọn máy tính để xem chi tiết)
+     ======================================================================== -->
+<div class="section-card" style="margin-bottom: 2rem;">
+    <div class="section-header" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.85rem; margin-bottom: 1.25rem;">
+        <div>
+            <h2 class="section-title" style="font-size: 1.2rem; font-weight: 700; color: #fff;">Danh Sách Máy Tính Của Con</h2>
+            <p style="color: var(--text-muted); font-size: 0.825rem; margin-top: 0.2rem;">
+                Nhấp vào máy tính bên dưới để xem chi tiết nhật ký, báo cáo và điều khiển riêng từng máy
+            </p>
+        </div>
+        {% if devices and devices|length > 0 %}
+            <span class="badge-subtle" style="font-family: 'Geist Mono', monospace;">{{ devices|length }} thiết bị</span>
+        {% endif %}
     </div>
 
     {% if devices and devices|length > 0 %}
-        <div class="table-responsive">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Tên Thiết Bị</th>
-                        <th>Trạng Thái</th>
-                        <th>Hạn Mức Quota</th>
-                        <th>Lệnh Khẩn Cấp (< 5s)</th>
-                        <th>Cấu Hình Chính Sách</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for dev in devices %}
-                        {% set pol = policies_map[dev.id] if policies_map and dev.id in policies_map else None %}
-                        <tr>
-                            <td>
-                                <div class="device-name-col">
-                                    <div class="device-avatar">🖥️</div>
-                                    <div>
-                                        <div class="device-title">{{ dev.device_name }}</div>
-                                        <div class="device-sub">ID: #{{ dev.id }} · Nhịp tim: {{ dev.last_seen|local_time('%H:%M:%S') }}</div>
-                                    </div>
+        <div class="device-cards-grid">
+            {% for dev in devices %}
+                {% set pol = policies_map[dev.id] if policies_map and dev.id in policies_map else None %}
+                {% set rep = reports_map[dev.id] if reports_map and dev.id in reports_map else None %}
+                {% set used_min = (rep.total_screen_time_sec / 60)|round|int if rep else 0 %}
+                {% set quota_today = pol.weekday_quota_minutes if pol else 90 %}
+                {% set percent_used = (used_min / quota_today * 100)|round|int if quota_today > 0 else 0 %}
+                
+                <div class="device-card-item {% if loop.first %}active{% endif %}" id="card-device-{{ dev.id }}" onclick="selectDevice({{ dev.id }})">
+                    <div class="device-card-top">
+                        <div style="display: flex; align-items: center; gap: 0.85rem;">
+                            <div class="device-avatar-glow">🖥️</div>
+                            <div>
+                                <div style="font-weight: 700; font-size: 1.05rem; color: #fff;">{{ dev.device_name }}</div>
+                                <div style="font-size: 0.775rem; color: var(--text-dim); font-family: 'Geist Mono', monospace;">
+                                    ID: #{{ dev.id }} · Nhịp tim: {{ dev.last_seen|local_time('%H:%M:%S') }}
                                 </div>
-                            </td>
-                            <td>
-                                {% if dev.status == 'online' %}
-                                    <span class="badge-status badge-online">
-                                        <span class="status-dot dot-online"></span> Trực tuyến
-                                    </span>
-                                {% else %}
-                                    <span class="badge-status badge-offline">
-                                        <span class="status-dot dot-offline"></span> Ngoại tuyến
-                                    </span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if pol %}
-                                    <div style="font-size: 0.85rem; line-height: 1.4;">
-                                        <div><span class="text-dim">Ngày thường:</span> <strong>{{ pol.weekday_quota_minutes }} phút</strong></div>
-                                        <div><span class="text-dim">Cuối tuần:</span> <strong>{{ pol.weekend_quota_minutes }} phút</strong></div>
-                                        <div style="font-size: 0.75rem; color: var(--accent-cyan);">Policy v{{ pol.version }}</div>
-                                    </div>
-                                {% else %}
-                                    <span class="text-dim">Mặc định</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <div class="btn-group-emergency">
-                                    <button class="btn-xs btn-danger-soft" onclick="sendEmergencyCommand({{ dev.id }}, 'lock_now')" title="Khóa màn hình máy tính con ngay lập tức qua WebSocket">
-                                        🔒 Khóa Ngay
-                                    </button>
-                                    <button class="btn-xs btn-success-soft" onclick="sendEmergencyCommand({{ dev.id }}, 'unlock')" title="Mở khóa màn hình máy con">
-                                        🔓 Mở Khóa
-                                    </button>
-                                    <button class="btn-xs btn-amber-soft" onclick="sendEmergencyCommand({{ dev.id }}, 'add_time', 15)" title="Thưởng thêm 15 phút sử dụng">
-                                        ⏳ +15 Phút
-                                    </button>
-                                </div>
-                            </td>
-                            <td>
-                                <div style="display: flex; flex-direction: column; gap: 4px;">
-                                    <button class="btn-xs btn-blue-soft" onclick="openPolicyModal({{ dev.id }}, '{{ dev.device_name }}', {{ pol.weekday_quota_minutes if pol else 90 }}, {{ pol.weekend_quota_minutes if pol else 150 }}, '{{ pol.schedule_matrix if pol else '' }}')">
-                                        ⚙️ Cài Quota & Lịch 7×48
-                                    </button>
-                                    <button class="btn-xs btn-danger-soft" onclick="openEraseModal({{ dev.id }}, '{{ dev.device_name }}')" title="Xóa toàn bộ dữ liệu lịch sử của thiết bị theo Nghị định 13/2023">
-                                        🗑️ Xóa Dữ Liệu Con (NĐ 13)
-                                    </button>
-                                    <button class="btn-xs btn-danger-soft" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.35); color: #f87171;" onclick="handleDeleteDevice({{ dev.id }}, '{{ dev.device_name }}')" title="Gỡ bỏ hoàn toàn thiết bị này khỏi danh sách quản lý">
-                                        ❌ Gỡ Thiết Bị
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                            </div>
+                        </div>
+
+                        <div>
+                            {% if dev.status == 'online' %}
+                                <span class="badge-status badge-online" style="display: inline-flex; align-items: center; gap: 6px;">
+                                    <span class="live-dot"></span> Trực tuyến
+                                </span>
+                            {% else %}
+                                <span class="badge-status badge-offline" style="display: inline-flex; align-items: center; gap: 6px;">
+                                    <span class="live-dot offline"></span> Ngoại tuyến
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Usage Progress Mini -->
+                    <div style="background: rgba(255,255,255,0.03); padding: 0.75rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 0.35rem;">
+                            <span style="color: var(--text-muted);">Đã dùng hôm nay:</span>
+                            <span style="font-family: 'Geist Mono', monospace; font-weight: 600; color: {% if percent_used >= 100 %}#ef4444{% elif percent_used >= 80 %}#f59e0b{% else %}#10b981{% endif %};">
+                                {{ used_min }} / {{ quota_today }} phút
+                            </span>
+                        </div>
+                        <div class="quota-bar-wrapper">
+                            <div class="quota-bar-fill" style="width: {{ [percent_used, 100]|min }}%; background: {% if percent_used >= 100 %}#ef4444{% elif percent_used >= 80 %}#f59e0b{% else %}linear-gradient(90deg, #0ea5e9, #10b981){% endif %};"></div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Emergency Actions -->
+                    <div style="display: flex; gap: 0.4rem; margin-top: 0.25rem;" onclick="event.stopPropagation();">
+                        <button class="btn-xs btn-danger-soft" style="flex: 1; padding: 0.45rem;" onclick="sendEmergencyCommand({{ dev.id }}, 'lock_now')" title="Khóa màn hình máy tính con ngay lập tức">
+                            🔒 Khóa Ngay
+                        </button>
+                        <button class="btn-xs btn-success-soft" style="flex: 1; padding: 0.45rem;" onclick="sendEmergencyCommand({{ dev.id }}, 'unlock')" title="Mở khóa màn hình máy con">
+                            🔓 Mở Khóa
+                        </button>
+                        <button class="btn-xs btn-amber-soft" style="flex: 1; padding: 0.45rem;" onclick="sendEmergencyCommand({{ dev.id }}, 'add_time', 15)" title="Thưởng thêm 15 phút sử dụng">
+                            ⏳ +15 Phút
+                        </button>
+                    </div>
+
+                    <!-- View Details Action Button -->
+                    <button class="btn btn-ghost btn-sm" style="width: 100%; border: 1px solid rgba(255,255,255,0.08); font-size: 0.825rem; font-weight: 600;">
+                        Xem Chi Tiết Máy Này ➜
+                    </button>
+                </div>
+            {% endfor %}
         </div>
     {% else %}
         <!-- Empty State -->
@@ -130,7 +132,7 @@
             <div class="empty-icon">🛡️</div>
             <h3 class="empty-title">Chưa có máy tính nào được kết nối</h3>
             <p class="empty-desc">
-                Nhấn vào nút <strong>"Thêm Thiết Bị Mới"</strong> để nhận mã ghép đôi 8 ký tự và nhập vào tác tử OGK Agent trên máy tính của trẻ.
+                Nhấn vào nút <strong>"Thêm Máy Tính Mới"</strong> để nhận mã ghép đôi 8 ký tự và nhập vào phần mềm Agent trên máy của con.
             </p>
             <button class="btn btn-primary btn-open-modal-trigger">
                 <span>➕</span> Tạo Mã Ghép Đôi Đầu Tiên
@@ -139,224 +141,304 @@
     {% endif %}
 </div>
 
-<!-- Audit Log Section (T2_023 - NT5 Minh Bạch Hai Chiều) -->
-<div class="section-card" style="margin-top: 1.5rem;">
-    <div class="section-header">
-        <h2 class="section-title">Nhật Ký Kiểm Toán Thay Đổi Luật (Audit Log — NT5)</h2>
-        <span class="text-dim" style="font-size: 0.8125rem;">Trẻ và cha mẹ đều có quyền xem minh bạch mọi thay đổi</span>
-    </div>
-
-    {% if audit_logs and audit_logs|length > 0 %}
-        <div class="table-responsive">
-            <table class="data-table" style="font-size: 0.85rem;">
-                <thead>
-                    <tr>
-                        <th>Thời Gian</th>
-                        <th>Thiết Bị</th>
-                        <th>Hành Động</th>
-                        <th>Chi Tiết Thay Đổi</th>
-                        <th>Địa Chỉ IP</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for log in audit_logs %}
-                        <tr>
-                            <td class="text-dim" style="white-space: nowrap;">
-                                {{ log.created_at|local_time('%H:%M:%S %d/%m/%Y') }}
-                            </td>
-                            <td>
-                                <strong>#{{ log.device_id }}</strong>
-                            </td>
-                            <td>
-                                <span class="badge-status" style="background: rgba(14, 165, 233, 0.15); color: #38bdf8;">
-                                    {{ log.action }}
-                                </span>
-                            </td>
-                            <td style="max-width: 400px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ log.new_value }}">
-                                <code>{{ log.new_value }}</code>
-                            </td>
-                            <td class="text-dim">
-                                {{ log.ip_address or '127.0.0.1' }}
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    {% else %}
-        <p class="text-dim" style="font-size: 0.875rem; padding: 1rem 0;">Chưa có nhật ký thay đổi chính sách nào.</p>
-    {% endif %}
-</div>
-
 <!-- ========================================================================
-     Week 3 (Version 0.3): Child Voice & Access Requests Inbox (NT3 - T3_024)
+     SECTION 2: Chi Tiết Máy Tính Được Chọn (Device Detail View)
      ======================================================================== -->
-<div class="section-card" id="childRequestsSection">
-    <div class="section-header">
-        <div style="display: flex; align-items: center; gap: 0.6rem;">
-            <h2 class="section-title">Hộp Thư Yêu Cầu Của Trẻ (NT3 - Tiếng Nói Của Con)</h2>
-            {% if pending_requests and pending_requests|length > 0 %}
-                <span class="badge-status badge-online" style="font-size: 0.75rem;">
-                    {{ pending_requests|length }} yêu cầu chờ duyệt
+{% if devices and devices|length > 0 %}
+    <div id="deviceDetailSection" style="margin-bottom: 2.5rem;">
+        <!-- Device Quick Switcher Chips -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem;">
+            <div style="display: flex; align-items: center; gap: 0.6rem;">
+                <span style="font-size: 0.85rem; color: var(--text-dim); text-transform: uppercase; font-weight: 600; letter-spacing: 0.05em;">Đang Xem Chi Tiết:</span>
+                <span id="currentDeviceNameTitle" style="font-weight: 700; color: var(--accent-cyan); font-size: 1.1rem;">
+                    {{ devices[0].device_name }}
                 </span>
-            {% endif %}
+            </div>
+
+            <div class="device-switcher-nav" style="border: 0; padding: 0; margin: 0;">
+                {% for dev in devices %}
+                    <button class="device-tab-chip {% if loop.first %}active{% endif %}" id="tab-btn-dev-{{ dev.id }}" onclick="selectDevice({{ dev.id }})">
+                        <span>🖥️</span> {{ dev.device_name }}
+                    </button>
+                {% endfor %}
+            </div>
         </div>
-        <span class="text-dim" style="font-size: 0.8125rem;">Trẻ xin thêm giờ hoặc phản ánh chặn nhầm (Phê duyệt kích hoạt tức thì < 5s)</span>
-    </div>
 
-    {% if all_requests and all_requests|length > 0 %}
-        <div class="request-inbox-grid">
-            {% for req in all_requests %}
-                <div class="request-card" id="req-card-{{ req.id }}">
-                    <div class="request-card-header">
-                        {% if req.request_type == 'add_time' %}
-                            <span class="request-type-badge badge-add-time">⏱️ Xin thêm giờ (+15m)</span>
-                        {% elif req.request_type == 'unblock_domain' %}
-                            <span class="request-type-badge badge-unblock">🌐 Báo chặn nhầm Web</span>
-                        {% else %}
-                            <span class="request-type-badge badge-unblock">📦 Báo chặn nhầm App</span>
-                        {% endif %}
-                        <span class="text-dim" style="font-size: 0.75rem;">Thiết bị #{{ req.device_id }}</span>
-                    </div>
-
-                    {% if req.target %}
-                        <div>
-                            <span class="text-dim" style="font-size: 0.75rem;">Mục tiêu yêu cầu:</span>
-                            <span class="request-target-highlight">{{ req.target }}</span>
-                        </div>
-                    {% endif %}
-
-                    {% if req.reason %}
-                        <div class="request-reason">
-                            "{{ req.reason }}"
-                        </div>
-                    {% endif %}
-
-                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: var(--text-dim); margin-top: 0.25rem;">
-                        <span>Gửi lúc: {{ req.created_at|local_time('%H:%M %d/%m') }}</span>
-                        {% if req.status == 'approved' %}
-                            <span style="color: #10b981; font-weight: 600;">✅ Đã duyệt</span>
-                        {% elif req.status == 'rejected' %}
-                            <span style="color: #ef4444; font-weight: 600;">❌ Đã từ chối</span>
-                        {% else %}
-                            <span style="color: #f59e0b; font-weight: 600;">⏳ Đang chờ</span>
-                        {% endif %}
-                    </div>
-
-                    {% if req.status == 'pending' %}
-                        <div class="request-actions-row">
-                            {% if req.request_type == 'add_time' %}
-                                <button class="btn btn-primary btn-sm" style="flex: 1; padding: 0.4rem;" onclick="reviewChildRequest({{ req.id }}, 'approved', 'add_time')">
-                                    ✅ Duyệt (+15p)
-                                </button>
-                            {% elif req.request_type == 'unblock_domain' %}
-                                <button class="btn btn-primary btn-sm" style="flex: 1; padding: 0.4rem;" onclick="reviewChildRequest({{ req.id }}, 'approved', 'unblock_domain')">
-                                    ✅ Mở Chặn Web
-                                </button>
-                            {% else %}
-                                <button class="btn btn-primary btn-sm" style="flex: 1; padding: 0.4rem;" onclick="reviewChildRequest({{ req.id }}, 'approved', 'unblock_app')">
-                                    ✅ Mở Khóa App
-                                </button>
-                            {% endif %}
-                            <button class="btn btn-secondary btn-sm" style="flex: 1; padding: 0.4rem;" onclick="reviewChildRequest({{ req.id }}, 'rejected', '{{ req.request_type }}')">
-                                ❌ Từ chối
-                            </button>
-                        </div>
-                    {% endif %}
-                </div>
+        <!-- Render Device Details for Each Device -->
+        {% for dev in devices %}
+            {% set pol = policies_map[dev.id] if policies_map and dev.id in policies_map else None %}
+            {% set rep = reports_map[dev.id] if reports_map and dev.id in reports_map else None %}
+            {% set dev_requests = [] %}
+            {% for r in all_requests if r.device_id == dev.id %}
+                {% set _ = dev_requests.append(r) %}
             {% endfor %}
-        </div>
-    {% else %}
-        <p class="text-dim" style="font-size: 0.875rem; padding: 1rem 0;">Hiện chưa có yêu cầu nào từ máy của trẻ.</p>
-    {% endif %}
-</div>
+            {% set dev_audit = [] %}
+            {% for l in audit_logs if l.device_id == dev.id %}
+                {% set _ = dev_audit.append(l) %}
+            {% endfor %}
 
-<!-- ========================================================================
-     Week 3 (Version 0.3): Usage Reports & Analytics (F3 & NT5 - T3_021)
-     ======================================================================== -->
-<div class="section-card" id="reportsSection">
-    <div class="section-header">
-        <h2 class="section-title">Báo Cáo Sử Dụng & Minh Bạch Hai Chiều (F3 & NT5)</h2>
-        <span class="text-dim" style="font-size: 0.8125rem;">Biểu đồ trực quan hóa thời lượng, Top ứng dụng & Website trẻ truy cập hôm nay</span>
+            <div class="device-detail-wrapper" id="dev-detail-panel-{{ dev.id }}" style="display: {% if loop.first %}block{% else %}none{% endif %};">
+                
+                <!-- 1. Báo Cáo Sử Dụng & Thống Kê Máy -->
+                <div class="section-card" style="margin-bottom: 1.5rem;">
+                    <div class="section-header" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.75rem; margin-bottom: 1rem;">
+                        <div>
+                            <h2 class="section-title" style="font-size: 1.15rem; font-weight: 700;">Báo Cáo Sử Dụng Thiết Bị</h2>
+                            <p style="color: var(--text-muted); font-size: 0.825rem; margin-top: 0.2rem;">
+                                Biểu đồ thời lượng sử dụng, top ứng dụng và website trẻ truy cập hôm nay
+                            </p>
+                        </div>
+                        <span class="badge-subtle">{{ dev.device_name }}</span>
+                    </div>
+
+                    <div class="reports-dashboard-grid">
+                        <!-- Weekly Screen Time Chart -->
+                        <div class="chart-card">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                                <div style="font-size: 0.875rem; font-weight: 600; color: #fff;">Thời Lượng Dùng Máy 7 Ngày Qua (phút)</div>
+                                <span class="text-dim" style="font-size: 0.75rem; font-family: 'Geist Mono', monospace;">{{ dev.device_name }}</span>
+                            </div>
+                            <div class="chart-canvas-container" style="height: 230px;">
+                                <canvas id="weeklyUsageChart-{{ dev.id }}"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Today's Top Apps & Domains -->
+                        <div class="chart-card">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                <div style="font-size: 0.875rem; font-weight: 600; color: #fff;">Hôm Nay Đã Dùng Gì</div>
+                                <div class="badge-status badge-online" style="font-size: 0.75rem; font-family: 'Geist Mono', monospace;">
+                                    {{ (rep.total_screen_time_sec / 60)|round|int if rep else 0 }} phút
+                                </div>
+                            </div>
+
+                            <!-- Top Apps -->
+                            <div style="margin-top: 0.75rem;">
+                                <div style="font-size: 0.75rem; font-weight: 600; color: var(--accent-cyan); text-transform: uppercase; letter-spacing: 0.05em;">
+                                    Top Ứng Dụng Sử Dụng
+                                </div>
+                                <div class="usage-rank-list">
+                                    {% if rep and rep.top_apps and rep.top_apps|length > 0 %}
+                                        {% for app in rep.top_apps[:5] %}
+                                            <div class="usage-rank-item">
+                                                <div class="usage-item-name">📦 {{ app.subject }}</div>
+                                                <div class="usage-item-stat">{{ (app.total_duration_sec / 60)|round(1) }} phút</div>
+                                            </div>
+                                        {% endfor %}
+                                    {% else %}
+                                        <div class="text-dim" style="font-size: 0.775rem; padding: 0.35rem 0;">Chưa ghi nhận tiến trình ứng dụng nào hôm nay.</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Top Domains (CLEAN: Đã bỏ hoàn toàn chữ 'Đã chặn 5 lần') -->
+                            <div style="margin-top: 1rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="font-size: 0.75rem; font-weight: 600; color: var(--accent-emerald); text-transform: uppercase; letter-spacing: 0.05em;">
+                                        Top Tên Miền Truy Cập
+                                    </span>
+                                </div>
+                                <div class="usage-rank-list">
+                                    {% if rep and rep.top_domains and rep.top_domains|length > 0 %}
+                                        {% for dom in rep.top_domains[:5] %}
+                                            <div class="usage-rank-item">
+                                                <div class="usage-item-name">🌐 {{ dom.subject }}</div>
+                                                <div class="usage-item-stat">{{ dom.count }} lượt</div>
+                                            </div>
+                                        {% endfor %}
+                                    {% else %}
+                                        <div class="text-dim" style="font-size: 0.775rem; padding: 0.35rem 0;">Chưa ghi nhận truy vấn tên miền nào hôm nay.</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Hộp Thư Yêu Cầu Của Máy Này -->
+                <div class="section-card" style="margin-bottom: 1.5rem;">
+                    <div class="section-header" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.75rem; margin-bottom: 1rem;">
+                        <div style="display: flex; align-items: center; gap: 0.6rem;">
+                            <h2 class="section-title" style="font-size: 1.15rem; font-weight: 700;">Hộp Thư Yêu Cầu Của Con</h2>
+                            {% set dev_pending = [] %}
+                            {% for r in dev_requests if r.status == 'pending' %}
+                                {% set _ = dev_pending.append(r) %}
+                            {% endfor %}
+                            {% if dev_pending|length > 0 %}
+                                <span class="badge-status badge-online" style="font-size: 0.725rem;">
+                                    {{ dev_pending|length }} yêu cầu chờ duyệt
+                                </span>
+                            {% endif %}
+                        </div>
+                        <span class="text-dim" style="font-size: 0.8125rem;">Trẻ xin thêm giờ hoặc phản ánh mở chặn web/app</span>
+                    </div>
+
+                    {% if dev_requests and dev_requests|length > 0 %}
+                        <div class="request-inbox-grid">
+                            {% for req in dev_requests %}
+                                <div class="request-card" id="req-card-{{ req.id }}">
+                                    <div class="request-card-header">
+                                        {% if req.request_type == 'add_time' %}
+                                            <span class="request-type-badge badge-add-time">⏱️ Xin thêm giờ (+15m)</span>
+                                        {% elif req.request_type == 'unblock_domain' %}
+                                            <span class="request-type-badge badge-unblock">🌐 Báo chặn nhầm Web</span>
+                                        {% else %}
+                                            <span class="request-type-badge badge-unblock">📦 Báo chặn nhầm App</span>
+                                        {% endif %}
+                                        <span class="text-dim" style="font-size: 0.75rem;">Thiết bị #{{ req.device_id }}</span>
+                                    </div>
+
+                                    {% if req.target %}
+                                        <div>
+                                            <span class="text-dim" style="font-size: 0.75rem;">Mục tiêu yêu cầu:</span>
+                                            <span class="request-target-highlight">{{ req.target }}</span>
+                                        </div>
+                                    {% endif %}
+
+                                    {% if req.reason %}
+                                        <div class="request-reason">
+                                            "{{ req.reason }}"
+                                        </div>
+                                    {% endif %}
+
+                                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: var(--text-dim); margin-top: 0.25rem;">
+                                        <span>Gửi lúc: {{ req.created_at|local_time('%H:%M %d/%m') }}</span>
+                                        {% if req.status == 'approved' %}
+                                            <span style="color: #10b981; font-weight: 600;">✅ Đã duyệt</span>
+                                        {% elif req.status == 'rejected' %}
+                                            <span style="color: #ef4444; font-weight: 600;">❌ Đã từ chối</span>
+                                        {% else %}
+                                            <span style="color: #f59e0b; font-weight: 600;">⏳ Đang chờ</span>
+                                        {% endif %}
+                                    </div>
+
+                                    {% if req.status == 'pending' %}
+                                        <div class="request-actions-row">
+                                            {% if req.request_type == 'add_time' %}
+                                                <button class="btn btn-primary btn-sm" style="flex: 1; padding: 0.4rem;" onclick="reviewChildRequest({{ req.id }}, 'approved', 'add_time')">
+                                                    ✅ Duyệt (+15p)
+                                                </button>
+                                            {% elif req.request_type == 'unblock_domain' %}
+                                                <button class="btn btn-primary btn-sm" style="flex: 1; padding: 0.4rem;" onclick="reviewChildRequest({{ req.id }}, 'approved', 'unblock_domain')">
+                                                    ✅ Mở Chặn Web
+                                                </button>
+                                            {% else %}
+                                                <button class="btn btn-primary btn-sm" style="flex: 1; padding: 0.4rem;" onclick="reviewChildRequest({{ req.id }}, 'approved', 'unblock_app')">
+                                                    ✅ Mở Khóa App
+                                                </button>
+                                            {% endif %}
+                                            <button class="btn btn-secondary btn-sm" style="flex: 1; padding: 0.4rem;" onclick="reviewChildRequest({{ req.id }}, 'rejected', '{{ req.request_type }}')">
+                                                ❌ Từ chối
+                                            </button>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-dim" style="font-size: 0.875rem; padding: 0.75rem 0;">Hiện chưa có yêu cầu nào từ máy tính này.</p>
+                    {% endif %}
+                </div>
+
+                <!-- 3. Cài Đặt Giới Hạn Thời Gian & Quản Trị Máy Này -->
+                <div class="section-card" style="margin-bottom: 1.5rem;">
+                    <div class="section-header" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.75rem; margin-bottom: 1rem;">
+                        <div>
+                            <h2 class="section-title" style="font-size: 1.15rem; font-weight: 700;">Cài Đặt Thời Gian & Lịch Dùng</h2>
+                            <p style="color: var(--text-muted); font-size: 0.825rem; margin-top: 0.2rem;">
+                                Thiết lập hạn mức sử dụng và lịch khóa máy tính định kỳ
+                            </p>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; align-items: center;">
+                        <div style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.06);">
+                            <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.25rem;">Hạn Mức Đang Áp Dụng:</div>
+                            <div style="font-size: 0.95rem; font-weight: 600; color: #fff; line-height: 1.6;">
+                                <div>• Ngày thường: <strong style="color: var(--accent-cyan);">{{ pol.weekday_quota_minutes if pol else 90 }} phút</strong></div>
+                                <div>• Cuối tuần: <strong style="color: var(--accent-emerald);">{{ pol.weekend_quota_minutes if pol else 150 }} phút</strong></div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <button class="btn btn-primary" onclick="openPolicyModal({{ dev.id }}, '{{ dev.device_name }}', {{ pol.weekday_quota_minutes if pol else 90 }}, {{ pol.weekend_quota_minutes if pol else 150 }}, '{{ pol.schedule_matrix if pol else '' }}')">
+                                ⚙️ Cài Đặt Thời Gian & Lịch Dùng
+                            </button>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button class="btn btn-secondary btn-sm" style="flex: 1; color: #f87171;" onclick="openEraseModal({{ dev.id }}, '{{ dev.device_name }}')" title="Xóa toàn bộ dữ liệu lịch sử của thiết bị này">
+                                    🗑️ Xóa Dữ Liệu Máy
+                                </button>
+                                <button class="btn btn-secondary btn-sm" style="flex: 1; color: #ef4444;" onclick="handleDeleteDevice({{ dev.id }}, '{{ dev.device_name }}')" title="Gỡ bỏ thiết bị này khỏi danh sách quản lý">
+                                    ❌ Gỡ Thiết Bị
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. Nhật Ký Hoạt Động Của Máy Này -->
+                <div class="section-card">
+                    <div class="section-header" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.75rem; margin-bottom: 1rem;">
+                        <div>
+                            <h2 class="section-title" style="font-size: 1.15rem; font-weight: 700;">Nhật Ký Hoạt Động & Lịch Sử Lệnh</h2>
+                            <p style="color: var(--text-muted); font-size: 0.825rem; margin-top: 0.2rem;">
+                                Lịch sử điều khiển khẩn cấp và cập nhật chính sách cho thiết bị này
+                            </p>
+                        </div>
+                        <span class="badge-subtle">{{ dev_audit|length }} bản ghi</span>
+                    </div>
+
+                    {% if dev_audit and dev_audit|length > 0 %}
+                        <div class="table-responsive">
+                            <table class="data-table" style="font-size: 0.85rem;">
+                                <thead>
+                                    <tr>
+                                        <th>Thời Gian</th>
+                                        <th>Hành Động</th>
+                                        <th>Chi Tiết</th>
+                                        <th>Địa Chỉ IP</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for log in dev_audit %}
+                                        <tr>
+                                            <td class="text-dim" style="white-space: nowrap; font-family: 'Geist Mono', monospace;">
+                                                {{ log.created_at|local_time('%H:%M:%S %d/%m/%Y') }}
+                                            </td>
+                                            <td>
+                                                <span class="badge-status" style="background: rgba(14, 165, 233, 0.15); color: #38bdf8;">
+                                                    {{ log.action }}
+                                                </span>
+                                            </td>
+                                            <td style="max-width: 420px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ log.new_value }}">
+                                                <code style="font-family: 'Geist Mono', monospace; font-size: 0.8rem;">{{ log.new_value }}</code>
+                                            </td>
+                                            <td class="text-dim" style="font-family: 'Geist Mono', monospace;">
+                                                {{ log.ip_address or '127.0.0.1' }}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-dim" style="font-size: 0.875rem; padding: 0.75rem 0;">Chưa ghi nhận hoạt động nào trên máy tính này.</p>
+                    {% endif %}
+                </div>
+
+            </div>
+        {% endfor %}
     </div>
-
-    {% if devices and devices|length > 0 %}
-        {% set primary_dev = devices[0] %}
-        {% set rep = reports_map[primary_dev.id] if reports_map and primary_dev.id in reports_map else None %}
-        <div class="reports-dashboard-grid">
-            <!-- Weekly Screen Time Chart -->
-            <div class="chart-card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-                    <div style="font-size: 0.9rem; font-weight: 600; color: #fff;">Thời lượng dùng máy 7 ngày qua (phút)</div>
-                    <span class="text-dim" style="font-size: 0.75rem;">{{ primary_dev.device_name }}</span>
-                </div>
-                <div class="chart-canvas-container">
-                    <canvas id="weeklyUsageChart"></canvas>
-                </div>
-            </div>
-
-            <!-- Today's Top Apps & Domains -->
-            <div class="chart-card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                    <div style="font-size: 0.9rem; font-weight: 600; color: #fff;">Hôm nay đã dùng gì (NT5)</div>
-                    <div class="badge-status badge-online" style="font-size: 0.75rem;">
-                        {{ (rep.total_screen_time_sec / 60)|round|int if rep else 0 }} phút
-                    </div>
-                </div>
-
-                <div style="margin-top: 0.75rem;">
-                    <div style="font-size: 0.8rem; font-weight: 600; color: var(--accent-cyan); text-transform: uppercase; letter-spacing: 0.05em;">
-                        Top 5 Ứng Dụng
-                    </div>
-                    <div class="usage-rank-list">
-                        {% if rep and rep.top_apps and rep.top_apps|length > 0 %}
-                            {% for app in rep.top_apps[:5] %}
-                                <div class="usage-rank-item">
-                                    <div class="usage-item-name">📦 {{ app.subject }}</div>
-                                    <div class="usage-item-stat">{{ (app.total_duration_sec / 60)|round(1) }} phút</div>
-                                </div>
-                            {% endfor %}
-                        {% else %}
-                            <div class="text-dim" style="font-size: 0.775rem; padding: 0.25rem 0;">Chưa ghi nhận tiến trình ứng dụng nào hôm nay.</div>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <div style="margin-top: 1rem;">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 0.8rem; font-weight: 600; color: var(--accent-emerald); text-transform: uppercase; letter-spacing: 0.05em;">
-                            Top 5 Tên Miền Truy Cập (NT2 FQDN)
-                        </span>
-                        {% if rep and rep.blocked_attempts_count > 0 %}
-                            <span class="badge-blocked">Đã chặn {{ rep.blocked_attempts_count }} lần</span>
-                        {% endif %}
-                    </div>
-                    <div class="usage-rank-list">
-                        {% if rep and rep.top_domains and rep.top_domains|length > 0 %}
-                            {% for dom in rep.top_domains[:5] %}
-                                <div class="usage-rank-item">
-                                    <div class="usage-item-name">🌐 {{ dom.subject }}</div>
-                                    <div class="usage-item-stat">{{ dom.count }} lượt</div>
-                                </div>
-                            {% endfor %}
-                        {% else %}
-                            <div class="text-dim" style="font-size: 0.775rem; padding: 0.25rem 0;">Chưa ghi nhận truy vấn tên miền nào hôm nay.</div>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-        </div>
-    {% endif %}
-</div>
+{% endif %}
 
 <!-- ========================================================================
-     Week 3 (Version 0.3): 200-Domain Classification & DNS Filtering (F2, NT6 - T3_022)
+     SECTION 3: Bộ Lọc Tên Miền Web (Chung toàn hệ thống)
      ======================================================================== -->
-<div class="section-card" id="domainFilteringSection">
-    <div class="section-header">
+<div class="section-card" id="domainFilteringSection" style="margin-bottom: 2rem;">
+    <div class="section-header" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.85rem; margin-bottom: 1.25rem;">
         <div style="display: flex; align-items: center; gap: 0.6rem;">
-            <h2 class="section-title">Danh Mục Tên Miền & Lọc DNS Sinkhole (F2)</h2>
-            <span class="badge-whitelist">Bảo vệ NT6 (Trường học & Tổng đài 111)</span>
+            <h2 class="section-title" style="font-size: 1.2rem; font-weight: 700; color: #fff;">Danh Mục Tên Miền Web</h2>
+            <span class="badge-whitelist">Miễn trừ giáo dục & bảo vệ trẻ</span>
         </div>
         <span class="text-dim" style="font-size: 0.8125rem;">Tổng cộng {{ total_domain_rules|default(10) }} tên miền phân loại 6 nhóm</span>
     </div>
@@ -377,7 +459,7 @@
     <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
         <input type="text" id="domainSearchInput" class="form-input" placeholder="🔍 Tìm kiếm tên miền (ví dụ: youtube, roblox, tongdai111)..." style="max-width: 380px;" oninput="filterDomainSearch()">
         
-        <form id="addDomainForm" onsubmit="handleAddDomainRule(event)" style="display: flex; gap: 0.5rem; align-items: center;">
+        <form id="addDomainForm" onsubmit="handleAddDomainRule(event)" style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
             <input type="text" id="newDomainInput" class="form-input" placeholder="domain.com" required style="width: 180px;">
             <select id="newDomainCategory" class="form-input" style="width: 140px;">
                 <option value="Giáo dục">Giáo dục</option>
@@ -399,10 +481,10 @@
         <table class="data-table" id="domainsTable">
             <thead>
                 <tr>
-                    <th>Tên Miền (FQDN / Pattern)</th>
+                    <th>Tên Miền</th>
                     <th>Nhóm Danh Mục</th>
                     <th>Chính Sách</th>
-                    <th>Đặc Quyền NT6</th>
+                    <th>Bảo Vệ Đặc Biệt</th>
                     <th>Thao Tác</th>
                 </tr>
             </thead>
@@ -446,7 +528,7 @@
                                     </button>
                                 </div>
                             {% else %}
-                                <span class="text-dim" style="font-size: 0.75rem; font-style: italic;">Bảo vệ NT6</span>
+                                <span class="text-dim" style="font-size: 0.75rem; font-style: italic;">Miễn trừ</span>
                             {% endif %}
                         </td>
                     </tr>
@@ -457,22 +539,22 @@
 </div>
 
 <!-- ========================================================================
-     Week 3 (Version 0.3): Application Control by SHA-256 Hash (F2 - T3_023)
+     SECTION 4: Kiểm Soát Ứng Dụng Chặn (Chung toàn hệ thống)
      ======================================================================== -->
 <div class="section-card" id="appControlSection">
-    <div class="section-header">
+    <div class="section-header" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.85rem; margin-bottom: 1.25rem;">
         <div style="display: flex; align-items: center; gap: 0.6rem;">
-            <h2 class="section-title">Kiểm Soát Ứng Dụng Theo Mã Băm SHA-256 (F2)</h2>
-            <span class="badge-status badge-offline" style="font-size: 0.75rem;">Chống đổi tên file thực thi</span>
+            <h2 class="section-title" style="font-size: 1.2rem; font-weight: 700; color: #fff;">Kiểm Soát Ứng Dụng Chặn</h2>
+            <span class="badge-status badge-offline" style="font-size: 0.75rem;">Ngăn chặn ứng dụng vượt rào</span>
         </div>
-        <span class="text-dim" style="font-size: 0.8125rem;">Quét tiến trình mỗi 3-5 giây và đối chiếu mã hash nhị phân</span>
+        <span class="text-dim" style="font-size: 0.8125rem;">Tự động phát hiện và ngăn chặn ứng dụng chạy ngầm</span>
     </div>
 
     <!-- Add App Rule Form -->
     <form id="addAppRuleForm" onsubmit="handleAddAppRule(event)" style="display: flex; gap: 0.6rem; align-items: center; margin-bottom: 1rem; flex-wrap: wrap;">
         <input type="text" id="newAppName" class="form-input" placeholder="Tên ứng dụng (vd: notepad.exe, game.exe)" required style="width: 240px;">
         <input type="text" id="newAppHash" class="form-input code-monospace" placeholder="Mã SHA-256 (Tùy chọn, để trống sẽ tự tạo)" style="width: 320px;">
-        <input type="text" id="newAppDesc" class="form-input" placeholder="Lý do khóa (NT4 giải thích)" style="width: 220px;">
+        <input type="text" id="newAppDesc" class="form-input" placeholder="Lý do khóa ứng dụng" style="width: 220px;">
         <button type="submit" class="btn btn-primary btn-sm">➕ Thêm Khóa Ứng Dụng</button>
     </form>
 
@@ -482,7 +564,7 @@
                 <tr>
                     <th>Tên Tiến Trình</th>
                     <th>Mã Băm Nhị Phân SHA-256</th>
-                    <th>Lý Do Quy Định (NT4)</th>
+                    <th>Lý Do Khóa</th>
                     <th>Trạng Thái</th>
                     <th>Thao Tác</th>
                 </tr>
@@ -519,7 +601,7 @@
                 {% else %}
                     <tr>
                         <td colspan="5" class="text-dim" style="text-align: center; padding: 1.5rem;">
-                            Chưa có ứng dụng nào bị cấu hình khóa SHA-256. Thêm mã băm ở trên để kích hoạt kiểm soát.
+                            Chưa có ứng dụng nào bị cấu hình khóa. Thêm ứng dụng ở trên để kích hoạt kiểm soát.
                         </td>
                     </tr>
                 {% endif %}
@@ -528,11 +610,14 @@
     </div>
 </div>
 
-<!-- Policy Configuration Modal (T2_020 & T2_021) -->
+<!-- ========================================================================
+     MODALS
+     ======================================================================== -->
+<!-- Policy Configuration Modal -->
 <div id="policyModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="policyModalTitle">
     <div class="modal-dialog" style="max-width: 900px; width: 95%;">
         <div class="modal-header">
-            <h3 id="policyModalTitle" class="modal-title">Cấu Hình Thời Gian & Lịch Tuần (F1)</h3>
+            <h3 id="policyModalTitle" class="modal-title">Cài Đặt Thời Gian & Lịch Dùng</h3>
             <button id="btnClosePolicyModal" class="modal-close" aria-label="Đóng">&times;</button>
         </div>
 
@@ -562,7 +647,7 @@
         <div style="margin-top: 1rem;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
                 <label style="font-size: 0.9rem; font-weight: 600; color: #fff;">
-                    Ma Trận Lịch Tuần 7×48 (Độ phân giải 30 phút / ô)
+                    Ma Trận Lịch Tuần (Độ phân giải 30 phút / ô)
                 </label>
                 <div style="display: flex; gap: 0.5rem;">
                     <button type="button" class="btn-xs btn-blue-soft" onclick="applySchedulePreset('all')">Mở 24/7</button>
@@ -595,13 +680,13 @@
         <div class="modal-actions" style="margin-top: 1.5rem;">
             <button id="btnCancelPolicyModal" class="btn btn-secondary">Hủy</button>
             <button id="btnSavePolicyModal" class="btn btn-primary" onclick="savePolicyChanges()">
-                <span>💾</span> Lưu Thay Đổi & Đẩy Ngay Xuống Máy Trẻ
+                <span>💾</span> Lưu Thay Đổi & Cập Nhật Tức Thì
             </button>
         </div>
     </div>
 </div>
 
-<!-- Pairing Code Generation Modal (T028) -->
+<!-- Pairing Code Generation Modal -->
 <div id="pairingModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <div class="modal-dialog">
         <div class="modal-header">
@@ -618,7 +703,7 @@
             <div id="pairingCodeDisplay" class="code-value">--------</div>
             <div class="countdown-box">
                 <span>⏱️ Hiệu lực:</span>
-                <strong id="countdownTimer" style="font-family: 'JetBrains Mono', monospace;">10:00</strong>
+                <strong id="countdownTimer" style="font-family: 'Geist Mono', monospace;">10:00</strong>
             </div>
             <div id="pairingTimeRange" style="font-size: 0.8125rem; color: var(--text-dim); margin-top: 0.5rem; text-align: center;">
                 Tạo lúc: --:-- · Hết hạn: --:--
@@ -642,19 +727,19 @@
     </div>
 </div>
 
-<!-- Right to Erasure Confirmation Modal (Decree 13/2023/ND-CP - T4_016) -->
+<!-- Right to Erasure Confirmation Modal -->
 <div id="eraseDataModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="eraseModalTitle">
     <div class="modal-dialog">
         <div class="modal-header">
-            <h3 id="eraseModalTitle" class="modal-title" style="color: #ef4444;">⚠️ Xóa Toàn Bộ Dữ Liệu Của Con</h3>
+            <h3 id="eraseModalTitle" class="modal-title" style="color: #ef4444;">⚠️ Xóa Toàn Bộ Dữ Liệu Máy Tính</h3>
             <button id="btnCloseEraseModal" class="modal-close" onclick="closeEraseModal()" aria-label="Đóng">&times;</button>
         </div>
 
         <div class="alert alert-danger" style="margin-top: 0.75rem; font-size: 0.8125rem;">
             <span>⚖️</span>
             <div>
-                <strong>Quyền được xóa dữ liệu (Điều 20 Nghị định 13/2023/NĐ-CP):</strong><br>
-                Hành động này sẽ <strong>xóa vĩnh viễn</strong> toàn bộ lịch sử truy cập tên miền, nhật ký ứng dụng, dữ liệu nhịp tim và các yêu cầu của thiết bị <strong id="eraseTargetDevName"></strong> trên cả Máy chủ và Bộ đệm máy con (Client Agent). Hành động này <strong>không thể hoàn tác</strong>.
+                <strong>Quyền được xóa dữ liệu:</strong><br>
+                Hành động này sẽ <strong>xóa vĩnh viễn</strong> toàn bộ lịch sử truy cập tên miền, nhật ký ứng dụng, dữ liệu nhịp tim và các yêu cầu của thiết bị <strong id="eraseTargetDevName"></strong> trên cả Máy chủ và Bộ đệm máy con. Hành động này <strong>không thể hoàn tác</strong>.
             </div>
         </div>
 
@@ -684,6 +769,118 @@
     let countdownInterval = null;
     let currentCode = "";
 
+    // Data maps injected from server
+    const weeklyStatsMap = {{ weekly_stats_map | tojson }};
+    const registeredDevIds = [{% for dev in devices %}{{ dev.id }}{% if not loop.last %},{% endif %}{% endfor %}];
+    let activeDevId = registeredDevIds.length > 0 ? registeredDevIds[0] : null;
+    const chartInstances = {};
+
+    // Toast utility
+    function showToast(message, isSuccess = true) {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = 'toast-msg';
+        toast.innerHTML = `<span>${isSuccess ? '✅' : '⚠️'}</span> <span>${message}</span>`;
+        container.appendChild(toast);
+        setTimeout(() => {
+            toast.remove();
+        }, 4000);
+    }
+
+    // Device selection handler (Multi-Device Management)
+    function selectDevice(devId) {
+        activeDevId = devId;
+
+        // 1. Update active card in grid
+        document.querySelectorAll('.device-card-item').forEach(card => {
+            card.classList.remove('active');
+        });
+        const targetCard = document.getElementById(`card-device-${devId}`);
+        if (targetCard) targetCard.classList.add('active');
+
+        // 2. Update switcher chips
+        document.querySelectorAll('.device-tab-chip').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        const targetTab = document.getElementById(`tab-btn-dev-${devId}`);
+        if (targetTab) targetTab.classList.add('active');
+
+        // 3. Show correct detail panel
+        document.querySelectorAll('.device-detail-wrapper').forEach(panel => {
+            panel.style.display = 'none';
+        });
+        const targetPanel = document.getElementById(`dev-detail-panel-${devId}`);
+        if (targetPanel) {
+            targetPanel.style.display = 'block';
+        }
+
+        // 4. Update title
+        const nameTitle = document.getElementById('currentDeviceNameTitle');
+        if (nameTitle && targetCard) {
+            const devName = targetCard.querySelector('.device-card-top strong, .device-card-top div div')?.textContent || `Thiết bị #${devId}`;
+            nameTitle.textContent = devName.trim();
+        }
+
+        // 5. Render or update chart for this device
+        renderWeeklyChart(devId);
+    }
+
+    // Render Weekly Chart with Chart.js
+    function renderWeeklyChart(devId) {
+        const canvasId = `weeklyUsageChart-${devId}`;
+        const canvas = document.getElementById(canvasId);
+        if (!canvas || typeof Chart === 'undefined') return;
+
+        if (chartInstances[devId]) {
+            return; // Already initialized
+        }
+
+        const stats = weeklyStatsMap[devId] || [];
+        const labels = stats.map(s => s.date);
+        const dataVals = stats.map(s => s.minutes);
+
+        const ctx = canvas.getContext('2d');
+        chartInstances[devId] = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Số phút sử dụng',
+                    data: dataVals,
+                    backgroundColor: 'rgba(14, 165, 233, 0.75)',
+                    borderColor: '#0ea5e9',
+                    borderWidth: 1,
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: { color: '#94a3b8', font: { family: 'Geist Mono' } }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#94a3b8', font: { family: 'Geist Mono' } }
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    }
+
+    // Initialize first device chart on load
+    document.addEventListener('DOMContentLoaded', () => {
+        if (activeDevId) {
+            renderWeeklyChart(activeDevId);
+        }
+    });
+
     // Pairing modal elements
     const pairModal = document.getElementById('pairingModal');
     const btnOpenPair = document.getElementById('btnOpenPairModal');
@@ -700,34 +897,14 @@
     const policyGrid = document.getElementById('scheduleMatrixGrid');
 
     let currentMatrixArray = new Array(336).fill('1');
-
     const DAY_NAMES = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ Nhật"];
 
-    // Toast utility
-    function showToast(message, isSuccess = true) {
-        const container = document.getElementById('toastContainer');
-        const toast = document.createElement('div');
-        toast.className = 'toast-msg';
-        toast.innerHTML = `<span>${isSuccess ? '✅' : '⚠️'}</span> <span>${message}</span>`;
-        container.appendChild(toast);
-        setTimeout(() => {
-            toast.remove();
-        }, 4000);
-    }
-
-    // Attach trigger to empty-state button if present
     document.querySelectorAll('.btn-open-modal-trigger').forEach(b => {
         b.addEventListener('click', openModalAndGenerateCode);
     });
 
-    if (btnOpenPair) {
-        btnOpenPair.addEventListener('click', openModalAndGenerateCode);
-    }
-
-    if (btnClosePair) {
-        btnClosePair.addEventListener('click', closePairModal);
-    }
-
+    if (btnOpenPair) btnOpenPair.addEventListener('click', openModalAndGenerateCode);
+    if (btnClosePair) btnClosePair.addEventListener('click', closePairModal);
     if (btnDonePair) {
         btnDonePair.addEventListener('click', () => {
             closePairModal();
@@ -749,97 +926,101 @@
     async function openModalAndGenerateCode() {
         pairModal.classList.add('active');
         codeDisplay.textContent = "ĐANG TẠO...";
-        timerDisplay.textContent = "10:00";
+        timerDisplay.textContent = "--:--";
 
         try {
-            const res = await fetch('/api/v1/enroll/create-code', {
+            const res = await fetch('/api/v1/enrollment/pairing-codes', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' }
             });
 
             if (!res.ok) {
-                throw new Error("Không thể tạo mã ghép đôi");
+                const errData = await res.json().catch(() => ({}));
+                throw new Error(errData.detail || "Không thể tạo mã ghép đôi");
             }
 
             const data = await res.json();
             currentCode = data.code;
-            codeDisplay.textContent = data.code;
+            codeDisplay.textContent = currentCode;
 
-            // Hiển thị giờ tạo và giờ hết hạn theo giờ Việt Nam
-            const now = new Date();
-            let expireDate = new Date(now.getTime() + 10 * 60 * 1000);
-            if (data.expires_at) {
-                const rawIso = (data.expires_at.endsWith('Z') || data.expires_at.includes('+')) 
-                    ? data.expires_at 
-                    : data.expires_at + 'Z';
-                const parsed = new Date(rawIso);
-                if (!isNaN(parsed.getTime())) {
-                    expireDate = parsed;
+            if (data.created_at && data.expires_at) {
+                const fmtLocal = (iso) => {
+                    const d = new Date(iso);
+                    return d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+                };
+                const tr = document.getElementById('pairingTimeRange');
+                if (tr) {
+                    tr.textContent = `Tạo lúc: ${fmtLocal(data.created_at)} · Hết hạn: ${fmtLocal(data.expires_at)}`;
                 }
             }
-            const pad = (n) => n.toString().padStart(2, '0');
-            const formatTime = (d) => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
-            const timeRangeEl = document.getElementById('pairingTimeRange');
-            if (timeRangeEl) {
-                timeRangeEl.textContent = `Tạo lúc: ${formatTime(now)} · Hết hạn: ${formatTime(expireDate)}`;
-            }
 
-            startCountdown(600);
+            const expireDate = new Date(data.expires_at).getTime();
+            startCountdown(expireDate);
         } catch (err) {
-            codeDisplay.textContent = "LỖI";
-            alert("Lỗi khi tạo mã: " + err.message);
+            codeDisplay.textContent = "LỖI TẠO MÃ";
+            showToast(`Lỗi: ${err.message}`, false);
         }
     }
 
     function closePairModal() {
         pairModal.classList.remove('active');
-        if (countdownInterval) clearInterval(countdownInterval);
+        if (countdownInterval) {
+            clearInterval(countdownInterval);
+            countdownInterval = null;
+        }
     }
 
-    function closePolicyModal() {
-        policyModal.classList.remove('active');
-    }
-
-    function startCountdown(totalSeconds) {
+    function startCountdown(expireTimeMs) {
         if (countdownInterval) clearInterval(countdownInterval);
-        let remaining = totalSeconds;
 
-        function updateDisplay() {
-            const m = Math.floor(remaining / 60);
-            const s = remaining % 60;
-            timerDisplay.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-            if (remaining <= 0) {
+        function update() {
+            const now = new Date().getTime();
+            const distance = expireTimeMs - now;
+
+            if (distance <= 0) {
                 clearInterval(countdownInterval);
-                codeDisplay.style.color = 'var(--status-danger)';
-                timerDisplay.textContent = "HẾT HẠN";
+                timerDisplay.textContent = "00:00 (Hết hạn)";
+                timerDisplay.style.color = "var(--status-danger)";
+                codeDisplay.style.opacity = "0.5";
+                return;
             }
-            remaining--;
+
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            timerDisplay.textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            timerDisplay.style.color = "var(--text-main)";
+            codeDisplay.style.opacity = "1";
         }
 
-        updateDisplay();
-        countdownInterval = setInterval(updateDisplay, 1000);
+        update();
+        countdownInterval = setInterval(update, 1000);
     }
 
-    btnCopy.addEventListener('click', async () => {
-        if (!currentCode) return;
-        try {
-            await navigator.clipboard.writeText(currentCode);
-            btnCopy.innerHTML = "<span>✅</span> Đã Sao Chép!";
-            setTimeout(() => {
-                btnCopy.innerHTML = "<span>📋</span> Sao Chép Mã";
-            }, 2000);
-        } catch (e) {
-            prompt("Sao chép mã này:", currentCode);
-        }
-    });
+    if (btnCopy) {
+        btnCopy.addEventListener('click', () => {
+            if (!currentCode || currentCode === "ĐANG TẠO...") return;
+            navigator.clipboard.writeText(currentCode).then(() => {
+                showToast("Đã sao chép mã ghép đôi vào khay nhớ tạm!");
+            }).catch(() => {
+                showToast("Không thể sao chép, vui lòng nhập thủ công", false);
+            });
+        });
+    }
 
-    // Emergency command dispatcher (< 5s via WebSocket)
-    async function sendEmergencyCommand(deviceId, commandType, minutes = 15, countdown = 30) {
+    async function sendEmergencyCommand(deviceId, commandType, minutes = 15) {
+        const payload = {
+            command_type: commandType,
+            minutes: commandType === 'add_time' ? minutes : null,
+            countdown: commandType === 'lock_now' ? 30 : null
+        };
+
         try {
-            const res = await fetch(`/api/v1/devices/${deviceId}/command`, {
+            const res = await fetch(`/api/v1/commands/devices/${deviceId}/emergency`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ command_type: commandType, minutes: minutes, countdown: countdown })
+                body: JSON.stringify(payload)
             });
 
             if (!res.ok) {
@@ -847,56 +1028,51 @@
                 throw new Error(errData.detail || "Không thể gửi lệnh");
             }
 
-            const actionNames = {
-                'lock_now': `Thông báo cảnh báo và Khóa máy (${countdown}s đếm ngược)`,
-                'unlock': 'Mở khóa máy tính',
-                'add_time': `Cộng thêm ${minutes} phút`
-            };
-            showToast(`Đã gửi lệnh: ${actionNames[commandType] || commandType} tới thiết bị #${deviceId}`);
+            const resData = await res.json();
+            const actionText = 
+                commandType === 'lock_now' ? "Khóa màn hình máy tính con" :
+                commandType === 'unlock' ? "Mở khóa màn hình máy tính con" :
+                `Cộng thêm ${minutes} phút sử dụng`;
+
+            showToast(`Đã phát lệnh thành công: ${actionText}`);
+            setTimeout(() => window.location.reload(), 1500);
         } catch (err) {
             showToast(`Lỗi: ${err.message}`, false);
         }
     }
 
-    // Policy Modal & 7x48 Matrix Builder
-    function openPolicyModal(deviceId, deviceName, weekdayQuota, weekendQuota, matrixStr) {
+    function openPolicyModal(deviceId, deviceName, weekdayQuota, weekendQuota, scheduleMatrix) {
         document.getElementById('policyDeviceId').value = deviceId;
-        document.getElementById('policyModalTitle').textContent = `Cấu hình chính sách: ${deviceName} (#${deviceId})`;
-        document.getElementById('inputWeekdayQuota').value = weekdayQuota;
-        document.getElementById('inputWeekendQuota').value = weekendQuota;
+        document.getElementById('policyModalTitle').textContent = `Cài Đặt Thời Gian & Lịch Dùng — "${deviceName}"`;
+        document.getElementById('inputWeekdayQuota').value = weekdayQuota || 90;
+        document.getElementById('inputWeekendQuota').value = weekendQuota || 150;
 
-        if (matrixStr && matrixStr.length === 336) {
-            currentMatrixArray = matrixStr.split('');
+        if (scheduleMatrix && scheduleMatrix.length === 336) {
+            currentMatrixArray = scheduleMatrix.split('');
         } else {
-            // Default 06:00 to 22:00
-            const dayDef = ("0".repeat(12)) + ("1".repeat(32)) + ("0".repeat(4));
-            currentMatrixArray = (dayDef.repeat(7)).split('');
+            currentMatrixArray = new Array(336).fill('1');
         }
 
-        renderMatrixGrid();
+        renderScheduleMatrixGrid();
         policyModal.classList.add('active');
     }
 
-    function renderMatrixGrid() {
+    function closePolicyModal() {
+        policyModal.classList.remove('active');
+    }
+
+    function renderScheduleMatrixGrid() {
         policyGrid.innerHTML = '';
+        policyGrid.appendChild(document.createElement('div'));
 
-        // Row 0: Hour Header
-        const corner = document.createElement('div');
-        corner.className = 'matrix-header-cell';
-        corner.textContent = 'Giờ';
-        policyGrid.appendChild(corner);
-
-        for (let slot = 0; slot < 48; slot++) {
-            const h = Math.floor(slot / 2);
-            const m = (slot % 2) === 0 ? "00" : "30";
-            const hCell = document.createElement('div');
-            hCell.className = 'matrix-header-cell';
-            hCell.textContent = (slot % 2 === 0) ? `${h}h` : '';
-            hCell.title = `${h.toString().padStart(2, '0')}:${m}`;
-            policyGrid.appendChild(hCell);
+        for (let h = 0; h < 24; h += 2) {
+            const hHeader = document.createElement('div');
+            hHeader.className = 'matrix-hour-header';
+            hHeader.style.gridColumn = `span 4`;
+            hHeader.textContent = `${h}h`;
+            policyGrid.appendChild(hHeader);
         }
 
-        // 7 Rows for 7 days
         for (let day = 0; day < 7; day++) {
             const dayLabel = document.createElement('div');
             dayLabel.className = 'matrix-day-label';
@@ -904,18 +1080,30 @@
             policyGrid.appendChild(dayLabel);
 
             for (let slot = 0; slot < 48; slot++) {
-                const idx = day * 48 + slot;
+                const index = day * 48 + slot;
                 const cell = document.createElement('div');
-                const isAllowed = currentMatrixArray[idx] === '1';
-                cell.className = `matrix-slot-cell ${isAllowed ? 'allowed' : 'blocked'}`;
-                const h = Math.floor(slot / 2);
-                const m = (slot % 2) === 0 ? "00" : "30";
-                cell.title = `${DAY_NAMES[day]} ${h.toString().padStart(2, '0')}:${m} - ${isAllowed ? 'Cho phép' : 'Khóa'}`;
-                
+                cell.className = 'time-cell';
+
+                const hour = Math.floor(slot / 2);
+                const min = (slot % 2) * 30;
+                cell.title = `${DAY_NAMES[day]} ${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
+
+                if (currentMatrixArray[index] === '1') {
+                    cell.classList.add('allowed');
+                } else {
+                    cell.classList.add('blocked');
+                }
+
                 cell.addEventListener('click', () => {
-                    const newState = currentMatrixArray[idx] === '1' ? '0' : '1';
-                    currentMatrixArray[idx] = newState;
-                    cell.className = `matrix-slot-cell ${newState === '1' ? 'allowed' : 'blocked'}`;
+                    if (currentMatrixArray[index] === '1') {
+                        currentMatrixArray[index] = '0';
+                        cell.classList.remove('allowed');
+                        cell.classList.add('blocked');
+                    } else {
+                        currentMatrixArray[index] = '1';
+                        cell.classList.remove('blocked');
+                        cell.classList.add('allowed');
+                    }
                 });
 
                 policyGrid.appendChild(cell);
@@ -926,15 +1114,28 @@
     function applySchedulePreset(presetType) {
         if (presetType === 'all') {
             currentMatrixArray = new Array(336).fill('1');
-        } else if (presetType === 'night_block') {
-            const dayDef = ("0".repeat(12)) + ("1".repeat(32)) + ("0".repeat(4));
-            currentMatrixArray = (dayDef.repeat(7)).split('');
         } else if (presetType === 'school') {
-            // 08:00 to 17:00 allowed (slots 16..33)
-            const dayDef = ("0".repeat(16)) + ("1".repeat(18)) + ("0".repeat(14));
-            currentMatrixArray = (dayDef.repeat(7)).split('');
+            currentMatrixArray = new Array(336).fill('0');
+            for (let day = 0; day < 5; day++) {
+                for (let h = 8; h < 17; h++) {
+                    currentMatrixArray[day * 48 + h * 2] = '1';
+                    currentMatrixArray[day * 48 + h * 2 + 1] = '1';
+                }
+            }
+        } else if (presetType === 'night_block') {
+            currentMatrixArray = new Array(336).fill('1');
+            for (let day = 0; day < 7; day++) {
+                for (let h = 0; h < 6; h++) {
+                    currentMatrixArray[day * 48 + h * 2] = '0';
+                    currentMatrixArray[day * 48 + h * 2 + 1] = '0';
+                }
+                for (let h = 22; h < 24; h++) {
+                    currentMatrixArray[day * 48 + h * 2] = '0';
+                    currentMatrixArray[day * 48 + h * 2 + 1] = '0';
+                }
+            }
         }
-        renderMatrixGrid();
+        renderScheduleMatrixGrid();
     }
 
     async function savePolicyChanges() {
@@ -944,8 +1145,8 @@
         const scheduleMatrix = currentMatrixArray.join('');
 
         try {
-            const res = await fetch(`/api/v1/policy?device_id=${deviceId}`, {
-                method: 'POST',
+            const res = await fetch(`/api/v1/policies/devices/${deviceId}`, {
+                method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     weekday_quota_minutes: weekdayQuota,
@@ -959,7 +1160,7 @@
                 throw new Error(errData.detail || "Không thể lưu chính sách");
             }
 
-            showToast("Đã lưu chính sách thành công và phát tín hiệu đồng bộ tới máy trẻ!");
+            showToast("Đã lưu chính sách thành công và cập nhật tức thì xuống máy con!");
             closePolicyModal();
             setTimeout(() => window.location.reload(), 1500);
         } catch (err) {
@@ -967,56 +1168,14 @@
         }
     }
 
-    // Auto reload every 30 seconds if modals are not active
+    // Auto reload every 45s if modals not active
     setInterval(() => {
         if (!pairModal.classList.contains('active') && !policyModal.classList.contains('active')) {
             window.location.reload();
         }
-    }, 30000);
+    }, 45000);
 
-    /* ======================================================================
-       Week 3 (Version 0.3): Reports, Filtering & Child Voice Handlers
-       ====================================================================== */
-    const weeklyStats = {{ (weekly_stats_map[devices[0].id] if devices and devices|length > 0 and devices[0].id in weekly_stats_map else []) | tojson }};
-
-    if (document.getElementById('weeklyUsageChart') && typeof Chart !== 'undefined' && weeklyStats.length > 0) {
-        const ctx = document.getElementById('weeklyUsageChart').getContext('2d');
-        const labels = weeklyStats.map(s => s.date);
-        const dataVals = weeklyStats.map(s => s.minutes);
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Số phút sử dụng',
-                    data: dataVals,
-                    backgroundColor: 'rgba(14, 165, 233, 0.7)',
-                    borderColor: '#0ea5e9',
-                    borderWidth: 1,
-                    borderRadius: 4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
-                        ticks: { color: '#94a3b8' }
-                    },
-                    x: {
-                        grid: { display: false },
-                        ticks: { color: '#94a3b8' }
-                    }
-                },
-                plugins: {
-                    legend: { display: false }
-                }
-            }
-        });
-    }
-
+    // Request Review Handler
     async function reviewChildRequest(reqId, status, reqType = 'add_time') {
         try {
             let parentMsg = status === 'approved' ? 'Cha mẹ đồng ý yêu cầu của con.' : 'Cha mẹ chưa đồng ý yêu cầu này.';
@@ -1174,7 +1333,6 @@
         });
     }
 
-    // Right to Erasure modal logic (T4_016)
     function openEraseModal(devId, devName) {
         document.getElementById('eraseTargetDevId').value = devId;
         document.getElementById('eraseTargetDevName').textContent = `"${devName}" (#${devId})`;
@@ -1208,7 +1366,7 @@
             }
 
             closeEraseModal();
-            showToast('Đã xóa toàn bộ dữ liệu của con trên máy chủ và máy trạm (Nghị định 13/2023).');
+            showToast('Đã xóa toàn bộ dữ liệu của thiết bị này.');
             setTimeout(() => window.location.reload(), 1500);
         } catch (err) {
             showToast(`Lỗi: ${err.message}`, false);

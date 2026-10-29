@@ -83,27 +83,6 @@ except ImportError:
 
 
 
-def show_child_alert_dialog(title: str, message: str, is_warning: bool = False):
-    """Display a non-blocking topmost dialog for the child."""
-    def _run():
-        try:
-            import tkinter as tk
-            from tkinter import messagebox
-            root = tk.Tk()
-            root.withdraw()
-            root.attributes("-topmost", True)
-            if is_warning:
-                messagebox.showwarning(title, message, parent=root)
-            else:
-                messagebox.showinfo(title, message, parent=root)
-            root.destroy()
-        except Exception:
-            pass
-
-    import threading
-    threading.Thread(target=_run, daemon=True, name="OGK_ChildAlert").start()
-
-
 def print_banner():
     """Print standard ethical banner on startup."""
     print("=" * 65)
@@ -316,7 +295,6 @@ def main():
             status = payload.get("status", "") if payload else ""
             req_type = payload.get("request_type", "") if payload else ""
             target = payload.get("target", "") if payload else ""
-            parent_resp = payload.get("parent_response", "") if payload else ""
 
             if status == "rejected":
                 if req_type == "unblock_domain":
@@ -332,13 +310,9 @@ def main():
                     title = "Thông Báo Từ Phụ Huynh"
                     msg = "Yêu cầu của em chưa được cha mẹ chấp thuận."
 
-                if parent_resp and parent_resp != "Cha mẹ chưa đồng ý yêu cầu này.":
-                    msg += f"\n\nLời nhắn từ cha mẹ: {parent_resp}"
-
                 print(f" [!] {title}: {msg}")
                 if tray_icon_holder[0]:
                     show_tray_notification(tray_icon_holder[0], title, msg)
-                show_child_alert_dialog(title, msg, is_warning=True)
 
             elif status == "approved":
                 if req_type == "unblock_domain":
@@ -357,13 +331,9 @@ def main():
                     title = "Yêu Cầu Đã Được Duyệt"
                     msg = "Phụ huynh đã chấp thuận yêu cầu của em."
 
-                if parent_resp:
-                    msg += f"\n\nLời nhắn từ cha mẹ: {parent_resp}"
-
                 print(f" [✓] {title}: {msg}")
                 if tray_icon_holder[0]:
                     show_tray_notification(tray_icon_holder[0], title, msg)
-                show_child_alert_dialog(title, msg, is_warning=False)
         elif action == "purge_local_data":
             print(" [!] Nhận lệnh từ phụ huynh: Xóa toàn bộ dữ liệu máy tính (Nghị định 13/2023)...")
             purge_local_data()

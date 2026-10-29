@@ -1,17 +1,18 @@
-/* Open Guardian Kids (OGK) - Modern Design System */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+/* Open Guardian Kids (OGK) - Modern Design System (xai247 Style Inspired) */
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&family=Hanken+Grotesk:wght@500;600;700&family=Geist+Mono:wght@400;500;600&display=swap');
 
 :root {
-  /* Color Palette */
-  --bg-dark: #080d1a;
-  --bg-surface: #0f172a;
-  --bg-surface-elevated: #1e293b;
-  --bg-card: rgba(15, 23, 42, 0.75);
-  --bg-glass: rgba(30, 41, 59, 0.6);
+  /* Color Palette - xai247 Cyber Minimalist */
+  --bg-dark: #0a0a0c;
+  --bg-surface: #101217;
+  --bg-surface-elevated: #161820;
+  --bg-card: rgba(18, 20, 26, 0.85);
+  --bg-card-hover: rgba(26, 29, 38, 0.95);
+  --bg-glass: rgba(20, 23, 31, 0.65);
   
   --border-subtle: rgba(255, 255, 255, 0.08);
   --border-hover: rgba(255, 255, 255, 0.16);
-  --border-focus: #06b6d4;
+  --border-focus: #0ea5e9;
 
   --primary: #0ea5e9;
   --primary-hover: #0284c7;
@@ -19,7 +20,7 @@
 
   --accent-emerald: #10b981;
   --accent-emerald-glow: rgba(16, 185, 129, 0.3);
-  --accent-cyan: #06b6d4;
+  --accent-cyan: #38bdf8;
 
   --status-online: #10b981;
   --status-offline: #64748b;
@@ -29,15 +30,15 @@
   --text-muted: #94a3b8;
   --text-dim: #64748b;
 
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.35);
-  --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.5);
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 14px 34px -14px rgba(0, 0, 0, 0.6);
   --shadow-glow: 0 0 24px var(--primary-glow);
 
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
-  --radius-xl: 24px;
+  --radius-xl: 22px;
   --radius-pill: 9999px;
 
   --transition-fast: 150ms ease;
@@ -52,17 +53,19 @@
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'Be Vietnam Pro', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   background-color: var(--bg-dark);
   color: var(--text-main);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   background-image: 
-    radial-gradient(at 0% 0%, rgba(14, 165, 233, 0.12) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.08) 0px, transparent 50%);
+    radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1.2px),
+    radial-gradient(600px 380px at 85% 15%, rgba(14, 165, 233, 0.12), transparent 65%),
+    radial-gradient(480px 320px at 10% 85%, rgba(16, 185, 129, 0.08), transparent 60%);
+  background-size: 26px 26px, 100% 100%, 100% 100%;
   background-attachment: fixed;
-  line-height: 1.5;
+  line-height: 1.55;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -1098,7 +1101,196 @@ body {
 }
 
 .code-monospace {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', 'JetBrains Mono', monospace;
   font-size: 0.775rem;
 }
+
+/* ==========================================================================
+   Multi-Device Management (xai247 Cyber Minimalist Layout)
+   ========================================================================== */
+.device-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  gap: 1.25rem;
+  margin-top: 1rem;
+}
+
+.device-card-item {
+  background: rgba(18, 20, 26, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 1.25rem;
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  position: relative;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.device-card-item:hover {
+  border-color: rgba(14, 165, 233, 0.45);
+  transform: translateY(-3px);
+  box-shadow: 0 14px 34px -14px rgba(0, 0, 0, 0.7), 0 0 20px -8px rgba(14, 165, 233, 0.2);
+}
+
+.device-card-item.active {
+  border-color: rgba(14, 165, 233, 0.85);
+  background: linear-gradient(180deg, rgba(14, 165, 233, 0.08) 0%, rgba(18, 20, 26, 0.95) 100%);
+  box-shadow: inset 0 0 0 1.5px rgba(14, 165, 233, 0.65), 0 14px 36px -12px rgba(14, 165, 233, 0.45);
+}
+
+.device-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.device-avatar-glow {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.15), rgba(16, 185, 129, 0.12));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 1.35rem;
+  box-shadow: 0 4px 14px -6px rgba(14, 165, 233, 0.4);
+  flex-shrink: 0;
+}
+
+.live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.9);
+  display: inline-block;
+  animation: lpPulse 2s ease-in-out infinite;
+}
+
+.live-dot.offline {
+  background: #64748b;
+  box-shadow: none;
+  animation: none;
+}
+
+@keyframes lpPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.45; transform: scale(0.92); }
+}
+
+.quota-bar-wrapper {
+  background: rgba(255, 255, 255, 0.05);
+  height: 6px;
+  border-radius: 99px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+
+.quota-bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, var(--primary), var(--accent-emerald));
+  transition: width 0.3s ease;
+}
+
+.device-switcher-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.device-tab-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1.1rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.device-tab-chip:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.device-tab-chip.active {
+  color: #fff;
+  background: rgba(14, 165, 233, 0.15);
+  border-color: rgba(14, 165, 233, 0.7);
+  box-shadow: 0 0 16px rgba(14, 165, 233, 0.3);
+}
+
+.device-detail-wrapper {
+  animation: devFadeIn 0.25s ease both;
+}
+
+@keyframes devFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.badge-subtle {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-muted);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.nav-section-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 0.25rem;
+  overflow-x: auto;
+}
+
+.nav-section-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.25rem;
+  border-radius: 12px 12px 0 0;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.nav-section-tab:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.nav-section-tab.active {
+  color: #fff;
+  border-bottom-color: var(--primary);
+  background: rgba(14, 165, 233, 0.08);
+}
+
 
