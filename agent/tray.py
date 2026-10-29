@@ -157,15 +157,16 @@ def init_tray_icon(
             show_tray_notification(icon, "Khởi Động Cùng Windows", "Đã bật tự động khởi động cùng Windows.")
 
     menu = Menu(
+        item("🖥️ Mở giao diện", on_transparency_view, default=True),
+        Menu.SEPARATOR,
+        item("⏱️ Xem thời gian còn lại hôm nay", on_check_time),
+        item("⏳ Xin thêm thời gian...", on_request_more_time),
+        item("🔗 Ghép đôi lại thiết bị...", lambda icon, item: open_pairing_dialog()),
+        item("🚀 Khởi động cùng Windows", on_toggle_autostart, checked=lambda item: is_autostart_enabled()),
+        Menu.SEPARATOR,
         item(f"🛡️ {APP_TITLE}", None, enabled=False),
         item(f"💻 Máy: {device_label}", None, enabled=False),
         item("🟢 Trạng thái: Đang bảo vệ & đồng hành", None, enabled=False),
-        Menu.SEPARATOR,
-        item("⏱️ Xem thời gian còn lại hôm nay", on_check_time),
-        item("⏳ Xin thêm giờ... (NT3)", on_request_more_time),
-        item("📖 Minh bạch bảo mật... (NT5)", on_transparency_view),
-        item("🔗 Ghép đôi lại thiết bị...", lambda icon, item: open_pairing_dialog()),
-        item("🚀 Khởi động cùng Windows", on_toggle_autostart, checked=lambda item: is_autostart_enabled()),
         Menu.SEPARATOR,
         item("Thoát", on_exit)
     )

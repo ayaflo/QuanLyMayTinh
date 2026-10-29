@@ -20,8 +20,17 @@ except ImportError:
 logger = logging.getLogger("OGK_ChildView")
 
 
+def _enable_high_dpi():
+    """Enable crisp font rendering on high-DPI Windows displays."""
+    try:
+        import ctypes
+        ctypes.windll.shcore.SetProcessDpiAwareness(1)
+    except Exception:
+        pass
+
+
 class ChildViewWindow:
-    """Tkinter window providing two-way transparency for children (NT3 & NT5)."""
+    """Tkinter window providing two-way transparency for children."""
 
     def __init__(self, server_url: str = SERVER_URL):
         self.server_url = server_url.rstrip("/")
@@ -30,53 +39,100 @@ class ChildViewWindow:
 
     def show(self):
         """Display the child transparency window."""
+        _enable_high_dpi()
+
         if self.root and self.root.winfo_exists():
             self.root.lift()
             self.root.focus_force()
             return
 
         self.root = tk.Tk()
-        self.root.title("Open Guardian Kids — Hôm Nay Em Đã Dùng Gì")
-        self.root.geometry("520x620")
-        self.root.configure(bg="#0f172a")
+        self.root.title("Open Guardian Kids — Bảng Minh Bạch Cùng Ba Mẹ")
+        self.root.geometry("560x680")
+        self.root.minsize(520, 640)
+        self.root.configure(bg="#000000")
 
-        # Header Title
-        header_frame = tk.Frame(self.root, bg="#1e293b", padx=16, pady=14)
+        # Center on screen
+        self.root.update_idletasks()
+        w = max(560, self.root.winfo_width())
+        h = max(680, self.root.winfo_height())
+        sw = self.root.winfo_screenwidth()
+        sh = self.root.winfo_screenheight()
+        x = max(0, (sw - w) // 2)
+        y = max(0, (sh - h) // 2)
+        self.root.geometry(f"{w}x{h}+{x}+{y}")
+
+        # 1. Header Frame (xai247 Glass Header)
+        header_frame = tk.Frame(
+            self.root,
+            bg="#0c0d12",
+            padx=20,
+            pady=16,
+            highlightbackground="#1e2230",
+            highlightthickness=1
+        )
         header_frame.pack(fill=tk.X)
 
+        header_top = tk.Frame(header_frame, bg="#0c0d12")
+        header_top.pack(fill=tk.X)
+
+        # Brand Icon Badge
+        brand_badge = tk.Label(
+            header_top,
+            text="OGK",
+            font=("Segoe UI", 11, "bold"),
+            bg="#ffffff",
+            fg="#000000",
+            padx=10,
+            pady=5
+        )
+        brand_badge.pack(side=tk.LEFT, padx=(0, 14))
+
+        title_box = tk.Frame(header_top, bg="#0c0d12")
+        title_box.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
         title_lbl = tk.Label(
-            header_frame,
-            text="🛡️ Bảng Minh Bạch Hai Chiều Cùng Ba Mẹ",
-            font=("Segoe UI", 12, "bold"),
-            fg="#f8fafc",
-            bg="#1e293b"
+            title_box,
+            text="Bảng Minh Bạch Hai Chiều Cùng Ba Mẹ",
+            font=("Segoe UI", 13, "bold"),
+            fg="#ffffff",
+            bg="#0c0d12"
         )
         title_lbl.pack(anchor=tk.W)
 
         sub_lbl = tk.Label(
-            header_frame,
-            text="Nguyên tắc NT5: Em và phụ huynh nhìn thấy cùng một dữ liệu. Không theo dõi lén.",
+            title_box,
+            text="Em và cha mẹ cùng xem chung dữ liệu minh bạch. Không theo dõi lén.",
             font=("Segoe UI", 8),
             fg="#94a3b8",
-            bg="#1e293b"
+            bg="#0c0d12",
+            wraplength=400,
+            justify=tk.LEFT
         )
-        sub_lbl.pack(anchor=tk.W, pady=(2, 0))
+        sub_lbl.pack(anchor=tk.W, pady=(3, 0))
 
-        # Main scrollable/padded container
-        content = tk.Frame(self.root, bg="#0f172a", padx=16, pady=12)
+        # Main padded content container
+        content = tk.Frame(self.root, bg="#000000", padx=20, pady=16)
         content.pack(fill=tk.BOTH, expand=True)
 
-        # 1. Screen Time Usage Box
+        # 1. Screen Time Usage Box (Card)
         self.today_str = datetime.now().strftime("%Y-%m-%d")
-        stat_card = tk.Frame(content, bg="#1e293b", padx=12, pady=10, relief=tk.FLAT)
-        stat_card.pack(fill=tk.X, pady=(0, 10))
+        stat_card = tk.Frame(
+            content,
+            bg="#0d0e14",
+            padx=16,
+            pady=14,
+            highlightbackground="#1e2230",
+            highlightthickness=1
+        )
+        stat_card.pack(fill=tk.X, pady=(0, 12))
 
         self.stat_title = tk.Label(
             stat_card,
             text="⏱️ Đang tải thời gian sử dụng...",
-            font=("Segoe UI", 10, "bold"),
+            font=("Segoe UI", 11, "bold"),
             fg="#38bdf8",
-            bg="#1e293b"
+            bg="#0d0e14"
         )
         self.stat_title.pack(anchor=tk.W)
 
@@ -85,21 +141,30 @@ class ChildViewWindow:
             text="",
             font=("Segoe UI", 9),
             fg="#10b981",
-            bg="#1e293b"
+            bg="#0d0e14",
+            wraplength=460,
+            justify=tk.LEFT
         )
-        self.rem_lbl.pack(anchor=tk.W, pady=(2, 0))
+        self.rem_lbl.pack(anchor=tk.W, pady=(4, 0))
         self._update_usage_display()
 
-        # 2. Privacy Commitment Box (NT1 & NT2)
-        privacy_card = tk.Frame(content, bg="#1e293b", padx=12, pady=8)
-        privacy_card.pack(fill=tk.X, pady=(0, 10))
+        # 2. Privacy Commitment Box (Card)
+        privacy_card = tk.Frame(
+            content,
+            bg="#0d0e14",
+            padx=16,
+            pady=12,
+            highlightbackground="#1e2230",
+            highlightthickness=1
+        )
+        privacy_card.pack(fill=tk.X, pady=(0, 12))
 
         p_title = tk.Label(
             privacy_card,
-            text="🔒 Cam Kết Tôn Trọng Quyền Riêng Tư (NT2)",
-            font=("Segoe UI", 9, "bold"),
+            text="🔒 Cam Kết Tôn Trọng Quyền Riêng Tư",
+            font=("Segoe UI", 10, "bold"),
             fg="#34d399",
-            bg="#1e293b"
+            bg="#0d0e14"
         )
         p_title.pack(anchor=tk.W)
 
@@ -108,78 +173,110 @@ class ChildViewWindow:
             text="• KHÔNG lưu URL chi tiết, KHÔNG chụp màn hình\n• KHÔNG đọc tin nhắn hay ghi bàn phím (keylogger)\n• Danh sách trường học & Tổng đài 111 luôn được bảo vệ",
             font=("Segoe UI", 8),
             fg="#cbd5e1",
-            bg="#1e293b",
+            bg="#0d0e14",
+            justify=tk.LEFT,
+            wraplength=460
+        )
+        p_desc.pack(anchor=tk.W, pady=(6, 0))
+
+        # 3. Actions Section: Voice of the child (Card)
+        actions_card = tk.Frame(
+            content,
+            bg="#0d0e14",
+            padx=16,
+            pady=14,
+            highlightbackground="#1e2230",
+            highlightthickness=1
+        )
+        actions_card.pack(fill=tk.X, pady=(0, 14))
+
+        a_title = tk.Label(
+            actions_card,
+            text="📢 Gửi Yêu Cầu Cho Cha Mẹ",
+            font=("Segoe UI", 10, "bold"),
+            fg="#ffffff",
+            bg="#0d0e14"
+        )
+        a_title.pack(anchor=tk.W)
+
+        a_desc = tk.Label(
+            actions_card,
+            text="Em có thể xin thêm thời gian hoặc báo mở khóa trang web/ứng dụng học tập:",
+            font=("Segoe UI", 8),
+            fg="#94a3b8",
+            bg="#0d0e14",
+            wraplength=460,
             justify=tk.LEFT
         )
-        p_desc.pack(anchor=tk.W, pady=(4, 0))
+        a_desc.pack(anchor=tk.W, pady=(2, 10))
 
-        # 3. Actions Section: Voice of the child (NT3)
-        actions_card = tk.LabelFrame(
-            content,
-            text=" 📢 Tiếng Nói Của Em (NT3 — Gửi Yêu Cầu Cho Cha Mẹ) ",
-            font=("Segoe UI", 9, "bold"),
-            fg="#f8fafc",
-            bg="#0f172a",
-            padx=10,
-            pady=8
-        )
-        actions_card.pack(fill=tk.X, pady=(0, 10))
-
-        req_frame = tk.Frame(actions_card, bg="#0f172a")
+        req_frame = tk.Frame(actions_card, bg="#0d0e14")
         req_frame.pack(fill=tk.X)
 
         btn_add_time = tk.Button(
             req_frame,
             text="➕ Xin Thêm 15 Phút",
             font=("Segoe UI", 9, "bold"),
-            bg="#0284c7",
-            fg="#ffffff",
-            activebackground="#0369a1",
-            padx=8,
-            pady=6,
+            bg="#ffffff",
+            fg="#000000",
+            activebackground="#f1f5f9",
+            activeforeground="#000000",
+            padx=12,
+            pady=8,
             relief=tk.FLAT,
+            cursor="hand2",
             command=self._dialog_request_time
         )
-        btn_add_time.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 6))
+        btn_add_time.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 8))
 
         btn_unblock = tk.Button(
             req_frame,
             text="🌐 Báo Chặn Nhầm Web / App",
             font=("Segoe UI", 9, "bold"),
-            bg="#d97706",
+            bg="#181c28",
             fg="#ffffff",
-            activebackground="#b45309",
-            padx=8,
-            pady=6,
+            activebackground="#252c3f",
+            activeforeground="#ffffff",
+            padx=12,
+            pady=8,
             relief=tk.FLAT,
+            cursor="hand2",
+            highlightbackground="#2d344d",
+            highlightthickness=1,
             command=self._dialog_unblock_request
         )
         btn_unblock.pack(side=tk.RIGHT, fill=tk.X, expand=True)
 
         # 4. Action Buttons (Refresh & Close)
-        btn_box = tk.Frame(content, bg="#0f172a")
-        btn_box.pack(side=tk.BOTTOM, fill=tk.X, pady=(6, 0))
+        btn_box = tk.Frame(content, bg="#000000")
+        btn_box.pack(side=tk.BOTTOM, fill=tk.X, pady=(8, 0))
 
         btn_refresh = tk.Button(
             btn_box,
             text="🔄 Làm Mới Dữ Liệu",
-            font=("Segoe UI", 9),
-            bg="#0369a1",
-            fg="#ffffff",
-            pady=4,
+            font=("Segoe UI", 9, "bold"),
+            bg="#121520",
+            fg="#38bdf8",
+            activebackground="#1e2436",
+            activeforeground="#38bdf8",
+            pady=7,
             relief=tk.FLAT,
+            cursor="hand2",
             command=self._manual_refresh
         )
-        btn_refresh.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 6))
+        btn_refresh.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 8))
 
         btn_close = tk.Button(
             btn_box,
             text="Đóng Cửa Sổ",
             font=("Segoe UI", 9),
-            bg="#334155",
-            fg="#ffffff",
-            pady=4,
+            bg="#121520",
+            fg="#94a3b8",
+            activebackground="#1e2436",
+            activeforeground="#ffffff",
+            pady=7,
             relief=tk.FLAT,
+            cursor="hand2",
             command=self.root.destroy
         )
         btn_close.pack(side=tk.RIGHT, fill=tk.X, expand=True)
@@ -333,23 +430,33 @@ class ChildViewWindow:
         """Prompt child for reason to request extra 15 minutes."""
         dlg = tk.Toplevel(self.root)
         dlg.title("Xin Thêm Giờ Học Tập")
-        dlg.geometry("380x200")
-        dlg.configure(bg="#0f172a", padx=14, pady=14)
+        dlg.geometry("420x220")
+        dlg.configure(bg="#08090c", padx=18, pady=16)
         dlg.transient(self.root)
         dlg.grab_set()
 
         lbl = tk.Label(
             dlg,
-            text="Lý do em xin thêm 15 phút (để làm bài tập, đọc sách...):",
-            font=("Segoe UI", 9),
-            fg="#fff",
-            bg="#0f172a"
+            text="Lý do em xin thêm 15 phút (học tập, đọc sách...):",
+            font=("Segoe UI", 9, "bold"),
+            fg="#ffffff",
+            bg="#08090c"
         )
         lbl.pack(anchor=tk.W)
 
-        reason_entry = tk.Entry(dlg, font=("Segoe UI", 10), width=40)
+        reason_entry = tk.Entry(
+            dlg,
+            font=("Segoe UI", 10),
+            bg="#121520",
+            fg="#ffffff",
+            insertbackground="#ffffff",
+            relief=tk.FLAT,
+            highlightbackground="#222838",
+            highlightthickness=1
+        )
         reason_entry.insert(0, "Em cần thêm thời gian hoàn thành bài tập toán.")
-        reason_entry.pack(fill=tk.X, pady=8)
+        reason_entry.pack(fill=tk.X, pady=(8, 14), ipady=4)
+        reason_entry.focus_set()
 
         def on_submit():
             reason = reason_entry.get().strip()
@@ -358,49 +465,71 @@ class ChildViewWindow:
 
         btn_submit = tk.Button(
             dlg,
-            text="Gửi Cho Cha Mẹ",
+            text="Gửi Cho Cha Mẹ ➜",
             font=("Segoe UI", 9, "bold"),
-            bg="#0284c7",
-            fg="#fff",
-            pady=4,
+            bg="#ffffff",
+            fg="#000000",
+            activebackground="#f1f5f9",
+            activeforeground="#000000",
+            pady=7,
             relief=tk.FLAT,
+            cursor="hand2",
             command=on_submit
         )
-        btn_submit.pack(fill=tk.X, pady=(6, 0))
+        btn_submit.pack(fill=tk.X)
 
     def _dialog_unblock_request(self):
         """Prompt child for target domain/app to report false-positive block."""
         dlg = tk.Toplevel(self.root)
         dlg.title("Báo Chặn Nhầm Web / Ứng Dụng")
-        dlg.geometry("400x240")
-        dlg.configure(bg="#0f172a", padx=14, pady=14)
+        dlg.geometry("440x280")
+        dlg.configure(bg="#08090c", padx=18, pady=16)
         dlg.transient(self.root)
         dlg.grab_set()
 
         lbl1 = tk.Label(
             dlg,
             text="Tên Website hoặc Ứng dụng em cần dùng:",
-            font=("Segoe UI", 9),
-            fg="#fff",
-            bg="#0f172a"
+            font=("Segoe UI", 9, "bold"),
+            fg="#ffffff",
+            bg="#08090c"
         )
         lbl1.pack(anchor=tk.W)
 
-        target_entry = tk.Entry(dlg, font=("Segoe UI", 10), width=40)
-        target_entry.pack(fill=tk.X, pady=(2, 8))
+        target_entry = tk.Entry(
+            dlg,
+            font=("Segoe UI", 10),
+            bg="#121520",
+            fg="#ffffff",
+            insertbackground="#ffffff",
+            relief=tk.FLAT,
+            highlightbackground="#222838",
+            highlightthickness=1
+        )
+        target_entry.pack(fill=tk.X, pady=(4, 10), ipady=4)
+        target_entry.focus_set()
 
         lbl2 = tk.Label(
             dlg,
             text="Lý do trang web/ứng dụng này an toàn và cần thiết:",
-            font=("Segoe UI", 9),
-            fg="#fff",
-            bg="#0f172a"
+            font=("Segoe UI", 9, "bold"),
+            fg="#ffffff",
+            bg="#08090c"
         )
         lbl2.pack(anchor=tk.W)
 
-        reason_entry = tk.Entry(dlg, font=("Segoe UI", 10), width=40)
+        reason_entry = tk.Entry(
+            dlg,
+            font=("Segoe UI", 10),
+            bg="#121520",
+            fg="#ffffff",
+            insertbackground="#ffffff",
+            relief=tk.FLAT,
+            highlightbackground="#222838",
+            highlightthickness=1
+        )
         reason_entry.insert(0, "Đây là trang tài liệu học tập của trường học em.")
-        reason_entry.pack(fill=tk.X, pady=(2, 10))
+        reason_entry.pack(fill=tk.X, pady=(4, 14), ipady=4)
 
         def on_submit():
             target = target_entry.get().strip()
@@ -414,12 +543,15 @@ class ChildViewWindow:
 
         btn_submit = tk.Button(
             dlg,
-            text="Gửi Yêu Cầu Cho Cha Mẹ",
+            text="Gửi Yêu Cầu Cho Cha Mẹ ➜",
             font=("Segoe UI", 9, "bold"),
-            bg="#d97706",
-            fg="#fff",
-            pady=4,
+            bg="#ffffff",
+            fg="#000000",
+            activebackground="#f1f5f9",
+            activeforeground="#000000",
+            pady=7,
             relief=tk.FLAT,
+            cursor="hand2",
             command=on_submit
         )
         btn_submit.pack(fill=tk.X)
