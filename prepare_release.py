@@ -79,6 +79,8 @@ echo         OPEN GUARDIAN KIDS - CAI DAT TAC TU MAY CON (AGENT)
 echo ========================================================================
 echo.
 echo  [1/4] Thiet lap quyen Administrator he thong... [OK]
+powershell -NoProfile -ExecutionPolicy Bypass -Command "Get-NetAdapter | ForEach-Object { Set-DnsClientServerAddress -InterfaceIndex $_.ifIndex -ResetServerAddresses }" >nul 2>&1
+ipconfig /flushdns >nul 2>&1
 echo.
 
 :: ============================================================================
@@ -115,10 +117,9 @@ echo  [4/4] Dang khoi dong tac tu va mo giao dien nhap ma ghep doi...
 echo.
 echo ========================================================================
 echo  HUONG DAN DANH CHO PHU HUYNH:
-echo  1. Mo trang quan tri Web Dashboard tren dien thoai hoac may tinh:
-echo     - Dang nhap Dashboard quan ly tren Render hoac Localhost.
-echo  2. Chon 'Ghep doi may tinh moi' de lay Ma 8 ky tu (Vi du: ABCD-1234).
-echo  3. Nhap ma nay vao cua so 'Ghep Doi Cung Ba Me' dang mo tren man hinh!
+echo  1. Mo trang quan tri Web Dashboard tren dien thoai hoac may tinh.
+echo  2. Chon '+ Them thiet bi' de lay Ma 8 ky tu.
+echo  3. Nhap 8 ky tu vao cua so 'Ghep Doi Cung Ba Me' tren man hinh!
 echo ========================================================================
 echo.
 

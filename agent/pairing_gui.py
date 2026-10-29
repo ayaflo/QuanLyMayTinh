@@ -43,14 +43,14 @@ class PairingWindow:
 
         self.root = tk.Tk()
         self.root.title(f"{APP_TITLE} — Ghép Đôi Cùng Ba Mẹ")
-        self.root.geometry("680x760")
-        self.root.minsize(620, 700)
+        self.root.geometry("600x560")
+        self.root.minsize(560, 500)
         self.root.configure(bg="#000000")
 
         # Center on screen
         self.root.update_idletasks()
-        w = max(680, self.root.winfo_width())
-        h = max(760, self.root.winfo_height())
+        w = max(600, self.root.winfo_width())
+        h = max(560, self.root.winfo_height())
         sw = self.root.winfo_screenwidth()
         sh = self.root.winfo_screenheight()
         x = max(0, (sw - w) // 2)
@@ -117,7 +117,7 @@ class PairingWindow:
         sub_lbl.pack(anchor=tk.W, pady=(2, 0))
 
         # 2. Main Content Body
-        body = tk.Frame(self.root, bg="#000000", padx=22, pady=16)
+        body = tk.Frame(self.root, bg="#000000", padx=24, pady=16)
         body.pack(fill=tk.BOTH, expand=True)
 
         # Guide Card (3 Steps)
@@ -141,23 +141,20 @@ class PairingWindow:
         guide_title.pack(anchor=tk.W, pady=(0, 6))
 
         steps = [
-            ("1️⃣", f"Ba mẹ mở trang quản lý trên điện thoại/máy tính: {self.server_url}"),
+            ("1️⃣", "Ba mẹ mở trang quản trị Dashboard trên điện thoại hoặc máy tính."),
             ("2️⃣", "Bấm nút '+ Thêm thiết bị' để lấy Mã kết nối 8 ký tự."),
             ("3️⃣", "Nhập 8 ký tự vào ô bên dưới rồi bấm nút 'Kết Nối Ngay'.")
         ]
-        self.step1_lbl = None
-        for i, (icon, txt) in enumerate(steps):
+        for icon, txt in steps:
             row = tk.Frame(guide_card, bg="#0d0e14")
             row.pack(fill=tk.X, pady=3)
             tk.Label(row, text=icon, font=("Segoe UI", 9), bg="#0d0e14", fg="#ffffff").pack(side=tk.LEFT, padx=(0, 8))
-            lbl = tk.Label(row, text=txt, font=("Segoe UI", 8), bg="#0d0e14", fg="#cbd5e1", wraplength=540, justify=tk.LEFT)
+            lbl = tk.Label(row, text=txt, font=("Segoe UI", 8), bg="#0d0e14", fg="#cbd5e1", wraplength=500, justify=tk.LEFT)
             lbl.pack(side=tk.LEFT, anchor=tk.W)
-            if i == 0:
-                self.step1_lbl = lbl
 
         # 3. Code Input Section
         code_section = tk.Frame(body, bg="#000000")
-        code_section.pack(fill=tk.X, pady=(0, 12))
+        code_section.pack(fill=tk.X, pady=(0, 10))
 
         code_header = tk.Frame(code_section, bg="#000000")
         code_header.pack(fill=tk.X, pady=(0, 5))
@@ -180,7 +177,7 @@ class PairingWindow:
         )
         self.counter_lbl.pack(side=tk.RIGHT)
 
-        # Entry row with paste button (Pack paste_btn FIRST to prevent clipping)
+        # Entry row with paste button
         entry_row = tk.Frame(code_section, bg="#000000")
         entry_row.pack(fill=tk.X)
 
@@ -222,7 +219,7 @@ class PairingWindow:
 
         # 4. Device Name Section
         name_section = tk.Frame(body, bg="#000000")
-        name_section.pack(fill=tk.X, pady=(10, 12))
+        name_section.pack(fill=tk.X, pady=(0, 10))
 
         name_lbl = tk.Label(
             name_section,
@@ -247,45 +244,7 @@ class PairingWindow:
         )
         self.name_entry.pack(fill=tk.X, ipady=5)
 
-        # 5. Server URL Section
-        server_section = tk.Frame(body, bg="#000000")
-        server_section.pack(fill=tk.X, pady=(2, 8))
-
-        server_lbl = tk.Label(
-            server_section,
-            text="🌐 Địa Chỉ Máy Chủ Quản Lý:",
-            font=("Segoe UI", 9, "bold"),
-            fg="#cbd5e1",
-            bg="#000000"
-        )
-        server_lbl.pack(anchor=tk.W, pady=(0, 4))
-
-        self.server_var = tk.StringVar(value=self.server_url)
-        self.server_var.trace_add("write", self._on_server_url_changed)
-        self.server_entry = tk.Entry(
-            server_section,
-            textvariable=self.server_var,
-            font=("Segoe UI", 10),
-            bg="#121520",
-            fg="#38bdf8",
-            insertbackground="#ffffff",
-            relief=tk.FLAT,
-            highlightbackground="#222838",
-            highlightthickness=1
-        )
-        self.server_entry.pack(fill=tk.X, ipady=5)
-        self.status_box = tk.Label(
-            body,
-            text="",
-            font=("Segoe UI", 9),
-            fg="#94a3b8",
-            bg="#000000",
-            wraplength=480,
-            justify=tk.CENTER
-        )
-        self.status_box.pack(fill=tk.X, pady=(4, 8))
-
-        # 6. Action Button (White Pill style)
+        # 5. Action Button (ALWAYS VISIBLE & PACKED ABOVE STATUS)
         self.submit_btn = tk.Button(
             body,
             text="🚀 Kết Nối Ngay",
@@ -296,11 +255,23 @@ class PairingWindow:
             activeforeground="#000000",
             relief=tk.FLAT,
             padx=20,
-            pady=9,
+            pady=10,
             cursor="hand2",
             command=self._on_submit
         )
-        self.submit_btn.pack(fill=tk.X, pady=(4, 8))
+        self.submit_btn.pack(fill=tk.X, pady=(12, 6))
+
+        # 6. Status Message Box (PACKED BELOW BUTTON - NEVER PUSHES BUTTON OFF-SCREEN)
+        self.status_box = tk.Label(
+            body,
+            text="",
+            font=("Segoe UI", 9),
+            fg="#94a3b8",
+            bg="#000000",
+            wraplength=520,
+            justify=tk.CENTER
+        )
+        self.status_box.pack(fill=tk.X, pady=(2, 6))
 
         # 7. Ethical Footer
         footer = tk.Frame(self.root, bg="#000000", padx=16, pady=8)
@@ -309,8 +280,8 @@ class PairingWindow:
         fp = get_device_fingerprint()[:16]
         info_lbl = tk.Label(
             footer,
-            text=f"Máy chủ: {self.server_url}  •  Thiết bị: {fp}...",
-            font=("Segoe UI", 7),
+            text=f"Hệ thống đồng hành cùng con  •  Mã thiết bị: {fp}...",
+            font=("Segoe UI", 8),
             fg="#64748b",
             bg="#000000"
         )
@@ -335,13 +306,15 @@ class PairingWindow:
             self.counter_lbl.config(text="0 / 8 ký tự", fg="#64748b")
             self.code_entry.config(highlightcolor="#38bdf8", highlightbackground="#0284c7")
 
-    def _on_server_url_changed(self, *args):
-        """Update active server_url and guide step 1 text dynamically."""
-        val = self.server_var.get().strip()
-        if val:
-            self.server_url = val
-            if self.step1_lbl and self.step1_lbl.winfo_exists():
-                self.step1_lbl.config(text=f"Ba mẹ mở trang quản lý trên điện thoại/máy tính: {self.server_url}")
+        # Automatically clear any error status and reset submit button when typing or modifying code
+        if not self.success and self.status_box.cget("text"):
+            self._set_status("")
+            self.submit_btn.config(
+                text="🚀 Kết Nối Ngay",
+                bg="#ffffff",
+                fg="#000000",
+                state=tk.NORMAL
+            )
 
     def _paste_clipboard(self):
         """Paste text from system clipboard into pairing code entry."""
@@ -361,19 +334,14 @@ class PairingWindow:
             self.code_entry.focus_set()
             return
 
-        # Ensure server_url has scheme
-        url = self.server_var.get().strip().rstrip("/") if hasattr(self, "server_var") else self.server_url
-        if url and not url.startswith(("http://", "https://")):
-            url = f"https://{url}"
-        self.server_url = url or self.server_url
-
         device_name = self.name_var.get().strip() or self.default_device_name
 
         # Loading state
         self.submit_btn.config(
             text="⏳ Đang kết nối đến máy chủ...",
             state=tk.DISABLED,
-            bg="#475569"
+            bg="#475569",
+            fg="#ffffff"
         )
         self._set_status("Đang gửi yêu cầu xác thực lên máy chủ...", color="#38bdf8")
 
@@ -402,6 +370,7 @@ class PairingWindow:
             self.submit_btn.config(
                 text="✅ Đã Kết Nối Thành Công",
                 bg="#10b981",
+                fg="#ffffff",
                 state=tk.DISABLED
             )
             # Auto-close after 1.5 seconds so child sees success celebration
