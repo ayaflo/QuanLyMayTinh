@@ -100,14 +100,14 @@ def create_domain_rule(db: Session, rule_in: DomainRuleCreate) -> DomainRule:
     return new_rule
 
 
-def delete_domain_rule(db: Session, rule_id: int) -> bool:
+def delete_domain_rule(db: Session, rule_id: int, force: bool = False) -> bool:
     """Delete a domain rule by ID.
-    Enforces NT6: Permanent whitelist entries cannot be deleted.
+    Enforces NT6: Permanent whitelist entries cannot be deleted unless force=True.
     """
     rule = db.query(DomainRule).filter(DomainRule.id == rule_id).first()
     if not rule:
         return False
-    if rule.is_permanent_whitelist:
+    if rule.is_permanent_whitelist and not force:
         raise ValueError("Không thể xóa tên miền thuộc danh sách trắng vĩnh viễn (NT6).")
 
     db.delete(rule)
@@ -183,6 +183,17 @@ def delete_app_rule(db: Session, rule_id: int) -> bool:
     db.delete(rule)
     db.commit()
     return True
+
+
+def toggle_app_rule(db: Session, rule_id: int) -> Optional[AppRule]:
+    """Toggle action of an app control rule between 'block' and 'allow'."""
+    rule = db.query(AppRule).filter(AppRule.id == rule_id).first()
+    if not rule:
+        return None
+    rule.action = "allow" if rule.action == "block" else "block"
+    db.commit()
+    db.refresh(rule)
+    return rule
 
 
 def get_domain_category_summaries(db: Session) -> List[DomainCategorySummary]:

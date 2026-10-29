@@ -25,6 +25,7 @@ try:
         toggle_domain_rule,
         create_app_rule,
         delete_app_rule,
+        toggle_app_rule,
         get_domain_category_summaries
     )
 except (ImportError, ValueError):
@@ -46,6 +47,7 @@ except (ImportError, ValueError):
         toggle_domain_rule,
         create_app_rule,
         delete_app_rule,
+        toggle_app_rule,
         get_domain_category_summaries
     )
 try:
@@ -96,10 +98,10 @@ async def add_domain_rule(
 
 
 @router.delete("/domain-rules/{rule_id}", status_code=status.HTTP_200_OK, summary="Xóa quy tắc lọc tên miền")
-async def remove_domain_rule(rule_id: int, db: Session = Depends(get_db)):
-    """Delete a domain rule. Permanent whitelist items are protected from deletion (NT6)."""
+async def remove_domain_rule(rule_id: int, force: bool = Query(False), db: Session = Depends(get_db)):
+    """Delete a domain rule. Permanent whitelist items are protected from deletion unless force=True."""
     try:
-        success = delete_domain_rule(db, rule_id)
+        success = delete_domain_rule(db, rule_id, force=force)
         if not success:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Không tìm thấy quy tắc tên miền.")
         await _notify_devices_rules_updated()
@@ -137,6 +139,16 @@ async def add_app_rule(
 ) -> AppRuleResponse:
     """Create or update executable SHA-256 application control rule."""
     rule = create_app_rule(db, rule_in)
+    await _notify_devices_rules_updated()
+    return AppRuleResponse.model_validate(rule)
+
+
+@router.post("/app-rules/{rule_id}/toggle", response_model=AppRuleResponse, summary="Đảo trạng thái Chặn / Mở khóa ứng dụng")
+async def toggle_app_rule_action(rule_id: int, db: Session = Depends(get_db)) -> AppRuleResponse:
+    """Toggle an application control rule between 'block' and 'allow'."""
+    rule = toggle_app_rule(db, rule_id)
+    if not rule:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Không tìm thấy quy tắc ứng dụng.")
     await _notify_devices_rules_updated()
     return AppRuleResponse.model_validate(rule)
 

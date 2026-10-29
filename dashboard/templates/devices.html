@@ -211,7 +211,7 @@
                             <div class="xai-card-tag">DNS SINKHOLE FILTERING</div>
                             <h3 style="font-size: 1.3rem; font-weight: 800; color: #fff;">Danh Mục Tên Miền & Lọc DNS Sinkhole</h3>
                             <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.2rem;">
-                                Tên miền độc hại, khiêu dâm, lừa đảo được tự động chặn triệt để qua DNS Sinkhole nội bộ của máy
+                                Tên miền độc hại, lừa đảo, mạng xã hội được tự động lọc qua DNS Sinkhole nội bộ của máy
                             </p>
                         </div>
                         <span class="badge-subtle" style="font-family: 'Geist Mono', monospace;">{{ total_domain_rules }} tên miền</span>
@@ -234,7 +234,6 @@
                         <input type="text" id="inputNewDomain" class="form-input-xai" style="flex: 2; min-width: 220px;" placeholder="Nhập tên miền (ví dụ: tiktok.com hoặc facebook.com)" required>
                         <select id="selectNewDomainCategory" class="form-input-xai" style="flex: 1; min-width: 150px;">
                             <option value="Độc hại">Độc hại</option>
-                            <option value="Khiêu dâm">Khiêu dâm</option>
                             <option value="Mạng xã hội">Mạng xã hội</option>
                             <option value="Quảng cáo & Theo dõi">Quảng cáo & Theo dõi</option>
                             <option value="Gian lận & Lừa đảo">Gian lận & Lừa đảo</option>
@@ -292,11 +291,9 @@
                                                     🔒 Chặn
                                                 </button>
                                             {% endif %}
-                                            {% if not rule.is_permanent_whitelist %}
-                                                <button class="btn-pill-dark" onclick="deleteDomainRule({{ rule.id }})" title="Gỡ bỏ khỏi danh mục" style="padding: 0.3rem 0.55rem; font-size: 0.775rem; margin-left: 4px;">
-                                                    ✕
-                                                </button>
-                                            {% endif %}
+                                            <button class="btn-pill-dark" onclick="deleteDomainRule({{ rule.id }})" title="Gỡ bỏ khỏi danh mục" style="padding: 0.3rem 0.55rem; font-size: 0.775rem; margin-left: 4px;">
+                                                ✕
+                                            </button>
                                         </td>
                                     </tr>
                                 {% endfor %}
@@ -332,10 +329,14 @@
 
                     <!-- Add Blocked App Form -->
                     <form onsubmit="handleAddAppRule(event)" style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.5rem; background: rgba(255,255,255,0.02); padding: 1.1rem; border-radius: 16px; border: 1px solid rgba(255,255,255,0.06);">
-                        <input type="text" id="inputNewAppName" class="form-input-xai" style="flex: 2; min-width: 220px;" placeholder="Tên tệp thực thi (ví dụ: notepad.exe, roblox.exe, game.exe)" required>
-                        <input type="text" id="inputNewAppDesc" class="form-input-xai" style="flex: 2; min-width: 200px;" placeholder="Ghi chú lý do chặn (ví dụ: Giờ học không chơi game)">
+                        <input type="text" id="inputNewAppName" class="form-input-xai" style="flex: 2; min-width: 200px;" placeholder="Tên tệp thực thi (ví dụ: notepad.exe, roblox.exe, game.exe)" required>
+                        <input type="text" id="inputNewAppDesc" class="form-input-xai" style="flex: 2; min-width: 180px;" placeholder="Ghi chú lý do (ví dụ: Giờ học không chơi game)">
+                        <select id="selectNewAppAction" class="form-input-xai" style="width: 140px;">
+                            <option value="block">Chặn (Block)</option>
+                            <option value="allow">Cho phép (Allow)</option>
+                        </select>
                         <button type="submit" class="btn-pill-white" style="padding: 0.65rem 1.4rem;">
-                            <span>➕</span> Thêm Ứng Dụng Chặn
+                            <span>➕</span> Thêm Ứng Dụng
                         </button>
                     </form>
 
@@ -358,19 +359,32 @@
                                             📦 {{ app.app_name }}
                                         </td>
                                         <td style="color: var(--text-muted); font-size: 0.85rem;">
-                                            {{ app.description or 'Chặn theo quy định của cha mẹ' }}
+                                            {{ app.description or 'Quy định quản lý của cha mẹ' }}
                                         </td>
                                         <td>
-                                            <span class="badge-danger">Khóa ngay</span>
+                                            {% if app.action == 'block' %}
+                                                <span class="badge-danger">Chặn</span>
+                                            {% else %}
+                                                <span class="badge-success">Cho phép</span>
+                                            {% endif %}
                                         </td>
                                         <td>
                                             <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem; color: #10b981;">
-                                                <span class="live-dot" style="width: 6px; height: 6px;"></span> Đang giám sát
+                                                <span class="live-dot" style="width: 6px; height: 6px;"></span> Đang áp dụng
                                             </span>
                                         </td>
-                                        <td style="text-align: right;">
-                                            <button class="btn-pill-danger" onclick="deleteAppRule({{ app.id }})" style="padding: 0.25rem 0.75rem; font-size: 0.75rem;">
-                                                ✕ Gỡ Khóa
+                                        <td style="text-align: right; white-space: nowrap;">
+                                            {% if app.action == 'block' %}
+                                                <button class="btn-pill-success" onclick="toggleAppRule({{ app.id }}, 'allow')" title="Đang chặn -> Nhấn để Mở Khóa" style="padding: 0.3rem 0.85rem; font-size: 0.775rem;">
+                                                    🔓 Mở khóa
+                                                </button>
+                                            {% else %}
+                                                <button class="btn-pill-danger" onclick="toggleAppRule({{ app.id }}, 'block')" title="Đang cho phép -> Nhấn để Chặn" style="padding: 0.3rem 0.85rem; font-size: 0.775rem;">
+                                                    🔒 Chặn
+                                                </button>
+                                            {% endif %}
+                                            <button class="btn-pill-dark" onclick="deleteAppRule({{ app.id }})" title="Xóa khỏi danh sách" style="padding: 0.3rem 0.55rem; font-size: 0.775rem; margin-left: 4px;">
+                                                ✕
                                             </button>
                                         </td>
                                     </tr>
@@ -1472,9 +1486,9 @@
     }
 
     async function deleteDomainRule(ruleId) {
-        if (!confirm('Bạn có chắc muốn xóa tên miền này?')) return;
+        if (!confirm('Bạn có chắc muốn xóa tên miền này khỏi danh sách?')) return;
         try {
-            const res = await fetch(`/api/v1/filtering/domain-rules/${ruleId}`, { method: 'DELETE' });
+            const res = await fetch(`/api/v1/filtering/domain-rules/${ruleId}?force=true`, { method: 'DELETE' });
             if (!res.ok) {
                 const err = await res.json().catch(() => ({}));
                 throw new Error(err.detail || "Không thể xóa tên miền.");
@@ -1490,12 +1504,14 @@
         event.preventDefault();
         const appName = document.getElementById('inputNewAppName').value.trim();
         const description = document.getElementById('inputNewAppDesc').value.trim();
+        const actionEl = document.getElementById('selectNewAppAction');
+        const action = actionEl ? actionEl.value : 'block';
 
         try {
             const res = await fetch('/api/v1/filtering/app-rules', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ app_name: appName, action: 'block', description })
+                body: JSON.stringify({ app_name: appName, action: action, description })
             });
 
             if (!res.ok) {
@@ -1503,22 +1519,38 @@
                 throw new Error(err.detail || "Không thể thêm ứng dụng.");
             }
 
-            showToast(`Đã thêm ứng dụng "${appName}" vào danh sách chặn.`);
+            showToast(action === 'block' ? `Đã thêm ứng dụng "${appName}" vào danh sách chặn.` : `Đã thêm ứng dụng "${appName}" vào danh sách cho phép.`);
             setTimeout(() => window.location.reload(), 800);
         } catch (e) {
             showToast(`Lỗi: ${e.message}`, false);
         }
     }
 
+    async function toggleAppRule(ruleId, targetAction) {
+        try {
+            const res = await fetch(`/api/v1/filtering/app-rules/${ruleId}/toggle`, {
+                method: 'POST'
+            });
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                throw new Error(err.detail || "Không thể chuyển trạng thái ứng dụng.");
+            }
+            showToast(targetAction === 'allow' ? 'Đã chuyển sang: Mở khóa ứng dụng' : 'Đã chuyển sang: Chặn ứng dụng');
+            setTimeout(() => window.location.reload(), 600);
+        } catch (e) {
+            showToast(`Lỗi: ${e.message}`, false);
+        }
+    }
+
     async function deleteAppRule(ruleId) {
-        if (!confirm('Bạn có chắc muốn bỏ khóa ứng dụng này?')) return;
+        if (!confirm('Bạn có chắc muốn xóa ứng dụng này khỏi danh sách?')) return;
         try {
             const res = await fetch(`/api/v1/filtering/app-rules/${ruleId}`, { method: 'DELETE' });
             if (!res.ok) {
                 const err = await res.json().catch(() => ({}));
-                throw new Error(err.detail || "Không thể xóa quy tắc.");
+                throw new Error(err.detail || "Không thể xóa quy tắc ứng dụng.");
             }
-            showToast('Đã xóa khóa ứng dụng.');
+            showToast('Đã xóa ứng dụng khỏi danh sách.');
             setTimeout(() => window.location.reload(), 800);
         } catch (e) {
             showToast(`Lỗi: ${e.message}`, false);
