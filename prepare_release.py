@@ -31,6 +31,13 @@ def prepare_release():
         shutil.copy2(enc_vault_src, os.path.join(target_ogk_agent, "uninstall_core.enc"))
         print("[✓] Đã đính kèm vault mã hóa uninstall_core.enc vào gói cài đặt.")
 
+    # Copy .env configuration
+    env_src = os.path.join(PROJECT_ROOT, ".env")
+    if os.path.exists(env_src):
+        shutil.copy2(env_src, os.path.join(RELEASE_DIR, ".env"))
+        shutil.copy2(env_src, os.path.join(target_ogk_agent, ".env"))
+        print("[✓] Đã đính kèm tệp cấu hình .env vào gói cài đặt release.")
+
     # 3. Create Cai_Dat_Agent.bat
     cai_dat_bat = r"""@echo off
 chcp 65001 >nul

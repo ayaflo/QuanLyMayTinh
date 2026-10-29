@@ -125,6 +125,9 @@ def print_banner():
 
 def prompt_enrollment_cli(server_url: str = SERVER_URL) -> bool:
     """Guide child or parent through pairing device via CLI input."""
+    if sys.stdin is None or not hasattr(sys.stdin, "readline"):
+        return False
+
     fingerprint = get_device_fingerprint()
     print("\n [!] Máy tính này chưa được ghép đôi với tài khoản phụ huynh.")
     print(f"     Mã nhận diện máy (Fingerprint): {fingerprint}")
@@ -135,7 +138,7 @@ def prompt_enrollment_cli(server_url: str = SERVER_URL) -> bool:
     while True:
         try:
             code = input("\n Nhập mã ghép đôi 8 ký tự (hoặc gõ 'q' để thoát): ").strip()
-        except (EOFError, KeyboardInterrupt):
+        except (EOFError, KeyboardInterrupt, RuntimeError):
             print("\n [x] Hủy bỏ ghép đôi.")
             return False
 
@@ -168,12 +171,14 @@ def prompt_enrollment(server_url: str = SERVER_URL, use_gui: bool = True) -> boo
 
             print("\n [*] Đang mở giao diện kết nối thân thiện cho trẻ và phụ huynh...")
             success = prompt_pairing_gui(server_url=server_url, default_device_name=DEVICE_NAME)
-            if success:
-                return True
-            print(" [i] Đã đóng giao diện ghép đôi. Chuyển sang chế độ dòng lệnh...")
+            return bool(success)
         except Exception as e:
-            print(f" [!] Không thể khởi động giao diện đồ họa ({e}), chuyển sang dòng lệnh...")
+            print(f" [!] Không thể khởi động giao diện đồ họa ({e})...")
+            if sys.stdin is None or not hasattr(sys.stdin, "readline"):
+                return False
 
+    if sys.stdin is None or not hasattr(sys.stdin, "readline"):
+        return False
     return prompt_enrollment_cli(server_url=server_url)
 
 

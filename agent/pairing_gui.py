@@ -145,11 +145,15 @@ class PairingWindow:
             ("2️⃣", "Bấm nút '+ Thêm thiết bị' để lấy Mã kết nối 8 ký tự."),
             ("3️⃣", "Nhập 8 ký tự vào ô bên dưới rồi bấm nút 'Kết Nối Ngay'.")
         ]
-        for icon, txt in steps:
+        self.step1_lbl = None
+        for i, (icon, txt) in enumerate(steps):
             row = tk.Frame(guide_card, bg="#0d0e14")
             row.pack(fill=tk.X, pady=3)
             tk.Label(row, text=icon, font=("Segoe UI", 9), bg="#0d0e14", fg="#ffffff").pack(side=tk.LEFT, padx=(0, 8))
-            tk.Label(row, text=txt, font=("Segoe UI", 8), bg="#0d0e14", fg="#cbd5e1", wraplength=540, justify=tk.LEFT).pack(side=tk.LEFT, anchor=tk.W)
+            lbl = tk.Label(row, text=txt, font=("Segoe UI", 8), bg="#0d0e14", fg="#cbd5e1", wraplength=540, justify=tk.LEFT)
+            lbl.pack(side=tk.LEFT, anchor=tk.W)
+            if i == 0:
+                self.step1_lbl = lbl
 
         # 3. Code Input Section
         code_section = tk.Frame(body, bg="#000000")
@@ -243,7 +247,33 @@ class PairingWindow:
         )
         self.name_entry.pack(fill=tk.X, ipady=5)
 
-        # 5. Status / Message Box
+        # 5. Server URL Section
+        server_section = tk.Frame(body, bg="#000000")
+        server_section.pack(fill=tk.X, pady=(2, 8))
+
+        server_lbl = tk.Label(
+            server_section,
+            text="🌐 Địa Chỉ Máy Chủ Quản Lý:",
+            font=("Segoe UI", 9, "bold"),
+            fg="#cbd5e1",
+            bg="#000000"
+        )
+        server_lbl.pack(anchor=tk.W, pady=(0, 4))
+
+        self.server_var = tk.StringVar(value=self.server_url)
+        self.server_var.trace_add("write", self._on_server_url_changed)
+        self.server_entry = tk.Entry(
+            server_section,
+            textvariable=self.server_var,
+            font=("Segoe UI", 10),
+            bg="#121520",
+            fg="#38bdf8",
+            insertbackground="#ffffff",
+            relief=tk.FLAT,
+            highlightbackground="#222838",
+            highlightthickness=1
+        )
+        self.server_entry.pack(fill=tk.X, ipady=5)
         self.status_box = tk.Label(
             body,
             text="",
@@ -305,6 +335,14 @@ class PairingWindow:
             self.counter_lbl.config(text="0 / 8 ký tự", fg="#64748b")
             self.code_entry.config(highlightcolor="#38bdf8", highlightbackground="#0284c7")
 
+    def _on_server_url_changed(self, *args):
+        """Update active server_url and guide step 1 text dynamically."""
+        val = self.server_var.get().strip()
+        if val:
+            self.server_url = val
+            if self.step1_lbl and self.step1_lbl.winfo_exists():
+                self.step1_lbl.config(text=f"Ba mẹ mở trang quản lý trên điện thoại/máy tính: {self.server_url}")
+
     def _paste_clipboard(self):
         """Paste text from system clipboard into pairing code entry."""
         try:
@@ -322,6 +360,12 @@ class PairingWindow:
             self._set_status("⚠️ Vui lòng nhập đầy đủ 8 ký tự mã kết nối.", color="#f59e0b")
             self.code_entry.focus_set()
             return
+
+        # Ensure server_url has scheme
+        url = self.server_var.get().strip().rstrip("/") if hasattr(self, "server_var") else self.server_url
+        if url and not url.startswith(("http://", "https://")):
+            url = f"https://{url}"
+        self.server_url = url or self.server_url
 
         device_name = self.name_var.get().strip() or self.default_device_name
 
