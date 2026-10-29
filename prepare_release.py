@@ -179,6 +179,12 @@ pause
     with open(os.path.join(RELEASE_DIR, "Kiem_Tra_Trang_Thai.bat"), "w", encoding="utf-8") as f:
         f.write(kiem_tra_bat)
 
+    # Copy Go_Cai_Dat_Chu_Dong.bat into release
+    chu_dong_src = os.path.join(PROJECT_ROOT, "Go_Cai_Dat_Chu_Dong.bat")
+    if os.path.exists(chu_dong_src):
+        shutil.copy2(chu_dong_src, os.path.join(RELEASE_DIR, "Go_Cai_Dat_Chu_Dong.bat"))
+        print("[✓] Đã đính kèm Go_Cai_Dat_Chu_Dong.bat vào gói cài đặt.")
+
     # 6. Create Huong_Dan_Cai_Dat.txt
     huong_dan_txt = """================================================================================
           HƯỚNG DẪN CÀI ĐẶT & SỬ DỤNG OPEN GUARDIAN KIDS AGENT (BẢN RELEASE)

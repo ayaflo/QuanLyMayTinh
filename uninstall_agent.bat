@@ -28,7 +28,7 @@ echo   OPEN GUARDIAN KIDS (OGK) - GO CAI DAT VA LAM SACH DE DEMO
 echo =================================================================
 echo.
 cd /d "%~dp0"
-python agent/uninstall.py %*
+python agent/uninstall.py --force-unprotected %*
 if errorlevel 1 (
     echo.
     echo [!] Qua trinh go cai dat bao loi: %errorlevel%
