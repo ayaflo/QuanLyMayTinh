@@ -14,6 +14,32 @@ if hasattr(sys.stdout, "reconfigure"):
     except Exception:
         pass
 
+# Global exception logger to diagnose windowed crashes in production
+def _setup_crash_logger():
+    try:
+        import traceback
+        from datetime import datetime
+        log_dir = os.path.dirname(os.path.abspath(__file__))
+        log_file = os.path.join(log_dir, "agent_error.log")
+
+        def _handle_exception(exc_type, exc_value, exc_traceback):
+            if issubclass(exc_type, KeyboardInterrupt):
+                sys.__excepthook__(exc_type, exc_value, exc_traceback)
+                return
+            try:
+                with open(log_file, "a", encoding="utf-8") as f:
+                    f.write(f"\n[{datetime.now()}] UNHANDLED AGENT EXCEPTION:\n")
+                    traceback.print_exception(exc_type, exc_value, exc_traceback, file=f)
+            except Exception:
+                pass
+            sys.__excepthook__(exc_type, exc_value, exc_traceback)
+
+        sys.excepthook = _handle_exception
+    except Exception:
+        pass
+
+_setup_crash_logger()
+
 # Ensure project root is in sys.path
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if PROJECT_ROOT not in sys.path:
