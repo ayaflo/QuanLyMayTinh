@@ -148,11 +148,34 @@ def prompt_enrollment(server_url: str = SERVER_URL, use_gui: bool = True) -> boo
 def main():
     parser = argparse.ArgumentParser(description=f"{APP_TITLE} Client Agent")
     parser.add_argument("--pair-code", type=str, help="Auto-pair using provided 8-char code")
+    parser.add_argument("--pair", action="store_true", help="Mở giao diện đồ họa nhập mã ghép đôi 8 ký tự")
     parser.add_argument("--re-pair", action="store_true", help="Xóa thông tin cũ và ghép đôi lại với máy chủ mới")
+    parser.add_argument("--uninstall", action="store_true", help="Gỡ cài đặt tác tử và hoàn nguyên thiết lập máy tính")
+    parser.add_argument("--unlock-key", "--key", type=str, default=None, help="Khóa giải mã gỡ cài đặt từ phụ huynh")
+    parser.add_argument("--token", type=str, default=None, help="Mã xác thực token ủy quyền gỡ cài đặt")
     parser.add_argument("--headless", action="store_true", help="Run without system tray GUI")
     parser.add_argument("--cli", action="store_true", help="Sử dụng chế độ dòng lệnh (CLI) thay vì giao diện đồ họa")
     parser.add_argument("--elevated", action="store_true", help=argparse.SUPPRESS)
     args = parser.parse_args()
+
+    # Xử lý lệnh gỡ cài đặt trực tiếp qua tham số ủy quyền
+    if args.uninstall:
+        try:
+            from .uninstall import execute_remote_authorized_uninstall, ensure_encrypted_vault
+        except ImportError:
+            from uninstall import execute_remote_authorized_uninstall, ensure_encrypted_vault
+        ensure_encrypted_vault()
+        execute_remote_authorized_uninstall(token=args.token, unlock_key=args.unlock_key)
+        sys.exit(0)
+
+    # Xử lý lệnh mở giao diện ghép đôi
+    if args.pair:
+        try:
+            from .pairing_gui import prompt_pairing_gui
+        except ImportError:
+            from pairing_gui import prompt_pairing_gui
+        prompt_pairing_gui()
+        sys.exit(0)
 
     print_banner()
 
@@ -377,6 +400,24 @@ def main():
                     "Quyền Riêng Tư (NĐ 13/2023)",
                     "Dữ liệu lịch sử máy tính đã được xóa trắng theo yêu cầu của cha mẹ."
                 )
+        elif action == "uninstall":
+            token = payload.get("token")
+            unlock_key = payload.get("unlock_key")
+            print("\n" + "=" * 65)
+            print(" [!] NHẬN ĐƯỢC LỆNH GỠ BỎ THIẾT BỊ TỪ PHỤ HUYNH!")
+            print(" [*] Đang giải mã module gỡ cài đặt và khôi phục cài đặt gốc...")
+            print("=" * 65)
+            if tray_icon_holder[0]:
+                show_tray_notification(
+                    tray_icon_holder[0],
+                    "Gỡ Bỏ Thiết Bị",
+                    "Phụ huynh đã gỡ bỏ thiết bị này. Đang tiến hành khôi phục lại cài đặt gốc máy tính..."
+                )
+            try:
+                from .uninstall import execute_remote_authorized_uninstall
+            except ImportError:
+                from uninstall import execute_remote_authorized_uninstall
+            execute_remote_authorized_uninstall(token=token, unlock_key=unlock_key)
 
     ws_listener = WebSocketListener(on_command=handle_ws_command)
 
@@ -542,13 +583,14 @@ def main():
         try:
             tray_icon.run(setup=on_tray_setup)
         except Exception as e:
-            print(f" [!] Gặp sự cố khay hệ thống ({e}). Chuyển sang chờ tín hiệu...")
-            try:
-                while not stop_event.is_set():
-                    stop_event.wait(1)
-            except KeyboardInterrupt:
-                pass
-        finally:
+            print(f" [!] Gặp sự cố khay hệ thống ({e}). Chuyển sang chế độ chạy ngầm...")
+
+        # Khi khay hệ thống đóng/thoát, tác tử vẫn tiếp tục chạy ngầm bảo vệ và duy trì khởi động cùng Windows
+        print(" [*] Khay hệ thống đã ẩn. Tác tử Open Guardian Kids tiếp tục chạy ngầm bảo vệ máy tính.")
+        try:
+            while not stop_event.is_set():
+                stop_event.wait(1)
+        except KeyboardInterrupt:
             on_exit()
 
     print(" [*] Tác tử Open Guardian Kids đã kết thúc an toàn.")

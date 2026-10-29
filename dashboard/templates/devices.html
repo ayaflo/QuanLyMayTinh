@@ -520,7 +520,7 @@
                             <span>⚙️</span> Mở Ma Trận Lịch Biểu 336 Khung Giờ
                         </button>
                         <button type="button" class="btn-pill-white" onclick="saveQuickQuota({{ dev.id }})">
-                            <span>💾</span> Lưu Hạn Ngạch Giờ
+                            <span>💾</span> Lưu Hạn Ngạch & Lịch Biểu
                         </button>
                     </div>
                 </div>
@@ -762,13 +762,14 @@
                     <div style="width: 14px; height: 14px; background: rgba(255,255,255,0.06); border-radius: 3px;"></div>
                     <span>Chặn dùng máy</span>
                 </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.25rem; border-top: 1px solid var(--border-subtle); padding-top: 1rem; flex-wrap: wrap; gap: 0.75rem;">
+                <p style="font-size: 0.825rem; color: var(--text-dim); margin: 0;">
+                    💡 Lựa chọn của bạn được tự động ghi nhớ. Nhấn <strong>"Lưu Hạn Ngạch & Lịch Biểu"</strong> ở trang quản lý để áp dụng.
+                </p>
+                <button type="button" class="btn-pill-dark" onclick="closePolicyModal()">
+                    Đóng cửa sổ
+                </button>
             </div>
-        </div>
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; border-top: 1px solid var(--border-subtle); padding-top: 1.25rem;">
-            <button type="button" class="btn-pill-dark" id="btnCancelPolicyModal">Hủy</button>
-            <button type="button" class="btn-pill-white" onclick="savePolicyChanges()">
-                💾 Lưu Ma Trận Lịch Biểu
-            </button>
         </div>
     </div>
 </div>
@@ -1346,6 +1347,11 @@
                         cell.classList.remove('blocked');
                         cell.classList.add('allowed');
                     }
+                    const devId = document.getElementById('policyDeviceId').value;
+                    if (devId) {
+                        if (!policiesMap[devId]) policiesMap[devId] = {};
+                        policiesMap[devId].schedule_matrix = currentMatrixArray.join('');
+                    }
                 });
 
                 policyGrid.appendChild(cell);
@@ -1377,16 +1383,38 @@
                 }
             }
         }
+        const devId = document.getElementById('policyDeviceId').value;
+        if (devId) {
+            if (!policiesMap[devId]) policiesMap[devId] = {};
+            policiesMap[devId].schedule_matrix = currentMatrixArray.join('');
+        }
         renderScheduleMatrixGrid();
     }
 
     async function savePolicyChanges() {
         const deviceId = document.getElementById('policyDeviceId').value;
+        if (deviceId) {
+            await saveQuickQuota(deviceId);
+            closePolicyModal();
+        }
+    }
+
+    async function saveQuickQuota(deviceId) {
         const weekdayInput = document.getElementById(`inputWeekdayQuota-${deviceId}`);
         const weekendInput = document.getElementById(`inputWeekendQuota-${deviceId}`);
         const weekdayQuota = weekdayInput ? parseInt(weekdayInput.value) || 90 : 90;
         const weekendQuota = weekendInput ? parseInt(weekendInput.value) || 150 : 150;
-        const scheduleMatrix = currentMatrixArray.join('');
+        const policy = policiesMap[deviceId] || {};
+
+        const curModalDevId = document.getElementById('policyDeviceId')?.value;
+        let scheduleMatrix = '';
+        if (curModalDevId == deviceId && currentMatrixArray && currentMatrixArray.length === 336) {
+            scheduleMatrix = currentMatrixArray.join('');
+        } else if (policy.schedule_matrix && policy.schedule_matrix.length === 336) {
+            scheduleMatrix = policy.schedule_matrix;
+        } else {
+            scheduleMatrix = "1".repeat(336);
+        }
 
         try {
             const res = await fetch(`/api/v1/policy?device_id=${deviceId}`, {
@@ -1401,41 +1429,15 @@
 
             if (!res.ok) {
                 const err = await res.json().catch(() => ({}));
-                throw new Error(err.detail || "Không thể cập nhật lịch biểu.");
-            }
-
-            closePolicyModal();
-            showToast('Đã lưu ma trận lịch biểu thành công!');
-            setTimeout(() => window.location.reload(), 1000);
-        } catch (err) {
-            showToast(`Lỗi: ${err.message}`, false);
-        }
-    }
-
-    async function saveQuickQuota(deviceId) {
-        const weekdayInput = document.getElementById(`inputWeekdayQuota-${deviceId}`);
-        const weekendInput = document.getElementById(`inputWeekendQuota-${deviceId}`);
-        const weekdayQuota = weekdayInput ? parseInt(weekdayInput.value) || 90 : 90;
-        const weekendQuota = weekendInput ? parseInt(weekendInput.value) || 150 : 150;
-        const policy = policiesMap[deviceId] || {};
-
-        try {
-            const res = await fetch(`/api/v1/policy?device_id=${deviceId}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    weekday_quota_minutes: weekdayQuota,
-                    weekend_quota_minutes: weekendQuota,
-                    schedule_matrix: policy.schedule_matrix || "1".repeat(336)
-                })
-            });
-
-            if (!res.ok) {
-                const err = await res.json().catch(() => ({}));
                 throw new Error(err.detail || "Không thể cập nhật hạn ngạch.");
             }
 
-            showToast('Đã lưu hạn ngạch sử dụng thành công!');
+            if (!policiesMap[deviceId]) policiesMap[deviceId] = {};
+            policiesMap[deviceId].weekday_quota_minutes = weekdayQuota;
+            policiesMap[deviceId].weekend_quota_minutes = weekendQuota;
+            policiesMap[deviceId].schedule_matrix = scheduleMatrix;
+
+            showToast('Đã lưu hạn ngạch và ma trận lịch biểu thành công!');
         } catch (err) {
             showToast(`Lỗi: ${err.message}`, false);
         }

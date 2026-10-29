@@ -132,10 +132,13 @@ def init_tray_icon(
     icon_image = create_shield_icon_image(64)
 
     def on_exit(icon, item):
-        print(" [x] Người dùng yêu cầu dừng Agent từ khay hệ thống.")
-        if on_exit_callback:
-            on_exit_callback()
-        icon.stop()
+        print(" [!] Trẻ bấm Thoát trên khay hệ thống. Tác tử tiếp tục chạy nền bảo vệ và duy trì khởi động cùng Windows.")
+        show_tray_notification(
+            icon,
+            "Open Guardian Kids",
+            "Tác tử tiếp tục hoạt động ngầm để quản lý thời gian và an toàn mạng. Chỉ có phụ huynh gỡ bỏ thiết bị mới dừng tác tử."
+        )
+        # Chỉ thông báo và không hủy tác tử; không gọi on_exit_callback
 
     def on_check_time(icon, item):
         mins = get_remaining_minutes_fn() if get_remaining_minutes_fn else "Đang đồng bộ..."
@@ -148,13 +151,22 @@ def init_tray_icon(
     creds = load_credentials()
     device_label = creds.get("device_name", DEVICE_NAME) if creds else DEVICE_NAME
 
-    def on_toggle_autostart(icon, item):
-        if is_autostart_enabled():
-            disable_autostart()
-            show_tray_notification(icon, "Khởi Động Cùng Windows", "Đã tắt tự động khởi động cùng Windows.")
-        else:
+    def on_autostart_info(icon, item):
+        try:
             enable_autostart()
-            show_tray_notification(icon, "Khởi Động Cùng Windows", "Đã bật tự động khởi động cùng Windows.")
+        except Exception:
+            pass
+        show_tray_notification(
+            icon,
+            "Khởi Động Cùng Windows",
+            "Open Guardian Kids là phần mềm giám sát mặc định luôn khởi động cùng Windows. Không thể tắt tính năng này."
+        )
+
+    # Đảm bảo tự động khởi động cùng Windows luôn được kích hoạt
+    try:
+        enable_autostart()
+    except Exception:
+        pass
 
     menu = Menu(
         item("🖥️ Mở giao diện", on_transparency_view, default=True),
@@ -162,7 +174,7 @@ def init_tray_icon(
         item("⏱️ Xem thời gian còn lại hôm nay", on_check_time),
         item("⏳ Xin thêm thời gian...", on_request_more_time),
         item("🔗 Ghép đôi lại thiết bị...", lambda icon, item: open_pairing_dialog()),
-        item("🚀 Khởi động cùng Windows", on_toggle_autostart, checked=lambda item: is_autostart_enabled()),
+        item("🔒 Khởi động cùng Windows (Bắt buộc)", on_autostart_info, checked=lambda item: True),
         Menu.SEPARATOR,
         item(f"🛡️ {APP_TITLE}", None, enabled=False),
         item(f"💻 Máy: {device_label}", None, enabled=False),

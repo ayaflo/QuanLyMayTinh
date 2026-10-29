@@ -105,13 +105,13 @@ async def erase_child_data(
 
 
 @router.delete("/{device_id}", summary="Phụ huynh gỡ bỏ hoàn toàn thiết bị khỏi tài khoản")
-def delete_device_by_parent(
+async def delete_device_by_parent(
     request: Request,
     device_id: int = Path(..., description="ID thiết bị cần gỡ bỏ"),
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(security_scheme),
     db: Session = Depends(get_db)
 ):
-    """Allows authenticated parent to permanently remove an enrolled device."""
+    """Allows authenticated parent to permanently remove an enrolled device and trigger clean remote uninstallation."""
     parent = _get_parent_from_request(request, credentials, db)
     if not parent:
         raise HTTPException(
@@ -130,10 +130,47 @@ def delete_device_by_parent(
             detail="Bạn không có quyền gỡ bỏ thiết bị này"
         )
 
-    from server.services.enrollment_service import unenroll_device
+    import hmac
+    import hashlib
+    import time
+    import asyncio
+    try:
+        from ..security import SECRET_KEY
+        from ..services.connection_manager import ws_manager
+        from ..services.enrollment_service import unenroll_device
+    except (ImportError, ValueError):
+        from server.security import SECRET_KEY
+        from server.services.connection_manager import ws_manager
+        from server.services.enrollment_service import unenroll_device
+
+    # 1. Sinh token ủy quyền và khóa giải mã module gỡ cài đặt
+    salt = f"UNINSTALL_AUTHORIZED:{device.device_fingerprint}:{device_id}"
+    token = hmac.new(SECRET_KEY.encode(), salt.encode(), hashlib.sha256).hexdigest()
+    unlock_key = hashlib.sha256(f"{SECRET_KEY}:{device.device_fingerprint}".encode()).hexdigest()[:32]
+
+    cmd_payload = {
+        "device_id": device_id,
+        "token": token,
+        "unlock_key": unlock_key,
+        "timestamp": int(time.time()),
+        "reason": "uninstalled_by_parent"
+    }
+
+    # 2. Gửi lệnh gỡ cài đặt khẩn cấp tới máy tính trẻ qua WebSocket (< 5s)
+    try:
+        await ws_manager.send_command(device_id, {
+            "action": "uninstall",
+            "payload": cmd_payload
+        })
+        await asyncio.sleep(0.3)
+    except Exception:
+        pass
+
+    # 3. Xóa thiết bị khỏi cơ sở dữ liệu máy chủ
     unenroll_device(db, device_id=device_id)
     return {
         "status": "success",
         "device_id": device_id,
-        "message": f"Đã gỡ bỏ thiết bị #{device_id} khỏi tài khoản phụ huynh thành công."
+        "message": f"Đã gửi lệnh gỡ cài đặt sạch tới máy #{device_id} và xóa khỏi tài khoản phụ huynh thành công."
     }
+

@@ -1,0 +1,46 @@
+================================================================================
+          HƯỚNG DẪN CÀI ĐẶT & SỬ DỤNG OPEN GUARDIAN KIDS AGENT (BẢN RELEASE)
+================================================================================
+
+I. YÊU CẦU HỆ THỐNG
+   • Hệ điều hành: Windows 10, Windows 11 (64-bit).
+   • Quyền tài khoản: Yêu cầu cấp quyền Administrator khi cài đặt.
+
+II. HƯỚNG DẪN CÀI ĐẶT TRÊN MÁY TÍNH CỦA TRẺ
+   1. Giải nén thư mục "release" ra máy tính của con (ví dụ: C:\OpenGuardianKids hoặc Desktop).
+   2. Nhấp đúp chuột vào tệp: "Cai_Dat_Agent.bat".
+   3. Khi cửa sổ Windows User Account Control (UAC) hiện lên hỏi quyền Administrator,
+      chọn "Yes" (Đồng ý).
+   4. Cửa sổ "Ghép Đôi Máy Tính Mới" với giao diện hiện đại sẽ hiện lên.
+   5. Mở trang Web Dashboard của phụ huynh -> bấm "Ghép Đôi Thiết Bị Mới" -> lấy Mã 8 ký tự
+      (Ví dụ: 9K7X-2M4P) và nhập vào ô trên màn hình máy con.
+   6. Bấm "Xác Nhận Ghép Đôi". Tác tử sẽ tự động kết nối với máy chủ phụ huynh!
+
+III. CƠ CHẾ BẢO VỆ & CHỐNG CAN THIỆP (ANTI-TAMPER PROTECTION)
+   • Tự khởi động cùng Windows:
+     - Tác tử tự động tạo Task Scheduler với quyền cao nhất (Highest Available) và đăng ký
+       vào Registry Run.
+     - Khi trẻ nhấp vào biểu tượng khay hệ thống, mục "Khởi động cùng Windows" luôn được khóa
+       ở trạng thái Bắt buộc (không thể tắt).
+   • Chống tự ý thoát phần mềm:
+     - Khi trẻ bấm "Thoát" trên biểu tượng khay hệ thống, tác tử vẫn tiếp tục chạy ngầm trong
+       hệ thống để đảm bảo hạn ngạch giờ và lọc trang web độc hại không bị gián đoạn.
+   • Mã hóa file gỡ cài đặt (Encrypted Uninstall):
+     - Tệp gỡ cài đặt đã được mã hóa bảo vệ (uninstall_core.enc). Trẻ không thể tự ý kích hoạt
+       gỡ cài đặt từ máy tính con.
+
+IV. CÁCH GỠ CÀI ĐẶT & HOÀN NGUYÊN MÁY TÍNH VỀ THIẾT LẬP GỐC
+   • CHỈ CÓ PHỤ HUYNH MỚI CÓ THỂ GỠ BỎ:
+     1. Phụ huynh đăng nhập vào trang Web Dashboard trên điện thoại/máy tính của mình.
+     2. Vào mục "Cài đặt & Gỡ bỏ thiết bị" của máy con.
+     3. Nhấn nút "✕ Gỡ Bỏ Thiết Bị".
+     4. Máy chủ sẽ lập tức gửi lệnh gỡ cài đặt kèm khóa giải mã ủy quyền từ xa (< 5 giây).
+     5. Tác tử trên máy con nhận tín hiệu, tự động giải mã và tiến hành:
+        - Khôi phục toàn bộ DNS card mạng (Wi-Fi, LAN) về DHCP tự động ban đầu.
+        - Xóa sạch danh sách chặn trong tệp hosts Windows.
+        - Gỡ bỏ chính sách DoH trên trình duyệt.
+        - Xóa đăng ký tự khởi động cùng Windows.
+        - Xóa bộ nhớ đệm và dừng toàn bộ tiến trình tác tử.
+        - Máy tính con trở về 100% nguyên trạng ban đầu!
+
+================================================================================
