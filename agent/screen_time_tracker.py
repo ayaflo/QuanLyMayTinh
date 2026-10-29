@@ -24,13 +24,21 @@ class ScreenTimeTracker:
     def __init__(
         self,
         on_lock_trigger: Optional[Callable[[str], None]] = None,
-        on_warning: Optional[Callable[[str], None]] = None
+        on_warning: Optional[Callable[[str], None]] = None,
+        on_schedule_block: Optional[Callable[[str], None]] = None,
+        on_schedule_allowed: Optional[Callable[[], None]] = None
     ):
         self.on_lock_trigger = on_lock_trigger
         self.on_warning = on_warning
+        self.on_schedule_block = on_schedule_block
+        self.on_schedule_allowed = on_schedule_allowed
 
         self.running = False
         self._thread: Optional[threading.Thread] = None
+
+        # Schedule countdown tracking
+        self.schedule_countdown_active = False
+        self.locked_by_schedule = False
 
         # Current date tracking (YYYY-MM-DD)
         self.current_date_str = datetime.now().strftime("%Y-%m-%d")
@@ -71,6 +79,8 @@ class ScreenTimeTracker:
         """Add bonus time awarded by parent via WebSocket command."""
         self.bonus_minutes += minutes
         self.is_locked = False
+        self.locked_by_schedule = False
+        self.schedule_countdown_active = False
         self.grace_period_active = False
         # Reset warnings if time increased significantly
         if self.get_remaining_seconds() > 600:
@@ -162,12 +172,28 @@ class ScreenTimeTracker:
 
             # If currently outside scheduled hours
             if not allowed_by_schedule:
-                if not self.is_locked:
-                    self.is_locked = True
-                    self._save_today_usage()
-                    if self.on_lock_trigger:
-                        self.on_lock_trigger("Đã đến giờ nghỉ ngơi theo lịch của cha mẹ!")
+                if not self.is_locked and not self.schedule_countdown_active:
+                    self.schedule_countdown_active = True
+                    reason = "Đang trong khoảng thời gian cấm sử dụng máy tính theo lịch của cha mẹ"
+                    if self.on_schedule_block:
+                        self.on_schedule_block(reason)
+                    else:
+                        self.is_locked = True
+                        self.locked_by_schedule = True
+                        self._save_today_usage()
+                        if self.on_lock_trigger:
+                            self.on_lock_trigger(reason)
                 continue
+            else:
+                # Outside forbidden hours
+                if self.schedule_countdown_active:
+                    self.schedule_countdown_active = False
+                    if self.on_schedule_allowed:
+                        self.on_schedule_allowed()
+                if self.locked_by_schedule and self.get_remaining_seconds() > 0:
+                    self.is_locked = False
+                    self.locked_by_schedule = False
+                    self._save_today_usage()
 
             # Check user inactivity (Idle > 5m = 300s)
             if is_user_idle(300.0):

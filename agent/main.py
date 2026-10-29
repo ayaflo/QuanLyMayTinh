@@ -243,9 +243,38 @@ def main():
         if tray_icon_holder[0]:
             show_tray_notification(tray_icon_holder[0], "Thời Gian Sử Dụng", msg)
 
+    def handle_schedule_block(reason: str):
+        countdown = 30
+        print(f"\n [!] CẢNH BÁO LỊCH BIỂU: Bắt đầu đếm ngược {countdown} giây trước khi khóa máy...")
+        print(f" [!] Lý do: {reason}")
+        if tray_icon_holder[0]:
+            show_tray_notification(
+                tray_icon_holder[0],
+                "⚠️ Sắp Khóa Máy Tính (Theo Lịch Biểu)",
+                f"{reason}. Màn hình sẽ khóa sau {countdown} giây để em lưu bài tập!"
+            )
+
+        def do_schedule_lock():
+            tracker.is_locked = True
+            tracker.locked_by_schedule = True
+            tracker.schedule_countdown_active = False
+            tracker._save_today_usage()
+            system_locker.lock_now(reason)
+
+        lock_warning_controller.start_countdown(
+            seconds=countdown,
+            reason=reason,
+            on_lock_callback=do_schedule_lock
+        )
+
+    def handle_schedule_allowed():
+        lock_warning_controller.cancel()
+
     tracker = ScreenTimeTracker(
         on_lock_trigger=handle_lock_trigger,
-        on_warning=handle_warning
+        on_warning=handle_warning,
+        on_schedule_block=handle_schedule_block,
+        on_schedule_allowed=handle_schedule_allowed
     )
     system_locker = SystemLocker(is_lock_required_fn=lambda: tracker.is_locked)
 
@@ -279,11 +308,16 @@ def main():
         elif action == "unlock":
             lock_warning_controller.cancel()
             tracker.is_locked = False
+            tracker.locked_by_schedule = False
+            tracker.schedule_countdown_active = False
             tracker.grace_period_active = False
+            tracker._save_today_usage()
             if tray_icon_holder[0]:
                 show_tray_notification(tray_icon_holder[0], "Lệnh Khẩn Cấp", "Phụ huynh đã mở khóa màn hình cho em.")
         elif action == "add_time":
             lock_warning_controller.cancel()
+            tracker.locked_by_schedule = False
+            tracker.schedule_countdown_active = False
             mins = payload.get("minutes", 15) if payload else 15
             tracker.add_bonus_minutes(mins)
             if tray_icon_holder[0]:

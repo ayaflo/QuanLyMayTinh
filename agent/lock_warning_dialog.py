@@ -21,6 +21,11 @@ class LockWarningController:
         self._cancelled = False
         self._lock = threading.RLock()
 
+    @property
+    def is_cancelled(self) -> bool:
+        with self._lock:
+            return self._cancelled
+
     def start_countdown(
         self,
         seconds: int = 30,
@@ -39,17 +44,24 @@ class LockWarningController:
         # Start GUI in background thread
         if show_gui:
             def _run_gui():
+                dialog = None
                 try:
                     import tkinter as tk
-                    self._active_dialog = LockCountdownWindow(
+                    dialog = LockCountdownWindow(
                         seconds=seconds,
                         reason=reason,
                         on_lock=self._trigger_lock,
                         controller=self
                     )
-                    self._active_dialog.show()
+                    with self._lock:
+                        self._active_dialog = dialog
+                    dialog.show()
                 except Exception as e:
                     logger.warning(f"[LOCK_WARNING] Could not display GUI countdown ({e}), using console/fallback timer.")
+                finally:
+                    with self._lock:
+                        if self._active_dialog == dialog:
+                            self._active_dialog = None
 
             gui_thread = threading.Thread(target=_run_gui, daemon=True, name="OGK_LockCountdownGUI")
             gui_thread.start()
@@ -107,18 +119,22 @@ class LockCountdownWindow:
     """Tkinter topmost countdown alert window."""
 
     def __init__(self, seconds: int, reason: str, on_lock: Callable[[], None], controller: LockWarningController):
+        self.total_seconds = seconds
         self.remaining = seconds
         self.reason = reason
         self.on_lock = on_lock
         self.controller = controller
         self.root = None
         self.timer_label = None
+        self._should_close = False
+        self.start_monotonic = 0.0
 
     def show(self):
         import tkinter as tk
         _enable_high_dpi()
 
         self.root = tk.Tk()
+        self.start_monotonic = time.monotonic()
         self.root.title("⚠️ CẢNH BÁO TỪ PHỤ HUYNH")
         self.root.geometry("560x320")
         self.root.minsize(520, 280)
@@ -190,33 +206,56 @@ class LockCountdownWindow:
         self.root.protocol("WM_DELETE_WINDOW", lambda: None)
 
         self._tick()
-        self.root.mainloop()
+        try:
+            self.root.mainloop()
+        except Exception:
+            pass
+        finally:
+            self._destroy_on_gui_thread()
 
     def _tick(self):
         if not self.root:
             return
 
-        if self.controller._cancelled:
-            self.close()
+        # Check cancellation or request to close
+        if self._should_close or self.controller.is_cancelled:
+            self._destroy_on_gui_thread()
             return
 
-        if self.remaining <= 0:
-            self.close()
-            return
+        elapsed = int(time.monotonic() - self.start_monotonic)
+        self.remaining = max(0, self.total_seconds - elapsed)
 
         if self.timer_label:
-            self.timer_label.config(text=f"{self.remaining} GIÂY")
-
-        self.remaining -= 1
-        self.root.after(1000, self._tick)
-
-    def close(self):
-        if self.root:
             try:
-                self.root.destroy()
+                self.timer_label.config(text=f"{self.remaining} GIÂY")
             except Exception:
                 pass
+
+        if self.remaining <= 0:
+            self._destroy_on_gui_thread()
+            return
+
+        try:
+            self.root.after(150, self._tick)
+        except Exception:
+            self._destroy_on_gui_thread()
+
+    def _destroy_on_gui_thread(self):
+        """Destroy the Tk window strictly on the GUI thread."""
+        if self.root:
+            r = self.root
             self.root = None
+            try:
+                r.destroy()
+            except Exception:
+                pass
+
+    def close(self):
+        """Thread-safe request to close the countdown window.
+        Sets a boolean flag so destruction is carried out exclusively on the GUI thread.
+        Prevents Tcl_AsyncDelete / wrong thread crashes.
+        """
+        self._should_close = True
 
 
 # Global controller instance
