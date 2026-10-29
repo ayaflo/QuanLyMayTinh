@@ -60,7 +60,7 @@
                                 <div style="min-width: 0;">
                                     <div class="device-name-title" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ dev.device_name }}</div>
                                     <div class="device-meta-sub">
-                                        ID: #{{ dev.id }} &bull; Nhịp tim: {{ dev.last_seen|local_time('%H:%M:%S') }}
+                                        ID: #{{ dev.id }}
                                     </div>
                                 </div>
                             </div>
@@ -231,7 +231,7 @@
 
                     <!-- Add New Domain Rule Form -->
                     <form onsubmit="handleAddDomainRule(event)" style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.5rem; background: rgba(255,255,255,0.02); padding: 1.1rem; border-radius: 16px; border: 1px solid rgba(255,255,255,0.06);">
-                        <input type="text" id="inputNewDomain" class="form-input-xai" style="flex: 2; min-width: 220px;" placeholder="Nhập tên miền (ví dụ: tiktok.com hoặc facebook.com)" required>
+                        <input type="text" id="inputNewDomain" class="form-input-xai" style="flex: 2; min-width: 220px;" placeholder="Nhập tên miền (ví dụ: facebook.com hoặc youtube.com)" required>
                         <select id="selectNewDomainCategory" class="form-input-xai" style="flex: 1; min-width: 150px;">
                             <option value="Độc hại">Độc hại</option>
                             <option value="Mạng xã hội">Mạng xã hội</option>

@@ -34,7 +34,6 @@ SEED_DOMAINS_DATA = [
 
     # 2. Mạng xã hội (Default: block)
     {"category": "Mạng xã hội", "domain": "facebook.com", "action": "block", "is_permanent_whitelist": False},
-    {"category": "Mạng xã hội", "domain": "tiktok.com", "action": "block", "is_permanent_whitelist": False},
 
     # 3. Giải trí (Default: allow)
     {"category": "Giải trí", "domain": "youtube.com", "action": "allow", "is_permanent_whitelist": False},

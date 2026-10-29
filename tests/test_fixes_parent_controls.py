@@ -267,8 +267,8 @@ def test_dashboard_renders_vietnam_time_for_requests_and_audit(client):
     assert res.status_code == 200
     html = res.text
 
-    # Heartbeat must display 15:16:00 (not 08:16:00)
-    assert "Nhịp tim: 15:16:00" in html
+    # Device ID must display correctly
+    assert f"ID: #{device.id}" in html
 
     # Child request must display 'Gửi lúc: 15:16 29/10' (not 08:16 29/10)
     assert "Gửi lúc: 15:16 29/10" in html
