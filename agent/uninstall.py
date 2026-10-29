@@ -552,7 +552,7 @@ def print_cli_summary(summary: Dict[str, Any]):
 
 
 ENCRYPTED_VAULT_FILE = os.path.join(AGENT_DIR, "uninstall_core.enc")
-DEFAULT_VAULT_SEED = "OGK_PROTECTED_UNINSTALL_CORE_VAULT_V1"
+DEFAULT_VAULT_SEED = "OGK_STATIC_MASTER_UNINSTALL_KEY_2026"
 
 
 def _derive_fernet_key(key_material: str) -> bytes:
@@ -601,32 +601,26 @@ def verify_uninstall_authorization(
 
     Returns True if:
     1. Running in test suite (OGK_TEST_MODE == '1')
-    2. Valid unlock_key provided that can decrypt vault
-    3. Valid token provided
+    2. Valid unlock_key or token provided that successfully decrypts the vault
     """
     if os.environ.get("OGK_TEST_MODE") == "1":
         return True
 
-    if unlock_key:
-        try:
-            from cryptography.fernet import Fernet
-            ensure_encrypted_vault()
-            if os.path.exists(ENCRYPTED_VAULT_FILE):
-                with open(ENCRYPTED_VAULT_FILE, "rb") as f:
-                    enc_data = f.read()
-                for seed in (unlock_key, DEFAULT_VAULT_SEED):
-                    try:
-                        k = _derive_fernet_key(seed)
-                        Fernet(k).decrypt(enc_data)
-                        return True
-                    except Exception:
-                        pass
-            return True
-        except Exception:
-            return True
+    key_to_test = unlock_key or token
+    if not key_to_test:
+        return False
 
-    if token and len(token) >= 16:
-        return True
+    try:
+        from cryptography.fernet import Fernet
+        ensure_encrypted_vault()
+        if os.path.exists(ENCRYPTED_VAULT_FILE):
+            with open(ENCRYPTED_VAULT_FILE, "rb") as f:
+                enc_data = f.read()
+            k = _derive_fernet_key(key_to_test)
+            Fernet(k).decrypt(enc_data)
+            return True
+    except Exception:
+        return False
 
     return False
 

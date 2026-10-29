@@ -77,11 +77,14 @@ def test_anti_tamper_blocks_unauthorized_uninstall(monkeypatch):
 
 
 def test_anti_tamper_accepts_valid_unlock_key(monkeypatch):
-    """Verify that a valid unlock_key passes authorization check."""
+    """Verify that the valid UNINSTALL_MASTER_KEY passes and invalid keys are rejected."""
     monkeypatch.delenv("OGK_TEST_MODE", raising=False)
     ensure_encrypted_vault()
     assert os.path.exists(ENCRYPTED_VAULT_FILE)
-    assert verify_uninstall_authorization(unlock_key="valid_sample_key_1234567890abcdef") is True
+    # Master key matches vault encryption -> True
+    assert verify_uninstall_authorization(unlock_key="OGK_STATIC_MASTER_UNINSTALL_KEY_2026") is True
+    # Wrong fake key fails to decrypt vault -> False
+    assert verify_uninstall_authorization(unlock_key="wrong_fake_key_12345") is False
 
 
 def test_tray_locks_autostart_permanently():
