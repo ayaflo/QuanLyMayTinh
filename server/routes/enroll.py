@@ -31,6 +31,11 @@ router = APIRouter()
     response_model=CreateCodeResponse,
     summary="Tạo mã ghép đôi 8 ký tự cho phụ huynh"
 )
+@router.post(
+    "/pairing-codes",
+    response_model=CreateCodeResponse,
+    summary="Alias tạo mã ghép đôi 8 ký tự cho phụ huynh"
+)
 def create_code(
     current_parent: Parent = Depends(get_current_parent),
     db: Session = Depends(get_db)

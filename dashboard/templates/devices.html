@@ -3,332 +3,578 @@
 {% block title %}Quản Lý Thiết Bị Trẻ Em - OGK{% endblock %}
 
 {% block content %}
-<!-- Dashboard Header (xai247 Style Inspired) -->
-<div class="dashboard-header" style="margin-bottom: 2rem;">
-    <div class="dashboard-title-group">
-        <h1 style="font-size: 2rem; font-weight: 700; letter-spacing: -0.03em; color: #fff;">Quản Lý Máy Tính Trẻ Em</h1>
-        <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 0.4rem;">
-            Giám sát thời lượng sử dụng, cài đặt giới hạn an toàn và quản lý máy tính của con
-        </p>
-    </div>
-    <button id="btnOpenPairModal" class="btn btn-primary" style="box-shadow: 0 4px 20px -4px rgba(14, 165, 233, 0.5);">
-        <span>➕</span> Thêm Máy Tính Mới
-    </button>
-</div>
-
-<!-- Quick Statistics Cards -->
-<div class="stats-grid" style="margin-bottom: 2rem;">
-    <div class="stat-card" style="border-radius: 16px; background: rgba(18, 20, 26, 0.85); border: 1px solid rgba(255, 255, 255, 0.08);">
-        <div class="stat-icon-wrapper stat-icon-blue" style="border-radius: 12px;">💻</div>
-        <div>
-            <div class="stat-value" style="font-family: 'Geist Mono', monospace; font-size: 1.8rem;">{{ devices|length }}</div>
-            <div class="stat-label" style="font-size: 0.825rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em;">Tổng Máy Tính</div>
-        </div>
-    </div>
-    <div class="stat-card" style="border-radius: 16px; background: rgba(18, 20, 26, 0.85); border: 1px solid rgba(255, 255, 255, 0.08);">
-        <div class="stat-icon-wrapper stat-icon-green" style="border-radius: 12px;">
-            <span class="live-dot"></span>
-        </div>
-        <div>
-            <div class="stat-value" style="font-family: 'Geist Mono', monospace; font-size: 1.8rem; color: #10b981;">{{ online_count|default(0) }}</div>
-            <div class="stat-label" style="font-size: 0.825rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em;">Đang Hoạt Động</div>
-        </div>
-    </div>
-    <div class="stat-card" style="border-radius: 16px; background: rgba(18, 20, 26, 0.85); border: 1px solid rgba(255, 255, 255, 0.08);">
-        <div class="stat-icon-wrapper stat-icon-gray" style="border-radius: 12px;">⚪</div>
-        <div>
-            <div class="stat-value" style="font-family: 'Geist Mono', monospace; font-size: 1.8rem; color: var(--text-muted);">{{ offline_count|default(0) }}</div>
-            <div class="stat-label" style="font-size: 0.825rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em;">Ngoại Tuyến</div>
-        </div>
-    </div>
-</div>
-
 <!-- ========================================================================
-     SECTION 1: Multi-Device Grid (Chọn máy tính để xem chi tiết)
+     VIEW 1: MÀN HÌNH CHÍNH (Chỉ hiển thị danh sách máy tính)
      ======================================================================== -->
-<div class="section-card" style="margin-bottom: 2rem;">
-    <div class="section-header" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.85rem; margin-bottom: 1.25rem;">
-        <div>
-            <h2 class="section-title" style="font-size: 1.2rem; font-weight: 700; color: #fff;">Danh Sách Máy Tính Của Con</h2>
-            <p style="color: var(--text-muted); font-size: 0.825rem; margin-top: 0.2rem;">
-                Nhấp vào máy tính bên dưới để xem chi tiết nhật ký, báo cáo và điều khiển riêng từng máy
+<div id="viewMainDeviceList">
+    <!-- Dashboard Header -->
+    <div class="dashboard-header" style="margin-bottom: 2rem;">
+        <div class="dashboard-title-group">
+            <h1 style="font-size: 2.1rem; font-weight: 800; letter-spacing: -0.03em; color: #fff;">Quản Lý Máy Tính Trẻ Em</h1>
+            <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 0.4rem;">
+                Hệ thống đồng hành, giám sát thời lượng và bảo vệ không gian mạng cho con
             </p>
         </div>
-        {% if devices and devices|length > 0 %}
-            <span class="badge-subtle" style="font-family: 'Geist Mono', monospace;">{{ devices|length }} thiết bị</span>
-        {% endif %}
+        <button id="btnOpenPairModal" class="btn btn-primary" style="box-shadow: 0 4px 20px -4px rgba(14, 165, 233, 0.5); padding: 0.75rem 1.4rem; font-weight: 700;">
+            <span>➕</span> Thêm Máy Tính Mới
+        </button>
     </div>
 
-    {% if devices and devices|length > 0 %}
-        <div class="device-cards-grid">
-            {% for dev in devices %}
-                {% set pol = policies_map[dev.id] if policies_map and dev.id in policies_map else None %}
-                {% set rep = reports_map[dev.id] if reports_map and dev.id in reports_map else None %}
-                {% set used_min = (rep.total_screen_time_sec / 60)|round|int if rep else 0 %}
-                {% set quota_today = pol.weekday_quota_minutes if pol else 90 %}
-                {% set percent_used = (used_min / quota_today * 100)|round|int if quota_today > 0 else 0 %}
-                
-                <div class="device-card-item {% if loop.first %}active{% endif %}" id="card-device-{{ dev.id }}" onclick="selectDevice({{ dev.id }})">
-                    <div class="device-card-top">
-                        <div style="display: flex; align-items: center; gap: 0.85rem;">
-                            <div class="device-avatar-glow">🖥️</div>
-                            <div>
-                                <div style="font-weight: 700; font-size: 1.05rem; color: #fff;">{{ dev.device_name }}</div>
-                                <div style="font-size: 0.775rem; color: var(--text-dim); font-family: 'Geist Mono', monospace;">
-                                    ID: #{{ dev.id }} · Nhịp tim: {{ dev.last_seen|local_time('%H:%M:%S') }}
+    <!-- Quick Statistics Cards -->
+    <div class="stats-grid" style="margin-bottom: 2rem;">
+        <div class="stat-card" style="border-radius: 18px; background: rgba(18, 20, 26, 0.85); border: 1px solid rgba(255, 255, 255, 0.08);">
+            <div class="stat-icon-wrapper stat-icon-blue" style="border-radius: 14px;">💻</div>
+            <div>
+                <div class="stat-value" style="font-family: 'Geist Mono', monospace; font-size: 1.85rem;">{{ devices|length }}</div>
+                <div class="stat-label" style="font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em;">Tổng Máy Tính</div>
+            </div>
+        </div>
+        <div class="stat-card" style="border-radius: 18px; background: rgba(18, 20, 26, 0.85); border: 1px solid rgba(255, 255, 255, 0.08);">
+            <div class="stat-icon-wrapper stat-icon-green" style="border-radius: 14px;">
+                <span class="live-dot"></span>
+            </div>
+            <div>
+                <div class="stat-value" style="font-family: 'Geist Mono', monospace; font-size: 1.85rem; color: #10b981;">{{ online_count|default(0) }}</div>
+                <div class="stat-label" style="font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em;">Đang Hoạt Động</div>
+            </div>
+        </div>
+        <div class="stat-card" style="border-radius: 18px; background: rgba(18, 20, 26, 0.85); border: 1px solid rgba(255, 255, 255, 0.08);">
+            <div class="stat-icon-wrapper stat-icon-gray" style="border-radius: 14px;">⚪</div>
+            <div>
+                <div class="stat-value" style="font-family: 'Geist Mono', monospace; font-size: 1.85rem; color: var(--text-muted);">{{ offline_count|default(0) }}</div>
+                <div class="stat-label" style="font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em;">Ngoại Tuyến</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Section: Danh Sách Máy Tính Của Con -->
+    <div class="section-card" style="margin-bottom: 2.5rem; background: rgba(18, 20, 26, 0.85); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px;">
+        <div class="section-header" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.9rem; margin-bottom: 1.4rem;">
+            <div>
+                <h2 class="section-title" style="font-size: 1.25rem; font-weight: 700; color: #fff;">Danh Sách Máy Tính Của Con</h2>
+                <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.25rem;">
+                    Chọn máy tính bên dưới để vào trung tâm điều khiển, xem báo cáo, cấu hình tên miền và quản lý ứng dụng
+                </p>
+            </div>
+            {% if devices and devices|length > 0 %}
+                <span class="badge-subtle" style="font-family: 'Geist Mono', monospace;">{{ devices|length }} máy tính</span>
+            {% endif %}
+        </div>
+
+        {% if devices and devices|length > 0 %}
+            <div class="device-cards-grid">
+                {% for dev in devices %}
+                    {% set pol = policies_map[dev.id] if policies_map and dev.id in policies_map else None %}
+                    {% set rep = reports_map[dev.id] if reports_map and dev.id in reports_map else None %}
+                    {% set used_min = (rep.total_screen_time_sec / 60)|round|int if rep else 0 %}
+                    {% set quota_today = pol.weekday_quota_minutes if pol else 90 %}
+                    {% set percent_used = (used_min / quota_today * 100)|round|int if quota_today > 0 else 0 %}
+                    
+                    <div class="device-card-item" id="main-card-device-{{ dev.id }}" onclick="openDeviceCockpit({{ dev.id }})">
+                        <div class="device-card-top">
+                            <div style="display: flex; align-items: center; gap: 0.85rem;">
+                                <div class="device-avatar-glow">🖥️</div>
+                                <div>
+                                    <div style="font-weight: 700; font-size: 1.1rem; color: #fff;">{{ dev.device_name }}</div>
+                                    <div style="font-size: 0.775rem; color: var(--text-dim); font-family: 'Geist Mono', monospace; margin-top: 0.2rem;">
+                                        ID: #{{ dev.id }} · Nhịp tim: {{ dev.last_seen|local_time('%H:%M:%S') }}
+                                    </div>
                                 </div>
+                            </div>
+
+                            <div>
+                                {% if dev.status == 'online' %}
+                                    <span class="badge-status badge-online" style="display: inline-flex; align-items: center; gap: 6px;">
+                                        <span class="live-dot"></span> Trực tuyến
+                                    </span>
+                                {% else %}
+                                    <span class="badge-status badge-offline" style="display: inline-flex; align-items: center; gap: 6px;">
+                                        <span class="live-dot offline"></span> Ngoại tuyến
+                                    </span>
+                                {% endif %}
                             </div>
                         </div>
 
-                        <div>
-                            {% if dev.status == 'online' %}
-                                <span class="badge-status badge-online" style="display: inline-flex; align-items: center; gap: 6px;">
-                                    <span class="live-dot"></span> Trực tuyến
+                        <!-- Usage Progress Bar Mini -->
+                        <div style="background: rgba(255,255,255,0.03); padding: 0.85rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.06);">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.825rem; margin-bottom: 0.4rem;">
+                                <span style="color: var(--text-muted);">Đã dùng hôm nay:</span>
+                                <span style="font-family: 'Geist Mono', monospace; font-weight: 600; color: {% if percent_used >= 100 %}#ef4444{% elif percent_used >= 80 %}#f59e0b{% else %}#10b981{% endif %};">
+                                    {{ used_min }} / {{ quota_today }} phút
                                 </span>
-                            {% else %}
-                                <span class="badge-status badge-offline" style="display: inline-flex; align-items: center; gap: 6px;">
-                                    <span class="live-dot offline"></span> Ngoại tuyến
-                                </span>
-                            {% endif %}
+                            </div>
+                            <div class="quota-bar-wrapper">
+                                <div class="quota-bar-fill" style="width: {{ [percent_used, 100]|min }}%; background: {% if percent_used >= 100 %}#ef4444{% elif percent_used >= 80 %}#f59e0b{% else %}linear-gradient(90deg, #0ea5e9, #10b981){% endif %};"></div>
+                            </div>
                         </div>
-                    </div>
 
-                    <!-- Usage Progress Mini -->
-                    <div style="background: rgba(255,255,255,0.03); padding: 0.75rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);">
-                        <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 0.35rem;">
-                            <span style="color: var(--text-muted);">Đã dùng hôm nay:</span>
-                            <span style="font-family: 'Geist Mono', monospace; font-weight: 600; color: {% if percent_used >= 100 %}#ef4444{% elif percent_used >= 80 %}#f59e0b{% else %}#10b981{% endif %};">
-                                {{ used_min }} / {{ quota_today }} phút
-                            </span>
+                        <!-- Quick Emergency Controls -->
+                        <div style="display: flex; gap: 0.45rem; margin-top: 0.2rem;" onclick="event.stopPropagation();">
+                            <button class="btn-xs btn-danger-soft" style="flex: 1; padding: 0.5rem;" onclick="sendEmergencyCommand({{ dev.id }}, 'lock_now')" title="Khóa màn hình máy tính con ngay lập tức">
+                                🔒 Khóa Ngay
+                            </button>
+                            <button class="btn-xs btn-success-soft" style="flex: 1; padding: 0.5rem;" onclick="sendEmergencyCommand({{ dev.id }}, 'unlock')" title="Mở khóa màn hình máy con">
+                                🔓 Mở Khóa
+                            </button>
+                            <button class="btn-xs btn-amber-soft" style="flex: 1; padding: 0.5rem;" onclick="sendEmergencyCommand({{ dev.id }}, 'add_time', 15)" title="Thưởng thêm 15 phút sử dụng">
+                                ⏳ +15 Phút
+                            </button>
                         </div>
-                        <div class="quota-bar-wrapper">
-                            <div class="quota-bar-fill" style="width: {{ [percent_used, 100]|min }}%; background: {% if percent_used >= 100 %}#ef4444{% elif percent_used >= 80 %}#f59e0b{% else %}linear-gradient(90deg, #0ea5e9, #10b981){% endif %};"></div>
-                        </div>
-                    </div>
 
-                    <!-- Quick Emergency Actions -->
-                    <div style="display: flex; gap: 0.4rem; margin-top: 0.25rem;" onclick="event.stopPropagation();">
-                        <button class="btn-xs btn-danger-soft" style="flex: 1; padding: 0.45rem;" onclick="sendEmergencyCommand({{ dev.id }}, 'lock_now')" title="Khóa màn hình máy tính con ngay lập tức">
-                            🔒 Khóa Ngay
-                        </button>
-                        <button class="btn-xs btn-success-soft" style="flex: 1; padding: 0.45rem;" onclick="sendEmergencyCommand({{ dev.id }}, 'unlock')" title="Mở khóa màn hình máy con">
-                            🔓 Mở Khóa
-                        </button>
-                        <button class="btn-xs btn-amber-soft" style="flex: 1; padding: 0.45rem;" onclick="sendEmergencyCommand({{ dev.id }}, 'add_time', 15)" title="Thưởng thêm 15 phút sử dụng">
-                            ⏳ +15 Phút
+                        <!-- Manage Button CTA -->
+                        <button class="btn-manage-pc">
+                            <span>⚡ Quản Lý & Cấu Hình Máy Này</span>
+                            <span class="arrow-move">➜</span>
                         </button>
                     </div>
-
-                    <!-- View Details Action Button -->
-                    <button class="btn btn-ghost btn-sm" style="width: 100%; border: 1px solid rgba(255,255,255,0.08); font-size: 0.825rem; font-weight: 600;">
-                        Xem Chi Tiết Máy Này ➜
-                    </button>
-                </div>
-            {% endfor %}
-        </div>
-    {% else %}
-        <!-- Empty State -->
-        <div class="empty-state">
-            <div class="empty-icon">🛡️</div>
-            <h3 class="empty-title">Chưa có máy tính nào được kết nối</h3>
-            <p class="empty-desc">
-                Nhấn vào nút <strong>"Thêm Máy Tính Mới"</strong> để nhận mã ghép đôi 8 ký tự và nhập vào phần mềm Agent trên máy của con.
-            </p>
-            <button class="btn btn-primary btn-open-modal-trigger">
-                <span>➕</span> Tạo Mã Ghép Đôi Đầu Tiên
-            </button>
-        </div>
-    {% endif %}
+                {% endfor %}
+            </div>
+        {% else %}
+            <!-- Empty State -->
+            <div class="empty-state">
+                <div class="empty-icon">🛡️</div>
+                <h3 class="empty-title">Chưa có máy tính nào được kết nối</h3>
+                <p class="empty-desc">
+                    Nhấn vào nút <strong>"Thêm Máy Tính Mới"</strong> để nhận mã ghép đôi 8 ký tự và nhập vào phần mềm Agent trên máy tính của con.
+                </p>
+                <button class="btn btn-primary btn-open-modal-trigger" style="box-shadow: 0 4px 20px -4px rgba(14, 165, 233, 0.5); padding: 0.75rem 1.4rem; font-weight: 700;">
+                    <span>➕</span> Tạo Mã Ghép Đôi Đầu Tiên
+                </button>
+            </div>
+        {% endif %}
+    </div>
 </div>
 
 <!-- ========================================================================
-     SECTION 2: Chi Tiết Máy Tính Được Chọn (Device Detail View)
+     VIEW 2: MÀN HÌNH CHI TIẾT MÁY TÍNH (Device Management Cockpit)
+     Xuất hiện khi người dùng ấn vào một máy tính cụ thể
      ======================================================================== -->
-{% if devices and devices|length > 0 %}
-    <div id="deviceDetailSection" style="margin-bottom: 2.5rem;">
-        <!-- Device Quick Switcher Chips -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem;">
-            <div style="display: flex; align-items: center; gap: 0.6rem;">
-                <span style="font-size: 0.85rem; color: var(--text-dim); text-transform: uppercase; font-weight: 600; letter-spacing: 0.05em;">Đang Xem Chi Tiết:</span>
-                <span id="currentDeviceNameTitle" style="font-weight: 700; color: var(--accent-cyan); font-size: 1.1rem;">
-                    {{ devices[0].device_name }}
-                </span>
+<div id="viewDeviceCockpit" style="display: none;">
+    <!-- Top Cockpit Bar -->
+    <div class="cockpit-top-bar">
+        <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+            <button class="btn-back-cockpit" onclick="backToDeviceList()">
+                <span>←</span> Quay Lại Danh Sách Máy
+            </button>
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <span style="font-size: 1.5rem;">💻</span>
+                <div>
+                    <div style="display: flex; align-items: center; gap: 0.6rem;">
+                        <h2 id="cockpitDeviceName" style="font-size: 1.35rem; font-weight: 800; color: #fff; margin: 0;"></h2>
+                        <span id="cockpitDeviceBadge"></span>
+                    </div>
+                    <div id="cockpitDeviceIdHeartbeat" style="font-size: 0.775rem; color: var(--text-dim); font-family: 'Geist Mono', monospace;"></div>
+                </div>
             </div>
+        </div>
 
-            <div class="device-switcher-nav" style="border: 0; padding: 0; margin: 0;">
+        <!-- Quick Switcher Between Multiple PCs (if > 1) -->
+        {% if devices and devices|length > 1 %}
+            <div style="display: flex; align-items: center; gap: 0.45rem; flex-wrap: wrap;">
+                <span style="font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; font-weight: 600;">Chuyển máy:</span>
                 {% for dev in devices %}
-                    <button class="device-tab-chip {% if loop.first %}active{% endif %}" id="tab-btn-dev-{{ dev.id }}" onclick="selectDevice({{ dev.id }})">
-                        <span>🖥️</span> {{ dev.device_name }}
+                    <button class="btn-xs btn-secondary cockpit-switcher-btn" id="switcher-btn-{{ dev.id }}" onclick="openDeviceCockpit({{ dev.id }})" style="border-radius: 8px;">
+                        🖥️ {{ dev.device_name }}
                     </button>
                 {% endfor %}
             </div>
-        </div>
+        {% endif %}
+    </div>
 
-        <!-- Render Device Details for Each Device -->
-        {% for dev in devices %}
-            {% set pol = policies_map[dev.id] if policies_map and dev.id in policies_map else None %}
-            {% set rep = reports_map[dev.id] if reports_map and dev.id in reports_map else None %}
-            {% set dev_requests = [] %}
-            {% for r in all_requests if r.device_id == dev.id %}
-                {% set _ = dev_requests.append(r) %}
-            {% endfor %}
-            {% set dev_audit = [] %}
-            {% for l in audit_logs if l.device_id == dev.id %}
-                {% set _ = dev_audit.append(l) %}
-            {% endfor %}
+    <!-- Render Each Machine's Cockpit Body -->
+    {% for dev in devices %}
+        {% set pol = policies_map[dev.id] if policies_map and dev.id in policies_map else None %}
+        {% set rep = reports_map[dev.id] if reports_map and dev.id in reports_map else None %}
+        {% set dev_requests = all_requests | selectattr('device_id', 'equalto', dev.id) | list %}
+        {% set dev_audit = audit_logs | selectattr('device_id', 'equalto', dev.id) | list %}
 
-            <div class="device-detail-wrapper" id="dev-detail-panel-{{ dev.id }}" style="display: {% if loop.first %}block{% else %}none{% endif %};">
-                
-                <!-- 1. Báo Cáo Sử Dụng & Thống Kê Máy -->
-                <div class="section-card" style="margin-bottom: 1.5rem;">
-                    <div class="section-header" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.75rem; margin-bottom: 1rem;">
+        <div class="device-cockpit-panel" id="device-cockpit-{{ dev.id }}" style="display: none;">
+            <!-- Cockpit Navigation Tabs -->
+            <div class="cockpit-tabs-container">
+                <button class="cockpit-tab-item active" onclick="switchCockpitTab('domains', {{ dev.id }})">
+                    <span>🌐</span> Cấu Hình Tên Miền & Lọc Web
+                </button>
+                <button class="cockpit-tab-item" onclick="switchCockpitTab('apps', {{ dev.id }})">
+                    <span>🛑</span> Quản Lý & Khóa Ứng Dụng
+                </button>
+                <button class="cockpit-tab-item" onclick="switchCockpitTab('reports', {{ dev.id }})">
+                    <span>📊</span> Báo Cáo Sử Dụng
+                </button>
+                <button class="cockpit-tab-item" onclick="switchCockpitTab('schedule', {{ dev.id }})">
+                    <span>⏰</span> Lịch Biểu & Hạn Ngạch
+                </button>
+                <button class="cockpit-tab-item" onclick="switchCockpitTab('requests', {{ dev.id }})">
+                    <span>📬</span> Hộp Thư Yêu Cầu
+                    {% set pending_for_dev = dev_requests | selectattr('status', 'equalto', 'pending') | list %}
+                    {% if pending_for_dev|length > 0 %}
+                        <span class="badge badge-amber" style="margin-left: 4px; padding: 0.15rem 0.45rem; font-size: 0.7rem;">{{ pending_for_dev|length }}</span>
+                    {% endif %}
+                </button>
+                <button class="cockpit-tab-item" onclick="switchCockpitTab('audit', {{ dev.id }})">
+                    <span>📋</span> Nhật Ký Hoạt Động
+                </button>
+                <button class="cockpit-tab-item" onclick="switchCockpitTab('settings', {{ dev.id }})">
+                    <span>⚙️</span> Cài Đặt & Gỡ Bỏ
+                </button>
+            </div>
+
+            <!-- ============================================================
+                 TAB 1: Cấu Hình Tên Miền & Lọc Web
+                 ============================================================ -->
+            <div class="cockpit-tab-content" id="tab-domains-{{ dev.id }}">
+                <div class="section-card" style="border-radius: 18px; margin-bottom: 2rem;">
+                    <div class="section-header" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.85rem; margin-bottom: 1.25rem;">
                         <div>
-                            <h2 class="section-title" style="font-size: 1.15rem; font-weight: 700;">Báo Cáo Sử Dụng Thiết Bị</h2>
-                            <p style="color: var(--text-muted); font-size: 0.825rem; margin-top: 0.2rem;">
-                                Biểu đồ thời lượng sử dụng, top ứng dụng và website trẻ truy cập hôm nay
+                            <h2 class="section-title" style="font-size: 1.25rem; font-weight: 700; color: #fff;">Danh Mục Tên Miền & Lọc DNS Sinkhole</h2>
+                            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.2rem;">
+                                Tên miền độc hại, khiêu dâm, lừa đảo được tự động chặn triệt để qua DNS Sinkhole nội bộ của máy
                             </p>
                         </div>
-                        <span class="badge-subtle">{{ dev.device_name }}</span>
+                        <span class="badge-subtle" style="font-family: 'Geist Mono', monospace;">{{ total_domain_rules }} tên miền</span>
                     </div>
 
-                    <div class="reports-dashboard-grid">
-                        <!-- Weekly Screen Time Chart -->
-                        <div class="chart-card">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-                                <div style="font-size: 0.875rem; font-weight: 600; color: #fff;">Thời Lượng Dùng Máy 7 Ngày Qua (phút)</div>
-                                <span class="text-dim" style="font-size: 0.75rem; font-family: 'Geist Mono', monospace;">{{ dev.device_name }}</span>
+                    <!-- Category Filter Chips -->
+                    <div class="category-chips-bar" style="margin-bottom: 1.25rem;">
+                        <button class="category-chip active" onclick="filterDomainCategory('ALL')">
+                            Tất cả ({{ total_domain_rules }})
+                        </button>
+                        {% for item in category_summaries %}
+                            <button class="category-chip" onclick="filterDomainCategory('{{ item.category }}')">
+                                {{ item.category }} ({{ item.count }})
+                            </button>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Add New Domain Rule Form -->
+                    <form id="formAddDomainRule" onsubmit="handleAddDomainRule(event)" style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.5rem; background: rgba(255,255,255,0.025); padding: 1rem; border-radius: 14px; border: 1px solid rgba(255,255,255,0.06);">
+                        <input type="text" id="inputNewDomain" class="form-input" style="flex: 2; min-width: 220px;" placeholder="Nhập tên miền (ví dụ: tiktok.com hoặc facebook.com)" required>
+                        <select id="selectNewDomainCategory" class="form-input" style="flex: 1; min-width: 150px;">
+                            <option value="Độc hại">Độc hại</option>
+                            <option value="Khiêu dâm">Khiêu dâm</option>
+                            <option value="Mạng xã hội">Mạng xã hội</option>
+                            <option value="Quảng cáo & Theo dõi">Quảng cáo & Theo dõi</option>
+                            <option value="Gian lận & Lừa đảo">Gian lận & Lừa đảo</option>
+                            <option value="Giáo dục">Giáo dục (Cho phép)</option>
+                        </select>
+                        <select id="selectNewDomainAction" class="form-input" style="width: 130px;">
+                            <option value="block">Chặn (Block)</option>
+                            <option value="allow">Miễn dịch (Allow)</option>
+                        </select>
+                        <button type="submit" class="btn btn-primary" style="padding: 0.65rem 1.25rem;">
+                            <span>➕</span> Thêm Tên Miền
+                        </button>
+                    </form>
+
+                    <!-- Domain Rules Table -->
+                    <div class="table-container" style="border-radius: 12px; border: 1px solid var(--border-subtle); max-height: 480px; overflow-y: auto;">
+                        <table class="table" style="width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th>Tên Miền</th>
+                                    <th>Phân Loại</th>
+                                    <th>Hành Động</th>
+                                    <th>Trạng Thái</th>
+                                    <th style="text-align: right;">Thao Tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="domainRulesTableBody">
+                                {% for rule in domain_rules %}
+                                    <tr class="domain-row" data-category="{{ rule.category }}" data-domain="{{ rule.domain }}">
+                                        <td style="font-family: 'Geist Mono', monospace; font-weight: 600; color: #fff;">
+                                            {{ rule.domain }}
+                                        </td>
+                                        <td>
+                                            <span class="badge-subtle">{{ rule.category }}</span>
+                                        </td>
+                                        <td>
+                                            {% if rule.action == 'block' %}
+                                                <span class="badge badge-danger">Chặn</span>
+                                            {% else %}
+                                                <span class="badge badge-success">Cho phép</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.8rem; color: #10b981;">
+                                                <span class="live-dot" style="width: 6px; height: 6px;"></span> Đang áp dụng
+                                            </span>
+                                        </td>
+                                        <td style="text-align: right;">
+                                            <button class="btn-xs btn-danger-soft" onclick="deleteDomainRule({{ rule.id }})" title="Xóa tên miền này">
+                                                ✕ Xóa
+                                            </button>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================================
+                 TAB 2: Quản Lý & Khóa Ứng Dụng
+                 ============================================================ -->
+            <div class="cockpit-tab-content" id="tab-apps-{{ dev.id }}" style="display: none;">
+                <div class="section-card" style="border-radius: 18px; margin-bottom: 2rem;">
+                    <div class="section-header" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.85rem; margin-bottom: 1.25rem;">
+                        <div>
+                            <h2 class="section-title" style="font-size: 1.25rem; font-weight: 700; color: #fff;">Danh Sách Khóa Ứng Dụng</h2>
+                            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.2rem;">
+                                Tự động quét và lập tức đóng các phần mềm bị cấm, game hoặc các trình duyệt bypass trên máy con
+                            </p>
+                        </div>
+                        <span class="badge-subtle" style="font-family: 'Geist Mono', monospace;">{{ app_rules|length }} ứng dụng</span>
+                    </div>
+
+                    <!-- Policy Info Alert -->
+                    <div style="background: rgba(14, 165, 233, 0.08); border: 1px solid rgba(14, 165, 233, 0.25); padding: 0.9rem 1.2rem; border-radius: 12px; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
+                        <span style="font-size: 1.25rem;">🛡️</span>
+                        <div style="font-size: 0.85rem; color: #e2e8f0;">
+                            <strong>Chế độ khóa bảo vệ:</strong> Các trình duyệt ẩn danh không kiểm soát (Opera, Tor Browser, Epic Browser) và chế độ ẩn danh (Incognito) trên Chrome, Edge, Brave đã được khóa tự động ở tầng hệ thống Registry.
+                        </div>
+                    </div>
+
+                    <!-- Add Blocked App Form -->
+                    <form id="formAddAppRule-{{ dev.id }}" onsubmit="handleAddAppRule(event)" style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.5rem; background: rgba(255,255,255,0.025); padding: 1rem; border-radius: 14px; border: 1px solid rgba(255,255,255,0.06);">
+                        <input type="text" id="inputNewAppName" class="form-input" style="flex: 2; min-width: 220px;" placeholder="Tên tệp thực thi (ví dụ: notepad.exe, roblox.exe, game.exe)" required>
+                        <input type="text" id="inputNewAppDesc" class="form-input" style="flex: 2; min-width: 200px;" placeholder="Ghi chú lý do chặn (ví dụ: Giờ học không chơi game)">
+                        <button type="submit" class="btn btn-primary" style="padding: 0.65rem 1.25rem;">
+                            <span>➕</span> Thêm Ứng Dụng Chặn
+                        </button>
+                    </form>
+
+                    <!-- Blocked Apps Table -->
+                    <div class="table-container" style="border-radius: 12px; border: 1px solid var(--border-subtle); max-height: 480px; overflow-y: auto;">
+                        <table class="table" style="width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th>Ứng Dụng (.exe)</th>
+                                    <th>Mô Tả / Lý Do</th>
+                                    <th>Hành Động</th>
+                                    <th>Trạng Thái</th>
+                                    <th style="text-align: right;">Thao Tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for app in app_rules %}
+                                    <tr>
+                                        <td style="font-family: 'Geist Mono', monospace; font-weight: 600; color: #fff;">
+                                            📦 {{ app.app_name }}
+                                        </td>
+                                        <td style="color: var(--text-muted); font-size: 0.85rem;">
+                                            {{ app.description or 'Chặn theo chính sách gia đình' }}
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-danger">Khóa ngay</span>
+                                        </td>
+                                        <td>
+                                            <span style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.8rem; color: #10b981;">
+                                                <span class="live-dot" style="width: 6px; height: 6px;"></span> Đang giám sát
+                                            </span>
+                                        </td>
+                                        <td style="text-align: right;">
+                                            <button class="btn-xs btn-danger-soft" onclick="deleteAppRule({{ app.id }})" title="Gỡ bỏ lệnh chặn ứng dụng này">
+                                                ✕ Gỡ Khóa
+                                            </button>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================================
+                 TAB 3: Báo Cáo Sử Dụng & Minh Bạch
+                 ============================================================ -->
+            <div class="cockpit-tab-content" id="tab-reports-{{ dev.id }}" style="display: none;">
+                <div class="section-card" style="border-radius: 18px; margin-bottom: 2rem;">
+                    <div class="section-header" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.85rem; margin-bottom: 1.25rem;">
+                        <div>
+                            <h2 class="section-title" style="font-size: 1.25rem; font-weight: 700; color: #fff;">Báo Cáo Sử Dụng & Minh Bạch</h2>
+                            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.2rem;">
+                                Biểu đồ trực quan hóa thời lượng, Top ứng dụng và Website con truy cập trong ngày
+                            </p>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 1.5rem;">
+                        <!-- Chart Column -->
+                        <div style="background: rgba(255,255,255,0.02); padding: 1.25rem; border-radius: 14px; border: 1px solid rgba(255,255,255,0.06);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <h3 style="font-size: 0.95rem; font-weight: 700; color: #fff;">Thời lượng dùng máy 7 ngày qua (phút)</h3>
+                                <span style="font-size: 0.75rem; color: var(--text-dim); font-family: 'Geist Mono', monospace;">{{ dev.device_name }}</span>
                             </div>
-                            <div class="chart-canvas-container" style="height: 230px;">
+                            <div style="height: 240px; position: relative;">
                                 <canvas id="weeklyUsageChart-{{ dev.id }}"></canvas>
                             </div>
                         </div>
 
-                        <!-- Today's Top Apps & Domains -->
-                        <div class="chart-card">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                                <div style="font-size: 0.875rem; font-weight: 600; color: #fff;">Hôm Nay Đã Dùng Gì</div>
-                                <div class="badge-status badge-online" style="font-size: 0.75rem; font-family: 'Geist Mono', monospace;">
-                                    {{ (rep.total_screen_time_sec / 60)|round|int if rep else 0 }} phút
-                                </div>
-                            </div>
-
-                            <!-- Top Apps -->
-                            <div style="margin-top: 0.75rem;">
-                                <div style="font-size: 0.75rem; font-weight: 600; color: var(--accent-cyan); text-transform: uppercase; letter-spacing: 0.05em;">
-                                    Top Ứng Dụng Sử Dụng
-                                </div>
-                                <div class="usage-rank-list">
-                                    {% if rep and rep.top_apps and rep.top_apps|length > 0 %}
-                                        {% for app in rep.top_apps[:5] %}
-                                            <div class="usage-rank-item">
-                                                <div class="usage-item-name">📦 {{ app.subject }}</div>
-                                                <div class="usage-item-stat">{{ (app.total_duration_sec / 60)|round(1) }} phút</div>
-                                            </div>
-                                        {% endfor %}
-                                    {% else %}
-                                        <div class="text-dim" style="font-size: 0.775rem; padding: 0.35rem 0;">Chưa ghi nhận tiến trình ứng dụng nào hôm nay.</div>
+                        <!-- Top Apps & Top Domains Column -->
+                        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+                            <!-- Top Apps Today -->
+                            <div style="background: rgba(255,255,255,0.02); padding: 1.25rem; border-radius: 14px; border: 1px solid rgba(255,255,255,0.06);">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem;">
+                                    <h4 style="font-size: 0.825rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent-cyan); font-weight: 700;">Top 5 Ứng Dụng Hôm Nay</h4>
+                                    {% if rep %}
+                                        <span class="badge-subtle" style="font-family: 'Geist Mono', monospace; color: #10b981;">{{ (rep.total_screen_time_sec / 60)|round(1) }} phút</span>
                                     {% endif %}
                                 </div>
-                            </div>
-
-                            <!-- Top Domains (CLEAN: Đã bỏ hoàn toàn chữ 'Đã chặn 5 lần') -->
-                            <div style="margin-top: 1rem;">
-                                <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <span style="font-size: 0.75rem; font-weight: 600; color: var(--accent-emerald); text-transform: uppercase; letter-spacing: 0.05em;">
-                                        Top Tên Miền Truy Cập
-                                    </span>
-                                </div>
-                                <div class="usage-rank-list">
-                                    {% if rep and rep.top_domains and rep.top_domains|length > 0 %}
-                                        {% for dom in rep.top_domains[:5] %}
-                                            <div class="usage-rank-item">
-                                                <div class="usage-item-name">🌐 {{ dom.subject }}</div>
-                                                <div class="usage-item-stat">{{ dom.count }} lượt</div>
+                                {% if rep and rep.top_apps and rep.top_apps|length > 0 %}
+                                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                        {% for app in rep.top_apps %}
+                                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0.75rem; background: rgba(255,255,255,0.03); border-radius: 8px;">
+                                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                                    <span>📦</span>
+                                                    <span style="font-family: 'Geist Mono', monospace; font-size: 0.85rem; color: #fff;">{{ app.name }}</span>
+                                                </div>
+                                                <span style="font-family: 'Geist Mono', monospace; font-size: 0.825rem; color: var(--accent-cyan); font-weight: 600;">
+                                                    {{ app.minutes }} phút
+                                                </span>
                                             </div>
                                         {% endfor %}
-                                    {% else %}
-                                        <div class="text-dim" style="font-size: 0.775rem; padding: 0.35rem 0;">Chưa ghi nhận truy vấn tên miền nào hôm nay.</div>
-                                    {% endif %}
+                                    </div>
+                                {% else %}
+                                    <div style="color: var(--text-dim); font-size: 0.85rem; text-align: center; padding: 1.5rem 0;">
+                                        Hôm nay chưa ghi nhận dữ liệu sử dụng ứng dụng.
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Top Domains Today -->
+                            <div style="background: rgba(255,255,255,0.02); padding: 1.25rem; border-radius: 14px; border: 1px solid rgba(255,255,255,0.06);">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem;">
+                                    <h4 style="font-size: 0.825rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent-cyan); font-weight: 700;">Top 5 Tên Miền Truy Cập</h4>
                                 </div>
+                                {% if rep and rep.top_domains and rep.top_domains|length > 0 %}
+                                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                        {% for dom in rep.top_domains %}
+                                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0.75rem; background: rgba(255,255,255,0.03); border-radius: 8px;">
+                                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                                    <span>🌐</span>
+                                                    <span style="font-family: 'Geist Mono', monospace; font-size: 0.85rem; color: #fff;">{{ dom.domain }}</span>
+                                                </div>
+                                                <span style="font-family: 'Geist Mono', monospace; font-size: 0.825rem; color: var(--accent-cyan); font-weight: 600;">
+                                                    {{ dom.count }} lượt
+                                                </span>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <div style="color: var(--text-dim); font-size: 0.85rem; text-align: center; padding: 1.5rem 0;">
+                                        Hôm nay chưa có lượt truy cập tên miền web nào.
+                                    </div>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- 2. Hộp Thư Yêu Cầu Của Máy Này -->
-                <div class="section-card" style="margin-bottom: 1.5rem;">
-                    <div class="section-header" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.75rem; margin-bottom: 1rem;">
-                        <div style="display: flex; align-items: center; gap: 0.6rem;">
-                            <h2 class="section-title" style="font-size: 1.15rem; font-weight: 700;">Hộp Thư Yêu Cầu Của Con</h2>
-                            {% set dev_pending = [] %}
-                            {% for r in dev_requests if r.status == 'pending' %}
-                                {% set _ = dev_pending.append(r) %}
-                            {% endfor %}
-                            {% if dev_pending|length > 0 %}
-                                <span class="badge-status badge-online" style="font-size: 0.725rem;">
-                                    {{ dev_pending|length }} yêu cầu chờ duyệt
-                                </span>
-                            {% endif %}
+            <!-- ============================================================
+                 TAB 4: Lịch Biểu & Hạn Ngạch
+                 ============================================================ -->
+            <div class="cockpit-tab-content" id="tab-schedule-{{ dev.id }}" style="display: none;">
+                <div class="section-card" style="border-radius: 18px; margin-bottom: 2rem;">
+                    <div class="section-header" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.85rem; margin-bottom: 1.25rem;">
+                        <div>
+                            <h2 class="section-title" style="font-size: 1.25rem; font-weight: 700; color: #fff;">Quy Định Giờ & Lịch Dùng Máy</h2>
+                            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.2rem;">
+                                Thiết lập tổng số phút mỗi ngày và các khung giờ được phép bật máy trong tuần
+                            </p>
                         </div>
-                        <span class="text-dim" style="font-size: 0.8125rem;">Trẻ xin thêm giờ hoặc phản ánh mở chặn web/app</span>
+                    </div>
+
+                    <!-- Quota Settings Inputs -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; background: rgba(255,255,255,0.025); padding: 1.25rem; border-radius: 14px; border: 1px solid rgba(255,255,255,0.06);">
+                        <div>
+                            <label class="form-label" style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Hạn Ngạch Ngày Thường (Thứ 2 - Thứ 6)</label>
+                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.4rem;">
+                                <input type="number" id="inputWeekdayQuota-{{ dev.id }}" class="form-input" value="{{ pol.weekday_quota_minutes if pol else 90 }}" min="0" max="1440" step="15" style="width: 130px;">
+                                <span style="color: var(--text-muted); font-size: 0.875rem;">phút / ngày</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="form-label" style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Hạn Ngạch Cuối Tuần (Thứ 7 - CN)</label>
+                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.4rem;">
+                                <input type="number" id="inputWeekendQuota-{{ dev.id }}" class="form-input" value="{{ pol.weekend_quota_minutes if pol else 150 }}" min="0" max="1440" step="15" style="width: 130px;">
+                                <span style="color: var(--text-muted); font-size: 0.875rem;">phút / ngày</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Presets & Matrix Action -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem;">
+                        <h3 style="font-size: 0.95rem; font-weight: 700; color: #fff;">Khung Giờ Cho Phép Sử Dụng (Ma Trận 336 Khung 30 Phút)</h3>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button type="button" class="btn-xs btn-secondary" onclick="openPolicyModal({{ dev.id }})">
+                                ⚙️ Mở Ma Trận Lịch Biểu Nâng Cao
+                            </button>
+                            <button type="button" class="btn-xs btn-primary" onclick="saveQuickQuota({{ dev.id }})">
+                                💾 Lưu Hạn Ngạch Giờ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================================
+                 TAB 5: Hộp Thư Yêu Cầu Của Con
+                 ============================================================ -->
+            <div class="cockpit-tab-content" id="tab-requests-{{ dev.id }}" style="display: none;">
+                <div class="section-card" style="border-radius: 18px; margin-bottom: 2rem;">
+                    <div class="section-header" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.85rem; margin-bottom: 1.25rem;">
+                        <div>
+                            <h2 class="section-title" style="font-size: 1.25rem; font-weight: 700; color: #fff;">Hộp Thư Yêu Cầu Của Trẻ</h2>
+                            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.2rem;">
+                                Trẻ gửi yêu cầu xin thêm giờ dùng máy hoặc xin mở website phục vụ việc học
+                            </p>
+                        </div>
                     </div>
 
                     {% if dev_requests and dev_requests|length > 0 %}
-                        <div class="request-inbox-grid">
+                        <div style="display: flex; flex-direction: column; gap: 0.85rem;">
                             {% for req in dev_requests %}
-                                <div class="request-card" id="req-card-{{ req.id }}">
-                                    <div class="request-card-header">
-                                        {% if req.request_type == 'add_time' %}
-                                            <span class="request-type-badge badge-add-time">⏱️ Xin thêm giờ (+15m)</span>
-                                        {% elif req.request_type == 'unblock_domain' %}
-                                            <span class="request-type-badge badge-unblock">🌐 Báo chặn nhầm Web</span>
-                                        {% else %}
-                                            <span class="request-type-badge badge-unblock">📦 Báo chặn nhầm App</span>
-                                        {% endif %}
-                                        <span class="text-dim" style="font-size: 0.75rem;">Thiết bị #{{ req.device_id }}</span>
-                                    </div>
-
-                                    {% if req.target %}
+                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem; background: rgba(255,255,255,0.025); border-radius: 14px; border: 1px solid rgba(255,255,255,0.06); flex-wrap: wrap; gap: 0.75rem;">
+                                    <div style="display: flex; align-items: flex-start; gap: 0.85rem;">
+                                        <div style="font-size: 1.5rem; margin-top: 2px;">
+                                            {% if req.request_type == 'add_time' %}⏳{% else %}🌐{% endif %}
+                                        </div>
                                         <div>
-                                            <span class="text-dim" style="font-size: 0.75rem;">Mục tiêu yêu cầu:</span>
-                                            <span class="request-target-highlight">{{ req.target }}</span>
+                                            <div style="display: flex; align-items: center; gap: 0.6rem;">
+                                                <span style="font-weight: 700; color: #fff; font-size: 0.95rem;">
+                                                    {% if req.request_type == 'add_time' %}
+                                                        Xin thêm {{ req.target }} phút
+                                                    {% else %}
+                                                        Xin mở trang web: <code style="color: var(--accent-cyan); font-family: 'Geist Mono', monospace;">{{ req.target }}</code>
+                                                    {% endif %}
+                                                </span>
+                                                {% if req.status == 'pending' %}
+                                                    <span class="badge badge-amber">Chờ duyệt</span>
+                                                {% elif req.status == 'approved' %}
+                                                    <span class="badge badge-success">Đã đồng ý</span>
+                                                {% else %}
+                                                    <span class="badge badge-danger">Từ chối</span>
+                                                {% endif %}
+                                            </div>
+                                            <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem;">
+                                                Lý do con nhắn: <em>"{{ req.reason or 'Không có ghi chú' }}"</em>
+                                            </div>
+                                            <div style="font-size: 0.775rem; color: var(--text-dim); font-family: 'Geist Mono', monospace; margin-top: 0.35rem;">
+                                                Gửi lúc: {{ req.created_at|local_time('%H:%M %d/%m') }}
+                                            </div>
                                         </div>
-                                    {% endif %}
-
-                                    {% if req.reason %}
-                                        <div class="request-reason">
-                                            "{{ req.reason }}"
-                                        </div>
-                                    {% endif %}
-
-                                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: var(--text-dim); margin-top: 0.25rem;">
-                                        <span>Gửi lúc: {{ req.created_at|local_time('%H:%M %d/%m') }}</span>
-                                        {% if req.status == 'approved' %}
-                                            <span style="color: #10b981; font-weight: 600;">✅ Đã duyệt</span>
-                                        {% elif req.status == 'rejected' %}
-                                            <span style="color: #ef4444; font-weight: 600;">❌ Đã từ chối</span>
-                                        {% else %}
-                                            <span style="color: #f59e0b; font-weight: 600;">⏳ Đang chờ</span>
-                                        {% endif %}
                                     </div>
 
                                     {% if req.status == 'pending' %}
-                                        <div class="request-actions-row">
-                                            {% if req.request_type == 'add_time' %}
-                                                <button class="btn btn-primary btn-sm" style="flex: 1; padding: 0.4rem;" onclick="reviewChildRequest({{ req.id }}, 'approved', 'add_time')">
-                                                    ✅ Duyệt (+15p)
-                                                </button>
-                                            {% elif req.request_type == 'unblock_domain' %}
-                                                <button class="btn btn-primary btn-sm" style="flex: 1; padding: 0.4rem;" onclick="reviewChildRequest({{ req.id }}, 'approved', 'unblock_domain')">
-                                                    ✅ Mở Chặn Web
-                                                </button>
-                                            {% else %}
-                                                <button class="btn btn-primary btn-sm" style="flex: 1; padding: 0.4rem;" onclick="reviewChildRequest({{ req.id }}, 'approved', 'unblock_app')">
-                                                    ✅ Mở Khóa App
-                                                </button>
-                                            {% endif %}
-                                            <button class="btn btn-secondary btn-sm" style="flex: 1; padding: 0.4rem;" onclick="reviewChildRequest({{ req.id }}, 'rejected', '{{ req.request_type }}')">
-                                                ❌ Từ chối
+                                        <div style="display: flex; gap: 0.5rem;">
+                                            <button class="btn btn-sm btn-success" onclick="reviewChildRequest({{ req.id }}, 'approved')">
+                                                ✓ Đồng Ý
+                                            </button>
+                                            <button class="btn btn-sm btn-danger" onclick="reviewChildRequest({{ req.id }}, 'rejected')">
+                                                ✕ Từ Chối
                                             </button>
                                         </div>
                                     {% endif %}
@@ -336,85 +582,49 @@
                             {% endfor %}
                         </div>
                     {% else %}
-                        <p class="text-dim" style="font-size: 0.875rem; padding: 0.75rem 0;">Hiện chưa có yêu cầu nào từ máy tính này.</p>
+                        <div style="color: var(--text-dim); font-size: 0.9rem; text-align: center; padding: 2.5rem 0;">
+                            Hiện chưa có yêu cầu nào từ máy tính của trẻ.
+                        </div>
                     {% endif %}
                 </div>
+            </div>
 
-                <!-- 3. Cài Đặt Giới Hạn Thời Gian & Quản Trị Máy Này -->
-                <div class="section-card" style="margin-bottom: 1.5rem;">
-                    <div class="section-header" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.75rem; margin-bottom: 1rem;">
+            <!-- ============================================================
+                 TAB 6: Nhật Ký Hoạt Động & Bảo Mật
+                 ============================================================ -->
+            <div class="cockpit-tab-content" id="tab-audit-{{ dev.id }}" style="display: none;">
+                <div class="section-card" style="border-radius: 18px; margin-bottom: 2rem;">
+                    <div class="section-header" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.85rem; margin-bottom: 1.25rem;">
                         <div>
-                            <h2 class="section-title" style="font-size: 1.15rem; font-weight: 700;">Cài Đặt Thời Gian & Lịch Dùng</h2>
-                            <p style="color: var(--text-muted); font-size: 0.825rem; margin-top: 0.2rem;">
-                                Thiết lập hạn mức sử dụng và lịch khóa máy tính định kỳ
+                            <h2 class="section-title" style="font-size: 1.25rem; font-weight: 700; color: #fff;">Nhật Ký Bảo Mật & Hoạt Động</h2>
+                            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.2rem;">
+                                Lưu vết minh bạch các thay đổi chính sách, ghép đôi và lệnh khẩn cấp
                             </p>
                         </div>
-                    </div>
-
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; align-items: center;">
-                        <div style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.06);">
-                            <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.25rem;">Hạn Mức Đang Áp Dụng:</div>
-                            <div style="font-size: 0.95rem; font-weight: 600; color: #fff; line-height: 1.6;">
-                                <div>• Ngày thường: <strong style="color: var(--accent-cyan);">{{ pol.weekday_quota_minutes if pol else 90 }} phút</strong></div>
-                                <div>• Cuối tuần: <strong style="color: var(--accent-emerald);">{{ pol.weekend_quota_minutes if pol else 150 }} phút</strong></div>
-                            </div>
-                        </div>
-
-                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                            <button class="btn btn-primary" onclick="openPolicyModal({{ dev.id }}, '{{ dev.device_name }}', {{ pol.weekday_quota_minutes if pol else 90 }}, {{ pol.weekend_quota_minutes if pol else 150 }}, '{{ pol.schedule_matrix if pol else '' }}')">
-                                ⚙️ Cài Đặt Thời Gian & Lịch Dùng
-                            </button>
-                            <div style="display: flex; gap: 0.5rem;">
-                                <button class="btn btn-secondary btn-sm" style="flex: 1; color: #f87171;" onclick="openEraseModal({{ dev.id }}, '{{ dev.device_name }}')" title="Xóa toàn bộ dữ liệu lịch sử của thiết bị này">
-                                    🗑️ Xóa Dữ Liệu Máy
-                                </button>
-                                <button class="btn btn-secondary btn-sm" style="flex: 1; color: #ef4444;" onclick="handleDeleteDevice({{ dev.id }}, '{{ dev.device_name }}')" title="Gỡ bỏ thiết bị này khỏi danh sách quản lý">
-                                    ❌ Gỡ Thiết Bị
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 4. Nhật Ký Hoạt Động Của Máy Này -->
-                <div class="section-card">
-                    <div class="section-header" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.75rem; margin-bottom: 1rem;">
-                        <div>
-                            <h2 class="section-title" style="font-size: 1.15rem; font-weight: 700;">Nhật Ký Hoạt Động & Lịch Sử Lệnh</h2>
-                            <p style="color: var(--text-muted); font-size: 0.825rem; margin-top: 0.2rem;">
-                                Lịch sử điều khiển khẩn cấp và cập nhật chính sách cho thiết bị này
-                            </p>
-                        </div>
-                        <span class="badge-subtle">{{ dev_audit|length }} bản ghi</span>
+                        <span class="badge-subtle" style="font-family: 'Geist Mono', monospace;">{{ dev_audit|length }} bản ghi</span>
                     </div>
 
                     {% if dev_audit and dev_audit|length > 0 %}
-                        <div class="table-responsive">
-                            <table class="data-table" style="font-size: 0.85rem;">
+                        <div class="table-container" style="border-radius: 12px; border: 1px solid var(--border-subtle); max-height: 480px; overflow-y: auto;">
+                            <table class="table" style="width: 100%;">
                                 <thead>
                                     <tr>
                                         <th>Thời Gian</th>
                                         <th>Hành Động</th>
                                         <th>Chi Tiết</th>
-                                        <th>Địa Chỉ IP</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% for log in dev_audit %}
                                         <tr>
-                                            <td class="text-dim" style="white-space: nowrap; font-family: 'Geist Mono', monospace;">
+                                            <td style="font-family: 'Geist Mono', monospace; font-size: 0.8rem; color: var(--text-dim); white-space: nowrap;">
                                                 {{ log.created_at|local_time('%H:%M:%S %d/%m/%Y') }}
                                             </td>
-                                            <td>
-                                                <span class="badge-status" style="background: rgba(14, 165, 233, 0.15); color: #38bdf8;">
-                                                    {{ log.action }}
-                                                </span>
+                                            <td style="font-weight: 600; color: #fff;">
+                                                <span class="badge-subtle">{{ log.action }}</span>
                                             </td>
-                                            <td style="max-width: 420px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ log.new_value }}">
-                                                <code style="font-family: 'Geist Mono', monospace; font-size: 0.8rem;">{{ log.new_value }}</code>
-                                            </td>
-                                            <td class="text-dim" style="font-family: 'Geist Mono', monospace;">
-                                                {{ log.ip_address or '127.0.0.1' }}
+                                            <td style="color: var(--text-muted); font-size: 0.85rem;">
+                                                {{ log.new_value or log.description or 'Thao tác hệ thống' }}
                                             </td>
                                         </tr>
                                     {% endfor %}
@@ -422,336 +632,165 @@
                             </table>
                         </div>
                     {% else %}
-                        <p class="text-dim" style="font-size: 0.875rem; padding: 0.75rem 0;">Chưa ghi nhận hoạt động nào trên máy tính này.</p>
+                        <div style="color: var(--text-dim); font-size: 0.9rem; text-align: center; padding: 2.5rem 0;">
+                            Chưa có nhật ký hoạt động nào được ghi nhận cho thiết bị này.
+                        </div>
                     {% endif %}
                 </div>
-
             </div>
-        {% endfor %}
-    </div>
-{% endif %}
 
-<!-- ========================================================================
-     SECTION 3: Bộ Lọc Tên Miền Web (Chung toàn hệ thống)
-     ======================================================================== -->
-<div class="section-card" id="domainFilteringSection" style="margin-bottom: 2rem;">
-    <div class="section-header" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.85rem; margin-bottom: 1.25rem;">
-        <div style="display: flex; align-items: center; gap: 0.6rem;">
-            <h2 class="section-title" style="font-size: 1.2rem; font-weight: 700; color: #fff;">Danh Mục Tên Miền Web</h2>
-            <span class="badge-whitelist">Miễn trừ giáo dục & bảo vệ trẻ</span>
+            <!-- ============================================================
+                 TAB 7: Cài Đặt & Gỡ Bỏ Thiết Bị
+                 ============================================================ -->
+            <div class="cockpit-tab-content" id="tab-settings-{{ dev.id }}" style="display: none;">
+                <div class="section-card" style="border-radius: 18px; margin-bottom: 2rem; border-color: rgba(239, 68, 68, 0.25);">
+                    <div class="section-header" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.85rem; margin-bottom: 1.25rem;">
+                        <div>
+                            <h2 class="section-title" style="font-size: 1.25rem; font-weight: 700; color: #ef4444;">Vùng Nguy Hiểm & Quản Lý Dữ Liệu</h2>
+                            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.2rem;">
+                                Quyền xóa dữ liệu cá nhân theo Nghị định 13/2023/NĐ-CP và hủy liên kết máy tính
+                            </p>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+                        <!-- Erase Data Option -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1.25rem; background: rgba(239, 68, 68, 0.04); border: 1px solid rgba(239, 68, 68, 0.15); border-radius: 14px; flex-wrap: wrap; gap: 1rem;">
+                            <div>
+                                <h4 style="font-weight: 700; color: #fff; font-size: 0.95rem;">Xóa Toàn Bộ Dữ Liệu Thiết Bị</h4>
+                                <p style="font-size: 0.825rem; color: var(--text-dim); margin-top: 0.25rem;">
+                                    Xóa vĩnh viễn nhật ký sử dụng, lịch sử ứng dụng và web của máy này trên máy chủ và máy con.
+                                </p>
+                            </div>
+                            <button class="btn btn-danger" onclick="openEraseModal({{ dev.id }}, '{{ dev.device_name }}')">
+                                🗑️ Xóa Vĩnh Viễn Dữ Liệu
+                            </button>
+                        </div>
+
+                        <!-- Remove Device Option -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1.25rem; background: rgba(255, 255, 255, 0.025); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; flex-wrap: wrap; gap: 1rem;">
+                            <div>
+                                <h4 style="font-weight: 700; color: #fff; font-size: 0.95rem;">Gỡ Bỏ Máy Tính Khỏi Tài Khoản</h4>
+                                <p style="font-size: 0.825rem; color: var(--text-dim); margin-top: 0.25rem;">
+                                    Ngừng quản lý máy tính này. Nếu muốn kết nối lại, phụ huynh sẽ cần tạo mã ghép đôi mới.
+                                </p>
+                            </div>
+                            <button class="btn btn-secondary" onclick="handleDeleteDevice({{ dev.id }}, '{{ dev.device_name }}')" style="border-color: rgba(239, 68, 68, 0.4); color: #fca5a5;">
+                                ✕ Gỡ Bỏ Thiết Bị
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <span class="text-dim" style="font-size: 0.8125rem;">Tổng cộng {{ total_domain_rules|default(10) }} tên miền phân loại 6 nhóm</span>
-    </div>
-
-    <!-- Category Filter Chips -->
-    <div class="category-chips-bar" id="categoryChips">
-        <button class="category-chip active" onclick="filterDomainCategory('ALL')">
-            Tất cả ({{ total_domain_rules|default(10) }})
-        </button>
-        {% for cat in category_summaries %}
-            <button class="category-chip" onclick="filterDomainCategory('{{ cat.category }}')">
-                {{ cat.category }} ({{ cat.total_domains }})
-            </button>
-        {% endfor %}
-    </div>
-
-    <!-- Domain Search & Add Custom Bar -->
-    <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
-        <input type="text" id="domainSearchInput" class="form-input" placeholder="🔍 Tìm kiếm tên miền (ví dụ: youtube, roblox, tongdai111)..." style="max-width: 380px;" oninput="filterDomainSearch()">
-        
-        <form id="addDomainForm" onsubmit="handleAddDomainRule(event)" style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
-            <input type="text" id="newDomainInput" class="form-input" placeholder="domain.com" required style="width: 180px;">
-            <select id="newDomainCategory" class="form-input" style="width: 140px;">
-                <option value="Giáo dục">Giáo dục</option>
-                <option value="Giải trí">Giải trí</option>
-                <option value="Mạng xã hội">Mạng xã hội</option>
-                <option value="Game">Game</option>
-                <option value="Không phù hợp">Không phù hợp</option>
-                <option value="DoH">DoH</option>
-            </select>
-            <select id="newDomainAction" class="form-input" style="width: 110px;">
-                <option value="block">Chặn</option>
-                <option value="allow">Cho phép</option>
-            </select>
-            <button type="submit" class="btn btn-primary btn-sm">➕ Thêm</button>
-        </form>
-    </div>
-
-    <div class="table-responsive" style="max-height: 420px; overflow-y: auto;">
-        <table class="data-table" id="domainsTable">
-            <thead>
-                <tr>
-                    <th>Tên Miền</th>
-                    <th>Nhóm Danh Mục</th>
-                    <th>Chính Sách</th>
-                    <th>Bảo Vệ Đặc Biệt</th>
-                    <th>Thao Tác</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for d in domain_rules %}
-                    <tr class="domain-row" data-domain="{{ d.domain }}" data-category="{{ d.category }}">
-                        <td>
-                            <span class="code-monospace" style="color: #fff; font-weight: 500;">{{ d.domain }}</span>
-                        </td>
-                        <td>
-                            <span class="text-dim" style="font-size: 0.8rem;">{{ d.category }}</span>
-                        </td>
-                        <td>
-                            {% if d.action == 'block' %}
-                                <span class="badge-blocked">🔴 Đang Chặn</span>
-                            {% else %}
-                                <span class="badge-allowed">🟢 Cho Phép</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if d.is_permanent_whitelist %}
-                                <span class="badge-whitelist">🛡️ Miễn Trừ Vĩnh Viễn</span>
-                            {% else %}
-                                <span class="text-dim" style="font-size: 0.75rem;">—</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if not d.is_permanent_whitelist %}
-                                <div style="display: flex; gap: 0.35rem;">
-                                    {% if d.action == 'block' %}
-                                        <button class="btn-xs btn-blue-soft" onclick="toggleDomainAction({{ d.id }}, 'allow', '{{ d.category }}', '{{ d.domain }}')">
-                                            Mở khóa
-                                        </button>
-                                    {% else %}
-                                        <button class="btn-xs btn-danger-soft" onclick="toggleDomainAction({{ d.id }}, 'block', '{{ d.category }}', '{{ d.domain }}')">
-                                            Chặn
-                                        </button>
-                                    {% endif %}
-                                    <button class="btn-xs btn-danger-ghost" onclick="deleteDomainRule({{ d.id }})" title="Xóa khỏi danh sách">
-                                        🗑️
-                                    </button>
-                                </div>
-                            {% else %}
-                                <span class="text-dim" style="font-size: 0.75rem; font-style: italic;">Miễn trừ</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+    {% endfor %}
 </div>
 
 <!-- ========================================================================
-     SECTION 4: Kiểm Soát Ứng Dụng Chặn (Chung toàn hệ thống)
+     MODAL 1: TẠO MÃ GHÉP ĐÔI (Tự động gọi /api/v1/enroll/create-code)
      ======================================================================== -->
-<div class="section-card" id="appControlSection">
-    <div class="section-header" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.85rem; margin-bottom: 1.25rem;">
-        <div style="display: flex; align-items: center; gap: 0.6rem;">
-            <h2 class="section-title" style="font-size: 1.2rem; font-weight: 700; color: #fff;">Kiểm Soát Ứng Dụng Chặn</h2>
-            <span class="badge-status badge-offline" style="font-size: 0.75rem;">Ngăn chặn ứng dụng vượt rào</span>
-        </div>
-        <span class="text-dim" style="font-size: 0.8125rem;">Tự động phát hiện và ngăn chặn ứng dụng chạy ngầm</span>
-    </div>
-
-    <!-- Add App Rule Form -->
-    <form id="addAppRuleForm" onsubmit="handleAddAppRule(event)" style="display: flex; gap: 0.6rem; align-items: center; margin-bottom: 1rem; flex-wrap: wrap;">
-        <input type="text" id="newAppName" class="form-input" placeholder="Tên ứng dụng (vd: notepad.exe, game.exe)" required style="width: 240px;">
-        <input type="text" id="newAppHash" class="form-input code-monospace" placeholder="Mã SHA-256 (Tùy chọn, để trống sẽ tự tạo)" style="width: 320px;">
-        <input type="text" id="newAppDesc" class="form-input" placeholder="Lý do khóa ứng dụng" style="width: 220px;">
-        <button type="submit" class="btn btn-primary btn-sm">➕ Thêm Khóa Ứng Dụng</button>
-    </form>
-
-    <div class="table-responsive">
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Tên Tiến Trình</th>
-                    <th>Mã Băm Nhị Phân SHA-256</th>
-                    <th>Lý Do Khóa</th>
-                    <th>Trạng Thái</th>
-                    <th>Thao Tác</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% if app_rules and app_rules|length > 0 %}
-                    {% for ar in app_rules %}
-                        <tr>
-                            <td>
-                                <strong style="color: #fff;">{{ ar.app_name }}</strong>
-                            </td>
-                            <td>
-                                <span class="code-monospace" style="color: var(--accent-cyan); font-size: 0.75rem;">
-                                    {{ ar.sha256_hash }}
-                                </span>
-                            </td>
-                            <td class="text-dim">
-                                {{ ar.description or 'Theo quy định của phụ huynh' }}
-                            </td>
-                            <td>
-                                {% if ar.action == 'block' %}
-                                    <span class="badge-blocked">🔴 Khóa</span>
-                                {% else %}
-                                    <span class="badge-allowed">🟢 Cho phép</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <button class="btn-xs btn-danger-ghost" onclick="deleteAppRule({{ ar.id }})">
-                                    🗑️ Xóa
-                                </button>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                {% else %}
-                    <tr>
-                        <td colspan="5" class="text-dim" style="text-align: center; padding: 1.5rem;">
-                            Chưa có ứng dụng nào bị cấu hình khóa. Thêm ứng dụng ở trên để kích hoạt kiểm soát.
-                        </td>
-                    </tr>
-                {% endif %}
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<!-- ========================================================================
-     MODALS
-     ======================================================================== -->
-<!-- Policy Configuration Modal -->
-<div id="policyModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="policyModalTitle">
-    <div class="modal-dialog" style="max-width: 900px; width: 95%;">
+<div class="modal-backdrop" id="pairingModal">
+    <div class="modal-card" style="border-radius: 22px; max-width: 480px;">
         <div class="modal-header">
-            <h3 id="policyModalTitle" class="modal-title">Cài Đặt Thời Gian & Lịch Dùng</h3>
-            <button id="btnClosePolicyModal" class="modal-close" aria-label="Đóng">&times;</button>
+            <h3 class="modal-title" style="display: flex; align-items: center; gap: 0.6rem; font-size: 1.3rem;">
+                <span>🔗</span> Ghép Đôi Máy Tính Mới
+            </h3>
+            <button class="modal-close" id="btnCloseModal">✕</button>
         </div>
-
-        <input type="hidden" id="policyDeviceId" value="">
-
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
-            <div>
-                <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem;">
-                    Hạn mức Ngày Thường (Thứ 2 - Thứ 6)
-                </label>
-                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <input type="number" id="inputWeekdayQuota" class="form-input" min="15" max="1440" value="90" style="width: 120px;">
-                    <span style="font-size: 0.85rem; color: var(--text-dim);">phút / ngày</span>
-                </div>
-            </div>
-            <div>
-                <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem;">
-                    Hạn mức Cuối Tuần (Thứ 7 - Chủ Nhật)
-                </label>
-                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <input type="number" id="inputWeekendQuota" class="form-input" min="15" max="1440" value="150" style="width: 120px;">
-                    <span style="font-size: 0.85rem; color: var(--text-dim);">phút / ngày</span>
-                </div>
-            </div>
-        </div>
-
-        <div style="margin-top: 1rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                <label style="font-size: 0.9rem; font-weight: 600; color: #fff;">
-                    Ma Trận Lịch Tuần (Độ phân giải 30 phút / ô)
-                </label>
-                <div style="display: flex; gap: 0.5rem;">
-                    <button type="button" class="btn-xs btn-blue-soft" onclick="applySchedulePreset('all')">Mở 24/7</button>
-                    <button type="button" class="btn-xs btn-amber-soft" onclick="applySchedulePreset('school')">Giờ học (8h-17h)</button>
-                    <button type="button" class="btn-xs btn-danger-soft" onclick="applySchedulePreset('night_block')">Khóa đêm (22h-6h)</button>
-                </div>
-            </div>
-
-            <p style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 0.5rem;">
-                Click vào từng ô 30 phút để đổi giữa 🟢 Cho phép dùng hoặc ⚫ Khóa máy.
+        <div class="modal-body" style="text-align: center; padding: 1.5rem 1rem;">
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.25rem;">
+                Nhập mã gồm 8 ký tự bên dưới vào phần mềm Agent trên máy con để hoàn tất liên kết:
             </p>
 
-            <div class="schedule-matrix-wrapper">
-                <div id="scheduleMatrixGrid" class="schedule-matrix-grid">
-                    <!-- Populated dynamically via JS -->
+            <div style="position: relative; margin: 1rem 0;">
+                <div id="pairingCodeDisplay" class="code-big" style="letter-spacing: 0.35em; font-size: 2.3rem; padding: 1rem; border-radius: 14px; background: rgba(14, 165, 233, 0.08); border: 2px dashed rgba(14, 165, 233, 0.5); color: #38bdf8;">
+                    --------
                 </div>
-                <div class="matrix-legend">
-                    <div class="legend-item">
-                        <div class="legend-color-box" style="background: #10b981;"></div>
-                        <span>Cho phép sử dụng</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color-box" style="background: #1e293b; border: 1px solid rgba(255,255,255,0.1);"></div>
-                        <span>Khóa máy</span>
-                    </div>
-                </div>
+                <button type="button" id="btnCopyCode" class="btn-xs btn-secondary" style="margin-top: 0.75rem; border-radius: 8px;" onclick="copyPairingCode()">
+                    📋 Sao Chép Mã
+                </button>
             </div>
-        </div>
 
-        <div class="modal-actions" style="margin-top: 1.5rem;">
-            <button id="btnCancelPolicyModal" class="btn btn-secondary">Hủy</button>
-            <button id="btnSavePolicyModal" class="btn btn-primary" onclick="savePolicyChanges()">
-                <span>💾</span> Lưu Thay Đổi & Cập Nhật Tức Thì
+            <div style="display: flex; justify-content: center; align-items: center; gap: 0.5rem; margin-top: 1rem; font-size: 0.85rem; color: var(--text-dim);">
+                <span>⏱️ Mã có hiệu lực trong:</span>
+                <span id="countdownTimer" style="font-family: 'Geist Mono', monospace; font-weight: 700; color: #f59e0b;">--:--</span>
+            </div>
+            <div id="pairingTimeRange" style="font-size: 0.775rem; color: var(--text-dim); margin-top: 0.35rem; font-family: 'Geist Mono', monospace;"></div>
+        </div>
+        <div class="modal-footer" style="display: flex; justify-content: space-between;">
+            <button type="button" class="btn btn-secondary" onclick="closePairModal()">Đóng</button>
+            <button type="button" class="btn btn-primary" id="btnDoneModal" onclick="closePairModal(); window.location.reload();">
+                ✓ Hoàn Tất Ghép Đôi
             </button>
         </div>
     </div>
 </div>
 
-<!-- Pairing Code Generation Modal -->
-<div id="pairingModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-    <div class="modal-dialog">
+<!-- ========================================================================
+     MODAL 2: MA TRẬN LỊCH BIỂU CHI TIẾT
+     ======================================================================== -->
+<div class="modal-backdrop" id="policyModal">
+    <div class="modal-card" style="border-radius: 22px; max-width: 900px; width: 95%;">
         <div class="modal-header">
-            <h3 id="modalTitle" class="modal-title">Ghép Đôi Thiết Bị Mới</h3>
-            <button id="btnCloseModal" class="modal-close" aria-label="Đóng">&times;</button>
+            <h3 class="modal-title" style="display: flex; align-items: center; gap: 0.6rem; font-size: 1.25rem;">
+                <span>⏰</span> Ma Trận Lịch Biểu 336 Khung Giờ
+            </h3>
+            <button class="modal-close" id="btnClosePolicyModal">✕</button>
         </div>
-
-        <p style="color: var(--text-muted); font-size: 0.875rem;">
-            Mã ghép đôi ngẫu nhiên 8 ký tự an toàn dưới đây dùng để xác thực Agent máy của con với tài khoản của bạn:
-        </p>
-
-        <!-- Code Box -->
-        <div class="code-display-box">
-            <div id="pairingCodeDisplay" class="code-value">--------</div>
-            <div class="countdown-box">
-                <span>⏱️ Hiệu lực:</span>
-                <strong id="countdownTimer" style="font-family: 'Geist Mono', monospace;">10:00</strong>
+        <div class="modal-body" style="padding: 1.25rem;">
+            <input type="hidden" id="policyDeviceId">
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem;">
+                <button type="button" class="btn-xs btn-secondary" onclick="applySchedulePreset('all')">✓ Cho phép cả ngày</button>
+                <button type="button" class="btn-xs btn-secondary" onclick="applySchedulePreset('school')">🎒 Giờ học tập (8h - 17h)</button>
+                <button type="button" class="btn-xs btn-secondary" onclick="applySchedulePreset('night_block')">🌙 Khóa ban đêm (22h - 6h)</button>
             </div>
-            <div id="pairingTimeRange" style="font-size: 0.8125rem; color: var(--text-dim); margin-top: 0.5rem; text-align: center;">
-                Tạo lúc: --:-- · Hết hạn: --:--
+
+            <div class="schedule-grid" id="scheduleMatrixGrid" style="max-height: 400px; overflow-y: auto;"></div>
+
+            <div style="display: flex; gap: 1.25rem; font-size: 0.8rem; margin-top: 0.85rem; color: var(--text-muted);">
+                <div style="display: flex; align-items: center; gap: 0.4rem;">
+                    <div style="width: 14px; height: 14px; background: #10b981; border-radius: 3px;"></div>
+                    <span>Cho phép dùng máy</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.4rem;">
+                    <div style="width: 14px; height: 14px; background: rgba(255,255,255,0.08); border-radius: 3px;"></div>
+                    <span>Chặn dùng máy</span>
+                </div>
             </div>
         </div>
-
-        <ol class="instructions-list">
-            <li>Mở ứng dụng <strong>OGK Agent</strong> trên máy tính Windows của trẻ.</li>
-            <li>Khi hộp thoại yêu cầu ghép đôi xuất hiện, nhập chính xác 8 ký tự phía trên.</li>
-            <li>Thiết bị sẽ tự động xuất hiện trong danh sách quản lý sau khi kích hoạt thành công.</li>
-        </ol>
-
-        <div class="modal-actions">
-            <button id="btnCopyCode" class="btn btn-secondary">
-                <span>📋</span> Sao Chép Mã
-            </button>
-            <button id="btnDoneModal" class="btn btn-primary">
-                Hoàn Tất & Làm Mới
+        <div class="modal-footer" style="display: flex; justify-content: space-between;">
+            <button type="button" class="btn btn-secondary" id="btnCancelPolicyModal">Hủy</button>
+            <button type="button" class="btn btn-primary" onclick="savePolicyChanges()">
+                💾 Lưu Ma Trận Lịch Biểu
             </button>
         </div>
     </div>
 </div>
 
-<!-- Right to Erasure Confirmation Modal -->
-<div id="eraseDataModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="eraseModalTitle">
-    <div class="modal-dialog">
+<!-- ========================================================================
+     MODAL 3: XÁC NHẬN XÓA DỮ LIỆU
+     ======================================================================== -->
+<div class="modal-backdrop" id="eraseDataModal">
+    <div class="modal-card" style="border-radius: 22px; max-width: 480px;">
         <div class="modal-header">
-            <h3 id="eraseModalTitle" class="modal-title" style="color: #ef4444;">⚠️ Xóa Toàn Bộ Dữ Liệu Máy Tính</h3>
-            <button id="btnCloseEraseModal" class="modal-close" onclick="closeEraseModal()" aria-label="Đóng">&times;</button>
+            <h3 class="modal-title" style="color: #ef4444; font-size: 1.2rem;">
+                <span>⚠️</span> Xác Nhận Xóa Dữ Liệu
+            </h3>
+            <button class="modal-close" onclick="closeEraseModal()">✕</button>
         </div>
-
-        <div class="alert alert-danger" style="margin-top: 0.75rem; font-size: 0.8125rem;">
-            <span>⚖️</span>
-            <div>
-                <strong>Quyền được xóa dữ liệu:</strong><br>
-                Hành động này sẽ <strong>xóa vĩnh viễn</strong> toàn bộ lịch sử truy cập tên miền, nhật ký ứng dụng, dữ liệu nhịp tim và các yêu cầu của thiết bị <strong id="eraseTargetDevName"></strong> trên cả Máy chủ và Bộ đệm máy con. Hành động này <strong>không thể hoàn tác</strong>.
+        <form onsubmit="handleConfirmErase(event)">
+            <input type="hidden" id="eraseTargetDevId">
+            <div class="modal-body" style="padding: 1.25rem;">
+                <p style="font-size: 0.875rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1rem;">
+                    Hành động này sẽ xóa toàn bộ lịch sử ứng dụng, sự kiện mạng của thiết bị <strong id="eraseTargetDevName" style="color: #fff;"></strong> trên cả máy chủ và máy tính con.
+                </p>
+                <div class="form-group">
+                    <label class="form-label" style="font-size: 0.8rem; font-weight: 600; text-transform: uppercase;">Nhập mật khẩu phụ huynh để xác nhận:</label>
+                    <input type="password" id="eraseParentPassword" class="form-input" placeholder="••••••••••••" required>
+                </div>
             </div>
-        </div>
-
-        <form id="eraseDataForm" onsubmit="handleConfirmErase(event)" style="margin-top: 1rem;">
-            <input type="hidden" id="eraseTargetDevId" value="">
-            <div class="form-group">
-                <label for="eraseParentPassword" class="form-label" style="font-weight: 600;">Nhập mật khẩu phụ huynh để xác thực quyền xóa:</label>
-                <input type="password" id="eraseParentPassword" class="form-input" placeholder="••••••••••••" required>
-            </div>
-
-            <div class="modal-actions" style="margin-top: 1.5rem;">
-                <button type="button" class="btn btn-secondary" onclick="closeEraseModal()">Hủy Bỏ</button>
+            <div class="modal-footer" style="display: flex; justify-content: space-between;">
+                <button type="button" class="btn btn-secondary" onclick="closeEraseModal()">Hủy</button>
                 <button type="submit" id="btnSubmitErase" class="btn btn-danger">
                     <span>🗑️</span> Xác Nhận Xóa Vĩnh Viễn
                 </button>
@@ -766,74 +805,117 @@
 
 {% block scripts %}
 <script>
-    let countdownInterval = null;
-    let currentCode = "";
-
-    // Data maps injected from server
-    const weeklyStatsMap = {{ weekly_stats_map | tojson }};
-    const registeredDevIds = [{% for dev in devices %}{{ dev.id }}{% if not loop.last %},{% endif %}{% endfor %}];
-    let activeDevId = registeredDevIds.length > 0 ? registeredDevIds[0] : null;
+    const weeklyStatsMap = {{ weekly_stats_map | tojson | safe }};
+    const policiesMap = {
+        {% for dev in devices %}
+            {% set pol = policies_map[dev.id] if policies_map and dev.id in policies_map else None %}
+            {{ dev.id }}: {
+                weekday_quota: {{ pol.weekday_quota_minutes if pol else 90 }},
+                weekend_quota: {{ pol.weekend_quota_minutes if pol else 150 }},
+                schedule_matrix: "{{ pol.schedule_matrix if pol else '1'*336 }}"
+            }{% if not loop.last %},{% endif %}
+        {% endfor %}
+    };
     const chartInstances = {};
+    let activeCockpitDevId = null;
+    let countdownInterval = null;
+    let currentCode = null;
 
-    // Toast utility
+    // Toast Notification Utility
     function showToast(message, isSuccess = true) {
         const container = document.getElementById('toastContainer');
         const toast = document.createElement('div');
-        toast.className = 'toast-msg';
-        toast.innerHTML = `<span>${isSuccess ? '✅' : '⚠️'}</span> <span>${message}</span>`;
+        toast.className = `toast ${isSuccess ? 'toast-success' : 'toast-error'}`;
+        toast.innerHTML = `<span>${isSuccess ? '✓' : '⚠️'}</span><span>${message}</span>`;
         container.appendChild(toast);
-        setTimeout(() => {
-            toast.remove();
-        }, 4000);
+        setTimeout(() => toast.remove(), 4000);
     }
 
-    // Device selection handler (Multi-Device Management)
-    function selectDevice(devId) {
-        activeDevId = devId;
+    // ========================================================================
+    // Master-Detail Navigation (Main Device Grid <-> Device Cockpit)
+    // ========================================================================
+    function openDeviceCockpit(devId) {
+        activeCockpitDevId = devId;
 
-        // 1. Update active card in grid
-        document.querySelectorAll('.device-card-item').forEach(card => {
-            card.classList.remove('active');
-        });
-        const targetCard = document.getElementById(`card-device-${devId}`);
-        if (targetCard) targetCard.classList.add('active');
+        // 1. Hide main list, show cockpit
+        document.getElementById('viewMainDeviceList').style.display = 'none';
+        document.getElementById('viewDeviceCockpit').style.display = 'block';
 
-        // 2. Update switcher chips
-        document.querySelectorAll('.device-tab-chip').forEach(btn => {
-            btn.classList.remove('active');
-        });
-        const targetTab = document.getElementById(`tab-btn-dev-${devId}`);
-        if (targetTab) targetTab.classList.add('active');
-
-        // 3. Show correct detail panel
-        document.querySelectorAll('.device-detail-wrapper').forEach(panel => {
-            panel.style.display = 'none';
-        });
-        const targetPanel = document.getElementById(`dev-detail-panel-${devId}`);
+        // 2. Hide all device panels, show target dev panel
+        document.querySelectorAll('.device-cockpit-panel').forEach(p => p.style.display = 'none');
+        const targetPanel = document.getElementById(`device-cockpit-${devId}`);
         if (targetPanel) {
             targetPanel.style.display = 'block';
         }
 
-        // 4. Update title
-        const nameTitle = document.getElementById('currentDeviceNameTitle');
-        if (nameTitle && targetCard) {
-            const devName = targetCard.querySelector('.device-card-top strong, .device-card-top div div')?.textContent || `Thiết bị #${devId}`;
-            nameTitle.textContent = devName.trim();
+        // 3. Update top bar details
+        const mainCard = document.getElementById(`main-card-device-${devId}`);
+        if (mainCard) {
+            const devName = mainCard.querySelector('.device-card-top strong, .device-card-top div div')?.textContent || `Thiết bị #${devId}`;
+            const devBadge = mainCard.querySelector('.badge-status')?.outerHTML || '';
+            const hbText = mainCard.querySelector('.device-card-top div div:nth-child(2)')?.textContent || `ID: #${devId}`;
+            
+            document.getElementById('cockpitDeviceName').textContent = devName.trim();
+            document.getElementById('cockpitDeviceBadge').innerHTML = devBadge;
+            document.getElementById('cockpitDeviceIdHeartbeat').textContent = hbText.trim();
         }
 
-        // 5. Render or update chart for this device
-        renderWeeklyChart(devId);
+        // 4. Update switcher buttons
+        document.querySelectorAll('.cockpit-switcher-btn').forEach(btn => {
+            btn.classList.remove('btn-primary');
+            btn.classList.add('btn-secondary');
+        });
+        const activeSwitcher = document.getElementById(`switcher-btn-${devId}`);
+        if (activeSwitcher) {
+            activeSwitcher.classList.remove('btn-secondary');
+            activeSwitcher.classList.add('btn-primary');
+        }
+
+        // 5. Default tab is domains (or keep current active)
+        switchCockpitTab('domains', devId);
+
+        // 6. Scroll smoothly to top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // Render Weekly Chart with Chart.js
+    function backToDeviceList() {
+        document.getElementById('viewDeviceCockpit').style.display = 'none';
+        document.getElementById('viewMainDeviceList').style.display = 'block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Tab Switching inside Cockpit
+    function switchCockpitTab(tabName, devId) {
+        const panel = document.getElementById(`device-cockpit-${devId}`);
+        if (!panel) return;
+
+        // 1. Update tab buttons
+        panel.querySelectorAll('.cockpit-tab-item').forEach(btn => btn.classList.remove('active'));
+        const activeBtn = Array.from(panel.querySelectorAll('.cockpit-tab-item')).find(b => b.getAttribute('onclick')?.includes(tabName));
+        if (activeBtn) activeBtn.classList.add('active');
+
+        // 2. Update content sections
+        panel.querySelectorAll('.cockpit-tab-content').forEach(c => c.style.display = 'none');
+        const targetContent = document.getElementById(`tab-${tabName}-${devId}`);
+        if (targetContent) {
+            targetContent.style.display = 'block';
+        }
+
+        // 3. If switching to reports, render Chart.js
+        if (tabName === 'reports') {
+            renderWeeklyChart(devId);
+        }
+    }
+
+    // ========================================================================
+    // Chart.js Weekly Usage Renderer
+    // ========================================================================
     function renderWeeklyChart(devId) {
         const canvasId = `weeklyUsageChart-${devId}`;
         const canvas = document.getElementById(canvasId);
         if (!canvas || typeof Chart === 'undefined') return;
 
-        if (chartInstances[devId]) {
-            return; // Already initialized
-        }
+        if (chartInstances[devId]) return; // Already rendered
 
         const stats = weeklyStatsMap[devId] || [];
         const labels = stats.map(s => s.date);
@@ -874,30 +956,14 @@
         });
     }
 
-    // Initialize first device chart on load
-    document.addEventListener('DOMContentLoaded', () => {
-        if (activeDevId) {
-            renderWeeklyChart(activeDevId);
-        }
-    });
-
-    // Pairing modal elements
+    // ========================================================================
+    // Pairing Modal Logic (Fixed endpoint /api/v1/enroll/create-code)
+    // ========================================================================
     const pairModal = document.getElementById('pairingModal');
     const btnOpenPair = document.getElementById('btnOpenPairModal');
     const btnClosePair = document.getElementById('btnCloseModal');
-    const btnDonePair = document.getElementById('btnDoneModal');
-    const btnCopy = document.getElementById('btnCopyCode');
     const codeDisplay = document.getElementById('pairingCodeDisplay');
     const timerDisplay = document.getElementById('countdownTimer');
-
-    // Policy modal elements
-    const policyModal = document.getElementById('policyModal');
-    const btnClosePolicy = document.getElementById('btnClosePolicyModal');
-    const btnCancelPolicy = document.getElementById('btnCancelPolicyModal');
-    const policyGrid = document.getElementById('scheduleMatrixGrid');
-
-    let currentMatrixArray = new Array(336).fill('1');
-    const DAY_NAMES = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ Nhật"];
 
     document.querySelectorAll('.btn-open-modal-trigger').forEach(b => {
         b.addEventListener('click', openModalAndGenerateCode);
@@ -905,23 +971,10 @@
 
     if (btnOpenPair) btnOpenPair.addEventListener('click', openModalAndGenerateCode);
     if (btnClosePair) btnClosePair.addEventListener('click', closePairModal);
-    if (btnDonePair) {
-        btnDonePair.addEventListener('click', () => {
-            closePairModal();
-            window.location.reload();
-        });
-    }
 
     pairModal.addEventListener('click', (e) => {
         if (e.target === pairModal) closePairModal();
     });
-
-    policyModal.addEventListener('click', (e) => {
-        if (e.target === policyModal) closePolicyModal();
-    });
-
-    if (btnClosePolicy) btnClosePolicy.addEventListener('click', closePolicyModal);
-    if (btnCancelPolicy) btnCancelPolicy.addEventListener('click', closePolicyModal);
 
     async function openModalAndGenerateCode() {
         pairModal.classList.add('active');
@@ -929,14 +982,23 @@
         timerDisplay.textContent = "--:--";
 
         try {
-            const res = await fetch('/api/v1/enrollment/pairing-codes', {
+            // First try primary route /api/v1/enroll/create-code
+            let res = await fetch('/api/v1/enroll/create-code', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' }
             });
 
+            // Fallback to alias if needed
+            if (!res.ok) {
+                res = await fetch('/api/v1/enrollment/pairing-codes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+            }
+
             if (!res.ok) {
                 const errData = await res.json().catch(() => ({}));
-                throw new Error(errData.detail || "Không thể tạo mã ghép đôi");
+                throw new Error(errData.detail || "Không thể tạo mã ghép đôi. Vui lòng kiểm tra quyền đăng nhập.");
             }
 
             const data = await res.json();
@@ -978,81 +1040,110 @@
             const distance = expireTimeMs - now;
 
             if (distance <= 0) {
-                clearInterval(countdownInterval);
-                timerDisplay.textContent = "00:00 (Hết hạn)";
-                timerDisplay.style.color = "var(--status-danger)";
+                timerDisplay.textContent = "HẾT HẠN";
+                timerDisplay.style.color = "#ef4444";
                 codeDisplay.style.opacity = "0.5";
+                clearInterval(countdownInterval);
                 return;
             }
 
-            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-            timerDisplay.textContent = 
-                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            timerDisplay.style.color = "var(--text-main)";
-            codeDisplay.style.opacity = "1";
+            const mins = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const secs = Math.floor((distance % (1000 * 60)) / 1000);
+            timerDisplay.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
         }
 
         update();
         countdownInterval = setInterval(update, 1000);
     }
 
-    if (btnCopy) {
-        btnCopy.addEventListener('click', () => {
-            if (!currentCode || currentCode === "ĐANG TẠO...") return;
-            navigator.clipboard.writeText(currentCode).then(() => {
-                showToast("Đã sao chép mã ghép đôi vào khay nhớ tạm!");
-            }).catch(() => {
-                showToast("Không thể sao chép, vui lòng nhập thủ công", false);
-            });
+    function copyPairingCode() {
+        if (!currentCode) return;
+        navigator.clipboard.writeText(currentCode).then(() => {
+            showToast('Đã sao chép mã ghép đôi vào bộ nhớ tạm.');
+        }).catch(() => {
+            showToast('Không thể tự động sao chép. Vui lòng chọn và chép thủ công.', false);
         });
     }
 
-    async function sendEmergencyCommand(deviceId, commandType, minutes = 15) {
-        const payload = {
-            command_type: commandType,
-            minutes: commandType === 'add_time' ? minutes : null,
-            countdown: commandType === 'lock_now' ? 30 : null
-        };
+    // ========================================================================
+    // Emergency Commands (Khóa ngay, Mở khóa, Thêm giờ)
+    // ========================================================================
+    async function sendEmergencyCommand(deviceId, action, extra = null) {
+        const payload = { action };
+        if (action === 'add_time' && extra) {
+            payload.minutes = parseInt(extra, 10);
+        }
 
         try {
-            const res = await fetch(`/api/v1/commands/devices/${deviceId}/emergency`, {
+            const res = await fetch(`/api/v1/devices/${deviceId}/command`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
 
             if (!res.ok) {
-                const errData = await res.json().catch(() => ({}));
-                throw new Error(errData.detail || "Không thể gửi lệnh");
+                const err = await res.json().catch(() => ({}));
+                throw new Error(err.detail || "Không thể gửi lệnh khẩn cấp.");
             }
 
-            const resData = await res.json();
-            const actionText = 
-                commandType === 'lock_now' ? "Khóa màn hình máy tính con" :
-                commandType === 'unlock' ? "Mở khóa màn hình máy tính con" :
-                `Cộng thêm ${minutes} phút sử dụng`;
-
-            showToast(`Đã phát lệnh thành công: ${actionText}`);
-            setTimeout(() => window.location.reload(), 1500);
+            const data = await res.json();
+            const actionText = action === 'lock_now' ? 'Khóa màn hình' : action === 'unlock' ? 'Mở khóa' : `Cộng thêm ${extra} phút`;
+            showToast(`Đã gửi lệnh "${actionText}" xuống máy con thành công!`);
         } catch (err) {
             showToast(`Lỗi: ${err.message}`, false);
         }
     }
 
-    function openPolicyModal(deviceId, deviceName, weekdayQuota, weekendQuota, scheduleMatrix) {
-        document.getElementById('policyDeviceId').value = deviceId;
-        document.getElementById('policyModalTitle').textContent = `Cài Đặt Thời Gian & Lịch Dùng — "${deviceName}"`;
-        document.getElementById('inputWeekdayQuota').value = weekdayQuota || 90;
-        document.getElementById('inputWeekendQuota').value = weekendQuota || 150;
+    // ========================================================================
+    // Review Child Requests
+    // ========================================================================
+    async function reviewChildRequest(reqId, status) {
+        try {
+            const res = await fetch(`/api/v1/requests/${reqId}/review`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    status: status,
+                    parent_response: status === 'approved' ? 'Phụ huynh đã duyệt yêu cầu.' : 'Chưa được cha mẹ đồng ý.'
+                })
+            });
 
-        if (scheduleMatrix && scheduleMatrix.length === 336) {
-            currentMatrixArray = scheduleMatrix.split('');
-        } else {
-            currentMatrixArray = new Array(336).fill('1');
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                throw new Error(err.detail || "Không thể xử lý yêu cầu.");
+            }
+
+            showToast(status === 'approved' ? 'Đã duyệt yêu cầu của con.' : 'Đã từ chối yêu cầu.');
+            setTimeout(() => window.location.reload(), 800);
+        } catch (err) {
+            showToast(`Lỗi: ${err.message}`, false);
         }
+    }
 
+    // ========================================================================
+    // Policy Schedule & Quota
+    // ========================================================================
+    const policyModal = document.getElementById('policyModal');
+    const policyGrid = document.getElementById('scheduleMatrixGrid');
+    let currentMatrixArray = new Array(336).fill('1');
+    const DAY_NAMES = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ Nhật"];
+
+    if (policyModal) {
+        policyModal.addEventListener('click', (e) => {
+            if (e.target === policyModal) closePolicyModal();
+        });
+    }
+
+    const btnClosePolicy = document.getElementById('btnClosePolicyModal');
+    const btnCancelPolicy = document.getElementById('btnCancelPolicyModal');
+    if (btnClosePolicy) btnClosePolicy.addEventListener('click', closePolicyModal);
+    if (btnCancelPolicy) btnCancelPolicy.addEventListener('click', closePolicyModal);
+
+    function openPolicyModal(deviceId) {
+        document.getElementById('policyDeviceId').value = deviceId;
+        const policy = policiesMap[deviceId] || {};
+        const matrixStr = policy.schedule_matrix || "1".repeat(336);
+        currentMatrixArray = matrixStr.split('');
         renderScheduleMatrixGrid();
         policyModal.classList.add('active');
     }
@@ -1063,19 +1154,9 @@
 
     function renderScheduleMatrixGrid() {
         policyGrid.innerHTML = '';
-        policyGrid.appendChild(document.createElement('div'));
-
-        for (let h = 0; h < 24; h += 2) {
-            const hHeader = document.createElement('div');
-            hHeader.className = 'matrix-hour-header';
-            hHeader.style.gridColumn = `span 4`;
-            hHeader.textContent = `${h}h`;
-            policyGrid.appendChild(hHeader);
-        }
-
         for (let day = 0; day < 7; day++) {
             const dayLabel = document.createElement('div');
-            dayLabel.className = 'matrix-day-label';
+            dayLabel.className = 'day-label';
             dayLabel.textContent = DAY_NAMES[day];
             policyGrid.appendChild(dayLabel);
 
@@ -1140,8 +1221,10 @@
 
     async function savePolicyChanges() {
         const deviceId = document.getElementById('policyDeviceId').value;
-        const weekdayQuota = parseInt(document.getElementById('inputWeekdayQuota').value) || 90;
-        const weekendQuota = parseInt(document.getElementById('inputWeekendQuota').value) || 150;
+        const weekdayInput = document.getElementById(`inputWeekdayQuota-${deviceId}`);
+        const weekendInput = document.getElementById(`inputWeekendQuota-${deviceId}`);
+        const weekdayQuota = weekdayInput ? parseInt(weekdayInput.value) || 90 : 90;
+        const weekendQuota = weekendInput ? parseInt(weekendInput.value) || 150 : 150;
         const scheduleMatrix = currentMatrixArray.join('');
 
         try {
@@ -1156,97 +1239,69 @@
             });
 
             if (!res.ok) {
-                const errData = await res.json().catch(() => ({}));
-                throw new Error(errData.detail || "Không thể lưu chính sách");
+                const err = await res.json().catch(() => ({}));
+                throw new Error(err.detail || "Không thể cập nhật lịch biểu.");
             }
 
-            showToast("Đã lưu chính sách thành công và cập nhật tức thì xuống máy con!");
             closePolicyModal();
-            setTimeout(() => window.location.reload(), 1500);
+            showToast('Đã lưu ma trận lịch biểu thành công!');
+            setTimeout(() => window.location.reload(), 1000);
         } catch (err) {
             showToast(`Lỗi: ${err.message}`, false);
         }
     }
 
-    // Auto reload every 45s if modals not active
-    setInterval(() => {
-        if (!pairModal.classList.contains('active') && !policyModal.classList.contains('active')) {
-            window.location.reload();
-        }
-    }, 45000);
+    async function saveQuickQuota(deviceId) {
+        const weekdayInput = document.getElementById(`inputWeekdayQuota-${deviceId}`);
+        const weekendInput = document.getElementById(`inputWeekendQuota-${deviceId}`);
+        const weekdayQuota = weekdayInput ? parseInt(weekdayInput.value) || 90 : 90;
+        const weekendQuota = weekendInput ? parseInt(weekendInput.value) || 150 : 150;
+        const policy = policiesMap[deviceId] || {};
 
-    // Request Review Handler
-    async function reviewChildRequest(reqId, status, reqType = 'add_time') {
         try {
-            let parentMsg = status === 'approved' ? 'Cha mẹ đồng ý yêu cầu của con.' : 'Cha mẹ chưa đồng ý yêu cầu này.';
-            if (status === 'approved') {
-                if (reqType === 'add_time') {
-                    parentMsg = 'Cha mẹ đồng ý thưởng thêm 15 phút, học xong nghỉ ngơi con nhé!';
-                } else if (reqType === 'unblock_domain') {
-                    parentMsg = 'Cha mẹ đã mở chặn trang web này theo đề xuất của con.';
-                } else if (reqType === 'unblock_app') {
-                    parentMsg = 'Cha mẹ đã mở khóa ứng dụng này theo đề xuất của con.';
-                }
-            }
-
-            const res = await fetch(`/api/v1/requests/${reqId}/review`, {
+            const res = await fetch(`/api/v1/policies/devices/${deviceId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    status: status,
-                    parent_response: parentMsg,
-                    granted_minutes: 15
+                    weekday_quota_minutes: weekdayQuota,
+                    weekend_quota_minutes: weekendQuota,
+                    schedule_matrix: policy.schedule_matrix || "1".repeat(336)
                 })
             });
+
             if (!res.ok) {
                 const err = await res.json().catch(() => ({}));
-                throw new Error(err.detail || "Không thể xử lý yêu cầu.");
+                throw new Error(err.detail || "Không thể cập nhật hạn ngạch.");
             }
-            if (status === 'approved') {
-                showToast(reqType === 'add_time' ? 'Đã duyệt yêu cầu và phát lệnh cộng 15 phút tới máy trẻ!' : 'Đã duyệt yêu cầu mở chặn thành công!');
-            } else {
-                showToast('Đã từ chối yêu cầu.');
-            }
-            setTimeout(() => window.location.reload(), 1200);
-        } catch (e) {
-            showToast(`Lỗi: ${e.message}`, false);
+
+            showToast('Đã lưu hạn ngạch sử dụng thành công!');
+        } catch (err) {
+            showToast(`Lỗi: ${err.message}`, false);
         }
     }
 
+    // ========================================================================
+    // Domain & App Rule Management
+    // ========================================================================
     async function handleAddDomainRule(event) {
         event.preventDefault();
-        const domain = document.getElementById('newDomainInput').value.trim();
-        const category = document.getElementById('newDomainCategory').value;
-        const action = document.getElementById('newDomainAction').value;
-        try {
-            const res = await fetch('/api/v1/filtering/domain-rules', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ domain, category, action, is_permanent_whitelist: false })
-            });
-            if (!res.ok) {
-                const err = await res.json().catch(() => ({}));
-                throw new Error(err.detail || "Không thể thêm quy tắc.");
-            }
-            showToast(`Đã thêm quy tắc ${domain} (${action === 'block' ? 'Chặn' : 'Cho phép'})`);
-            setTimeout(() => window.location.reload(), 1000);
-        } catch (e) {
-            showToast(`Lỗi: ${e.message}`, false);
-        }
-    }
+        const domain = document.getElementById('inputNewDomain').value.trim();
+        const category = document.getElementById('selectNewDomainCategory').value;
+        const action = document.getElementById('selectNewDomainAction').value;
 
-    async function toggleDomainAction(ruleId, newAction, category, domain) {
         try {
             const res = await fetch('/api/v1/filtering/domain-rules', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ domain, category, action: newAction, is_permanent_whitelist: false })
+                body: JSON.stringify({ domain, category, action })
             });
+
             if (!res.ok) {
                 const err = await res.json().catch(() => ({}));
-                throw new Error(err.detail || "Không thể đổi trạng thái.");
+                throw new Error(err.detail || "Không thể thêm tên miền.");
             }
-            showToast(`Đã đổi quy tắc ${domain} sang ${newAction === 'block' ? 'Chặn' : 'Cho phép'}`);
+
+            showToast(`Đã thêm tên miền "${domain}" thành công.`);
             setTimeout(() => window.location.reload(), 800);
         } catch (e) {
             showToast(`Lỗi: ${e.message}`, false);
@@ -1254,14 +1309,14 @@
     }
 
     async function deleteDomainRule(ruleId) {
-        if (!confirm('Bạn có chắc muốn xóa quy tắc tên miền này?')) return;
+        if (!confirm('Bạn có chắc muốn xóa tên miền này?')) return;
         try {
             const res = await fetch(`/api/v1/filtering/domain-rules/${ruleId}`, { method: 'DELETE' });
             if (!res.ok) {
                 const err = await res.json().catch(() => ({}));
-                throw new Error(err.detail || "Không thể xóa quy tắc.");
+                throw new Error(err.detail || "Không thể xóa tên miền.");
             }
-            showToast('Đã xóa quy tắc tên miền.');
+            showToast('Đã xóa tên miền khỏi danh sách.');
             setTimeout(() => window.location.reload(), 800);
         } catch (e) {
             showToast(`Lỗi: ${e.message}`, false);
@@ -1270,21 +1325,23 @@
 
     async function handleAddAppRule(event) {
         event.preventDefault();
-        const app_name = document.getElementById('newAppName').value.trim();
-        const sha256_hash = document.getElementById('newAppHash').value.trim().toLowerCase();
-        const description = document.getElementById('newAppDesc').value.trim() || 'Khóa theo quy định phụ huynh';
+        const appName = document.getElementById('inputNewAppName').value.trim();
+        const description = document.getElementById('inputNewAppDesc').value.trim();
+
         try {
             const res = await fetch('/api/v1/filtering/app-rules', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ app_name, sha256_hash: sha256_hash || null, action: 'block', description })
+                body: JSON.stringify({ app_name: appName, action: 'block', description })
             });
+
             if (!res.ok) {
                 const err = await res.json().catch(() => ({}));
-                throw new Error(err.detail || "Không thể thêm khóa app.");
+                throw new Error(err.detail || "Không thể thêm ứng dụng.");
             }
-            showToast(`Đã thêm khóa cho ${app_name}`);
-            setTimeout(() => window.location.reload(), 1000);
+
+            showToast(`Đã thêm ứng dụng "${appName}" vào danh sách chặn.`);
+            setTimeout(() => window.location.reload(), 800);
         } catch (e) {
             showToast(`Lỗi: ${e.message}`, false);
         }
@@ -1315,24 +1372,15 @@
                 btn.classList.remove('active');
             }
         });
-        applyDomainFilters();
-    }
-
-    function filterDomainSearch() {
-        applyDomainFilters();
-    }
-
-    function applyDomainFilters() {
-        const searchVal = document.getElementById('domainSearchInput').value.toLowerCase().trim();
         document.querySelectorAll('.domain-row').forEach(row => {
-            const domain = row.getAttribute('data-domain').toLowerCase();
             const category = row.getAttribute('data-category');
-            const matchesCat = (activeCategory === 'ALL' || category === activeCategory);
-            const matchesSearch = !searchVal || domain.includes(searchVal);
-            row.style.display = (matchesCat && matchesSearch) ? '' : 'none';
+            row.style.display = (activeCategory === 'ALL' || category === activeCategory) ? '' : 'none';
         });
     }
 
+    // ========================================================================
+    // Data Erase & Delete Device Modals
+    // ========================================================================
     function openEraseModal(devId, devName) {
         document.getElementById('eraseTargetDevId').value = devId;
         document.getElementById('eraseTargetDevName').textContent = `"${devName}" (#${devId})`;
@@ -1377,7 +1425,7 @@
     }
 
     async function handleDeleteDevice(devId, devName) {
-        if (!confirm(`Bạn có chắc chắn muốn gỡ bỏ thiết bị "${devName}" (#${devId}) không?\n\nSau khi gỡ, thiết bị sẽ lập tức biến mất khỏi danh sách quản lý. Để kết nối lại, bạn cần cấp mã ghép đôi mới.`)) {
+        if (!confirm(`Bạn có chắc chắn muốn gỡ bỏ thiết bị "${devName}" (#${devId}) không?\n\nSau khi gỡ, thiết bị sẽ lập tức biến mất khỏi danh sách quản lý.`)) {
             return;
         }
 

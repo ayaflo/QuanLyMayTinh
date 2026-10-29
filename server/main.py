@@ -117,6 +117,7 @@ app.add_middleware(
 # Register API Routers (Week 1, Week 2 & Week 3)
 app.include_router(auth_router, prefix="/api/v1/auth", tags=["Authentication"])
 app.include_router(enroll_router, prefix="/api/v1/enroll", tags=["Enrollment"])
+app.include_router(enroll_router, prefix="/api/v1/enrollment", tags=["Enrollment Alias"])
 app.include_router(heartbeat_router, prefix="/api/v1/heartbeat", tags=["Heartbeat"])
 app.include_router(policy_router, prefix="/api/v1/policy", tags=["Policy & Time Governance"])
 app.include_router(commands_router, prefix="/api/v1/devices", tags=["Emergency Commands"])

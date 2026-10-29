@@ -19,25 +19,30 @@
             <a href="/devices" class="brand">
                 <div class="brand-icon">🛡️</div>
                 <div>
-                    <span class="brand-name">OGK Dashboard</span>
-                    <span class="brand-badge">v0.4</span>
+                    <span class="brand-name">OGK · Guardian</span>
+                    <span class="brand-badge">Cyber Cockpit</span>
                 </div>
             </a>
 
-            <div class="nav-actions">
+            <div class="nav-actions" style="display: flex; align-items: center; gap: 1rem;">
+                <div style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.775rem; color: #10b981; background: rgba(16, 185, 129, 0.08); padding: 0.35rem 0.75rem; border-radius: 99px; border: 1px solid rgba(16, 185, 129, 0.25);">
+                    <span class="live-dot"></span>
+                    <span style="font-weight: 600;">Giám Sát Thời Gian Thực</span>
+                </div>
+
                 {% if parent %}
-                    <div class="user-tag">
-                        <div class="user-avatar">{{ parent.username[0]|upper }}</div>
-                        <span>{{ parent.username }}</span>
+                    <div class="user-tag" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 0.35rem 0.75rem;">
+                        <div class="user-avatar" style="background: linear-gradient(135deg, #0ea5e9, #10b981); color: #fff; font-weight: 700;">{{ parent.username[0]|upper }}</div>
+                        <span style="font-weight: 600; font-size: 0.875rem;">{{ parent.username }}</span>
                     </div>
-                    <a href="/logout" class="btn btn-danger-ghost btn-sm" title="Đăng xuất">
+                    <a href="/logout" class="btn btn-danger-ghost btn-sm" title="Đăng xuất khỏi hệ thống" style="border-radius: 10px;">
                         Đăng xuất ⏻
                     </a>
                 {% else %}
-                    <a href="/login" class="btn btn-secondary btn-sm" style="margin-right: 0.5rem;">
+                    <a href="/login" class="btn btn-secondary btn-sm" style="margin-right: 0.35rem; border-radius: 10px;">
                         Đăng nhập
                     </a>
-                    <a href="/register" class="btn btn-primary btn-sm">
+                    <a href="/register" class="btn btn-primary btn-sm" style="border-radius: 10px;">
                         Đăng ký
                     </a>
                 {% endif %}
@@ -48,13 +53,13 @@
     <!-- Main Content Area -->
     <main class="main-content">
         {% if error %}
-            <div class="alert alert-danger">
+            <div class="alert alert-danger" style="border-radius: 12px; margin-bottom: 1.5rem;">
                 <span>⚠️</span>
                 <div>{{ error }}</div>
             </div>
         {% endif %}
         {% if message %}
-            <div class="alert alert-success">
+            <div class="alert alert-success" style="border-radius: 12px; margin-bottom: 1.5rem;">
                 <span>✅</span>
                 <div>{{ message }}</div>
             </div>
@@ -64,13 +69,13 @@
     </main>
 
     <!-- Ethical Footer (NT1-NT6) -->
-    <footer class="footer">
-        <div class="footer-content">
+    <footer class="footer" style="border-top: 1px solid rgba(255, 255, 255, 0.06); background: rgba(8, 10, 14, 0.85); backdrop-filter: blur(16px); padding: 1.5rem 0; margin-top: auto;">
+        <div class="footer-content" style="max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; font-size: 0.825rem; color: var(--text-dim);">
             <div>
-                <strong>Open Guardian Kids</strong> — <span class="ethics-tag">Đồng hành, không theo dõi lén</span>
+                <strong style="color: #fff;">Open Guardian Kids</strong> — <span class="ethics-tag" style="background: rgba(14, 165, 233, 0.12); color: #38bdf8; padding: 0.2rem 0.5rem; border-radius: 6px; font-weight: 600;">Đồng hành, không theo dõi lén</span>
             </div>
             <div>
-                Bảo vệ dữ liệu cá nhân theo Nghị định 13/2023/NĐ-CP & Luật Trẻ em 2016
+                Tuân thủ Nghị định 13/2023/NĐ-CP & Luật Trẻ em 2016
             </div>
         </div>
     </footer>

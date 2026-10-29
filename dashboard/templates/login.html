@@ -8,19 +8,19 @@
         <div class="auth-header">
             <div class="auth-logo">🛡️</div>
             <h1 class="auth-title">Đăng Nhập Phụ Huynh</h1>
-            <p class="auth-subtitle">Cổng quản lý và đồng hành cùng máy tính của trẻ</p>
+            <p class="auth-subtitle">Cổng điều khiển giám sát & đồng hành cùng con trẻ</p>
         </div>
 
         {% if error %}
-            <div class="alert alert-danger">
+            <div class="alert alert-danger" style="margin-bottom: 1.25rem;">
                 <span>⚠️</span>
                 <div>{{ error }}</div>
             </div>
         {% endif %}
 
         <form method="POST" action="/login">
-            <div class="form-group">
-                <label for="username" class="form-label">Tên đăng nhập</label>
+            <div class="form-group" style="margin-bottom: 1.25rem;">
+                <label for="username" class="form-label" style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.4rem;">Tên đăng nhập</label>
                 <input 
                     type="text" 
                     id="username" 
@@ -33,8 +33,8 @@
                 >
             </div>
 
-            <div class="form-group">
-                <label for="password" class="form-label">Mật khẩu</label>
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label for="password" class="form-label" style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.4rem;">Mật khẩu</label>
                 <input 
                     type="password" 
                     id="password" 
@@ -45,19 +45,19 @@
                 >
             </div>
 
-            <button type="submit" class="btn btn-primary btn-block">
-                Đăng Nhập Vào Hệ Thống
+            <button type="submit" class="btn btn-primary btn-block" style="padding: 0.85rem; font-weight: 700; box-shadow: 0 4px 20px -4px rgba(14, 165, 233, 0.5);">
+                Đăng Nhập Vào Hệ Thống ➜
             </button>
         </form>
 
         <div style="margin-top: 1.25rem; text-align: center; font-size: 0.875rem;">
             <span style="color: var(--text-dim);">Chưa có tài khoản phụ huynh?</span>
-            <a href="/register" style="color: var(--accent-cyan); text-decoration: none; font-weight: 500; margin-left: 0.25rem;">
+            <a href="/register" style="color: var(--accent-cyan); text-decoration: none; font-weight: 600; margin-left: 0.25rem;">
                 Đăng ký tài khoản mới
             </a>
         </div>
 
-        <div style="margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border-subtle); font-size: 0.8125rem; color: var(--text-dim); text-align: center;">
+        <div style="margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border-subtle); font-size: 0.8125rem; color: var(--text-dim); text-align: center; font-family: 'Geist Mono', monospace;">
             Tài khoản mẫu: <code style="color: var(--accent-cyan);">admin</code> hoặc <code style="color: var(--accent-cyan);">parent_admin</code> &bull; Mật khẩu: <code style="color: var(--accent-cyan);">Admin@123456</code>
         </div>
     </div>
