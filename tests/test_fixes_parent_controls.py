@@ -322,3 +322,67 @@ def test_pairing_code_timezone_and_audit_log(client):
     db2.close()
 
 
+def test_clean_10_domains_and_notepad_blocking(client, monkeypatch):
+    """Verify clean 10-domain seed list and Notepad app blocking (F2)."""
+    from server.seed_domains import seed_domain_rules, SEED_DOMAINS_DATA, SEED_APP_RULES_DATA
+    from server.models import DomainRule, AppRule
+    from agent.app_controller import AppController
+
+    db = TestingSessionLocal()
+    # 1. Verify 10 domains
+    assert len(SEED_DOMAINS_DATA) == 10
+    seed_domain_rules(db)
+    domains = db.query(DomainRule).all()
+    assert len(domains) == 10
+
+    # 2. Verify notepad.exe in default app rules
+    app_names = [a["app_name"] for a in SEED_APP_RULES_DATA]
+    assert "notepad.exe" in app_names
+    db.close()
+
+    # 3. Test API allows adding app rule without SHA-256 hash (auto-generates)
+    res = client.post("/api/v1/filtering/app-rules", json={
+        "app_name": "notepad",
+        "action": "block",
+        "description": "Thử nghiệm khóa Notepad"
+    })
+    assert res.status_code == 201
+    rule_data = res.json()
+    assert rule_data["app_name"] == "notepad.exe"
+    assert len(rule_data["sha256_hash"]) == 64
+
+    # 4. Test AppController terminates notepad process
+    terminated = []
+
+    class FakeProc:
+        def __init__(self, pid, name, exe):
+            self.info = {'pid': pid, 'name': name, 'exe': exe}
+            self.killed = False
+
+        def terminate(self):
+            self.killed = True
+
+        def kill(self):
+            self.killed = True
+
+    proc_notepad = FakeProc(9999, "Notepad.exe", r"C:\Windows\System32\notepad.exe")
+
+    import psutil
+    monkeypatch.setattr(psutil, "process_iter", lambda attrs: [proc_notepad])
+
+    rules_map = {
+        rule_data["sha256_hash"]: {
+            "name": "notepad.exe",
+            "action": "block",
+            "description": "Thử nghiệm khóa Notepad"
+        }
+    }
+    controller = AppController(rules_provider=lambda: rules_map)
+    killed_list = controller.scan_and_enforce()
+
+    assert len(killed_list) == 1
+    assert killed_list[0]["app_name"] == "Notepad.exe"
+    assert proc_notepad.killed is True
+
+
+

@@ -46,8 +46,21 @@ except (ImportError, ValueError):
         delete_app_rule,
         get_domain_category_summaries
     )
+try:
+    from ..services.connection_manager import ws_manager
+except (ImportError, ValueError):
+    from server.services.connection_manager import ws_manager
 
 router = APIRouter(prefix="/api/v1/filtering", tags=["Filtering"])
+
+
+async def _notify_devices_rules_updated():
+    """Notify all connected devices in real-time via WebSocket to re-sync rules."""
+    for dev_id in list(ws_manager.active_connections.keys()):
+        try:
+            await ws_manager.send_command(dev_id, {"action": "policy_updated"})
+        except Exception:
+            pass
 
 
 @router.get("/rules", response_model=FilteringRulesSyncResponse, summary="Đồng bộ toàn bộ quy tắc lọc cho Agent hoặc Dashboard")
@@ -67,25 +80,27 @@ def list_domain_rules(db: Session = Depends(get_db)) -> List[DomainRuleResponse]
 
 
 @router.post("/domain-rules", response_model=DomainRuleResponse, status_code=status.HTTP_201_CREATED, summary="Thêm hoặc cập nhật quy tắc lọc tên miền")
-def add_domain_rule(
+async def add_domain_rule(
     rule_in: DomainRuleCreate,
     db: Session = Depends(get_db)
 ) -> DomainRuleResponse:
     """Create or update domain rule. Enforces NT6 permanent whitelist protection."""
     try:
         rule = create_domain_rule(db, rule_in)
+        await _notify_devices_rules_updated()
         return DomainRuleResponse.model_validate(rule)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
 @router.delete("/domain-rules/{rule_id}", status_code=status.HTTP_200_OK, summary="Xóa quy tắc lọc tên miền")
-def remove_domain_rule(rule_id: int, db: Session = Depends(get_db)):
+async def remove_domain_rule(rule_id: int, db: Session = Depends(get_db)):
     """Delete a domain rule. Permanent whitelist items are protected from deletion (NT6)."""
     try:
         success = delete_domain_rule(db, rule_id)
         if not success:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Không tìm thấy quy tắc tên miền.")
+        await _notify_devices_rules_updated()
         return {"status": "success", "message": f"Đã xóa quy tắc #{rule_id}"}
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
@@ -101,21 +116,23 @@ def list_app_rules(
 
 
 @router.post("/app-rules", response_model=AppRuleResponse, status_code=status.HTTP_201_CREATED, summary="Thêm quy tắc chặn ứng dụng theo SHA-256")
-def add_app_rule(
+async def add_app_rule(
     rule_in: AppRuleCreate,
     db: Session = Depends(get_db)
 ) -> AppRuleResponse:
     """Create or update executable SHA-256 application control rule."""
     rule = create_app_rule(db, rule_in)
+    await _notify_devices_rules_updated()
     return AppRuleResponse.model_validate(rule)
 
 
 @router.delete("/app-rules/{rule_id}", status_code=status.HTTP_200_OK, summary="Xóa quy tắc ứng dụng")
-def remove_app_rule(rule_id: int, db: Session = Depends(get_db)):
+async def remove_app_rule(rule_id: int, db: Session = Depends(get_db)):
     """Delete an application control rule."""
     success = delete_app_rule(db, rule_id)
     if not success:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Không tìm thấy quy tắc ứng dụng.")
+    await _notify_devices_rules_updated()
     return {"status": "success", "message": f"Đã xóa quy tắc #{rule_id}"}
 
 

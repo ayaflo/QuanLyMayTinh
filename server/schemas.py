@@ -193,7 +193,7 @@ class AppRuleCreate(BaseModel):
     """Schema for adding an app SHA-256 control rule."""
     device_id: Optional[int] = Field(None, description="Device ID or None for global rule")
     app_name: str = Field(..., min_length=1, max_length=100)
-    sha256_hash: str = Field(..., min_length=64, max_length=64, description="64-hex char SHA-256 hash")
+    sha256_hash: Optional[str] = Field(None, description="64-hex char SHA-256 hash (auto-generated if omitted)")
     action: str = Field("block", description="'allow' or 'block'")
     description: Optional[str] = None
 

@@ -359,16 +359,16 @@
 <div class="section-card" id="domainFilteringSection">
     <div class="section-header">
         <div style="display: flex; align-items: center; gap: 0.6rem;">
-            <h2 class="section-title">Danh Mục 200+ Tên Miền & Lọc DNS Sinkhole (F2)</h2>
+            <h2 class="section-title">Danh Mục Tên Miền & Lọc DNS Sinkhole (F2)</h2>
             <span class="badge-whitelist">Bảo vệ NT6 (Trường học & Tổng đài 111)</span>
         </div>
-        <span class="text-dim" style="font-size: 0.8125rem;">Tổng cộng {{ total_domain_rules|default(205) }} tên miền phân loại 6 nhóm</span>
+        <span class="text-dim" style="font-size: 0.8125rem;">Tổng cộng {{ total_domain_rules|default(10) }} tên miền phân loại 6 nhóm</span>
     </div>
 
     <!-- Category Filter Chips -->
     <div class="category-chips-bar" id="categoryChips">
         <button class="category-chip active" onclick="filterDomainCategory('ALL')">
-            Tất cả ({{ total_domain_rules|default(205) }})
+            Tất cả ({{ total_domain_rules|default(10) }})
         </button>
         {% for cat in category_summaries %}
             <button class="category-chip" onclick="filterDomainCategory('{{ cat.category }}')">
@@ -474,10 +474,10 @@
 
     <!-- Add App Rule Form -->
     <form id="addAppRuleForm" onsubmit="handleAddAppRule(event)" style="display: flex; gap: 0.6rem; align-items: center; margin-bottom: 1rem; flex-wrap: wrap;">
-        <input type="text" id="newAppName" class="form-input" placeholder="Tên ứng dụng (vd: notepad.exe, game.exe)" required style="width: 200px;">
-        <input type="text" id="newAppHash" class="form-input code-monospace" placeholder="Mã SHA-256 (64 ký tự hex)" required style="width: 320px;">
+        <input type="text" id="newAppName" class="form-input" placeholder="Tên ứng dụng (vd: notepad.exe, game.exe)" required style="width: 240px;">
+        <input type="text" id="newAppHash" class="form-input code-monospace" placeholder="Mã SHA-256 (Tùy chọn, để trống sẽ tự tạo)" style="width: 320px;">
         <input type="text" id="newAppDesc" class="form-input" placeholder="Lý do khóa (NT4 giải thích)" style="width: 220px;">
-        <button type="submit" class="btn btn-primary btn-sm">➕ Thêm Khóa SHA-256</button>
+        <button type="submit" class="btn btn-primary btn-sm">➕ Thêm Khóa Ứng Dụng</button>
     </form>
 
     <div class="table-responsive">
@@ -1117,18 +1117,18 @@
         event.preventDefault();
         const app_name = document.getElementById('newAppName').value.trim();
         const sha256_hash = document.getElementById('newAppHash').value.trim().toLowerCase();
-        const description = document.getElementById('newAppDesc').value.trim();
+        const description = document.getElementById('newAppDesc').value.trim() || 'Khóa theo quy định phụ huynh';
         try {
             const res = await fetch('/api/v1/filtering/app-rules', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ app_name, sha256_hash, action: 'block', description })
+                body: JSON.stringify({ app_name, sha256_hash: sha256_hash || null, action: 'block', description })
             });
             if (!res.ok) {
                 const err = await res.json().catch(() => ({}));
                 throw new Error(err.detail || "Không thể thêm khóa app.");
             }
-            showToast(`Đã thêm khóa SHA-256 cho ${app_name}`);
+            showToast(`Đã thêm khóa cho ${app_name}`);
             setTimeout(() => window.location.reload(), 1000);
         } catch (e) {
             showToast(`Lỗi: ${e.message}`, false);

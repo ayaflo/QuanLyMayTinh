@@ -127,11 +127,16 @@ class AppController:
         blocked_hashes = {
             h.lower(): info for h, info in rules.items() if info.get("action") == "block"
         }
-        blocked_names = {
-            info["name"].lower(): info
-            for info in rules.values()
-            if info.get("action") == "block" and info.get("name")
-        }
+        blocked_names = {}
+        for info in rules.values():
+            if info.get("action") == "block" and info.get("name"):
+                n = info["name"].lower().strip()
+                blocked_names[n] = info
+                if n.endswith(".exe"):
+                    blocked_names[n[:-4]] = info
+                else:
+                    blocked_names[f"{n}.exe"] = info
+
         if not blocked_hashes and not blocked_names:
             return []
 
@@ -150,14 +155,19 @@ class AppController:
                 if not exe_path and not app_name:
                     continue
 
-                # SHA-256 detection defeats binary renaming (T3_041); name matching catches VPNs (T4_019)
+                # SHA-256 detection defeats binary renaming (T3_041); name matching catches VPNs and apps (T4_019)
                 file_hash = self._get_cached_sha256(exe_path) if exe_path else None
                 rule_info = None
 
+                name_clean = app_name.lower().strip()
+                name_base = name_clean[:-4] if name_clean.endswith(".exe") else name_clean
+
                 if file_hash and file_hash in blocked_hashes:
                     rule_info = blocked_hashes[file_hash]
-                elif app_name.lower() in blocked_names:
-                    rule_info = blocked_names[app_name.lower()]
+                elif name_clean in blocked_names:
+                    rule_info = blocked_names[name_clean]
+                elif name_base in blocked_names:
+                    rule_info = blocked_names[name_base]
 
                 if rule_info:
                     reason = rule_info.get("description") or "Quy định của cha mẹ"

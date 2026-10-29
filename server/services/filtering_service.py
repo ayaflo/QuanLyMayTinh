@@ -117,14 +117,28 @@ def delete_domain_rule(db: Session, rule_id: int) -> bool:
 
 def create_app_rule(db: Session, rule_in: AppRuleCreate) -> AppRule:
     """Create a new executable SHA-256 control rule (F2)."""
-    clean_hash = rule_in.sha256_hash.strip().lower()
+    import hashlib
+
+    clean_name = rule_in.app_name.strip()
+    # Normalize extension: if no dot, append .exe
+    if "." not in clean_name:
+        clean_name = f"{clean_name}.exe"
+
+    raw_hash = (rule_in.sha256_hash or "").strip().lower()
+    if len(raw_hash) == 64:
+        clean_hash = raw_hash
+    else:
+        # Fallback to deterministic hash of executable name so process matching works
+        clean_hash = hashlib.sha256(clean_name.lower().encode("utf-8")).hexdigest()
+
     existing = db.query(AppRule).filter(
-        AppRule.sha256_hash == clean_hash,
+        (AppRule.sha256_hash == clean_hash) | (AppRule.app_name == clean_name),
         AppRule.device_id == rule_in.device_id
     ).first()
 
     if existing:
-        existing.app_name = rule_in.app_name
+        existing.app_name = clean_name
+        existing.sha256_hash = clean_hash
         existing.action = rule_in.action
         existing.description = rule_in.description
         db.commit()
@@ -133,7 +147,7 @@ def create_app_rule(db: Session, rule_in: AppRuleCreate) -> AppRule:
 
     new_rule = AppRule(
         device_id=rule_in.device_id,
-        app_name=rule_in.app_name,
+        app_name=clean_name,
         sha256_hash=clean_hash,
         action=rule_in.action,
         description=rule_in.description,
