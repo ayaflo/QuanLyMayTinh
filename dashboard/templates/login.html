@@ -1,31 +1,35 @@
 {% extends "base.html" %}
 
-{% block title %}Đăng nhập Phụ huynh - OGK{% endblock %}
+{% block title %}Đăng Nhập Phụ Huynh - OGK{% endblock %}
 
 {% block content %}
 <div class="auth-wrapper">
     <div class="auth-card">
-        <div class="auth-header">
-            <div class="auth-logo">🛡️</div>
-            <h1 class="auth-title">Đăng Nhập Phụ Huynh</h1>
-            <p class="auth-subtitle">Cổng điều khiển giám sát & đồng hành cùng con trẻ</p>
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <div style="width: 52px; height: 52px; border-radius: 14px; background: #fff; color: #000; font-size: 1.6rem; display: grid; place-items: center; margin: 0 auto 1.25rem; font-weight: 800; box-shadow: 0 0 25px rgba(255, 255, 255, 0.3);">
+                🛡️
+            </div>
+            <h1 style="font-size: 1.75rem; font-weight: 800; color: #fff; letter-spacing: -0.03em;">Đăng Nhập Phụ Huynh</h1>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.4rem;">
+                Cổng điều khiển giám sát & đồng hành cùng con trẻ
+            </p>
         </div>
 
         {% if error %}
-            <div class="alert alert-danger" style="margin-bottom: 1.25rem;">
+            <div class="alert alert-danger" style="margin-bottom: 1.5rem;">
                 <span>⚠️</span>
                 <div>{{ error }}</div>
             </div>
         {% endif %}
 
         <form method="POST" action="/login">
-            <div class="form-group" style="margin-bottom: 1.25rem;">
-                <label for="username" class="form-label" style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.4rem;">Tên đăng nhập</label>
+            <div style="margin-bottom: 1.25rem;">
+                <label for="username" style="display: block; font-size: 0.775rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.4rem;">Tên đăng nhập</label>
                 <input 
                     type="text" 
                     id="username" 
                     name="username" 
-                    class="form-input" 
+                    class="form-input-xai" 
                     placeholder="Ví dụ: parent_admin" 
                     value="{{ username|default('') }}" 
                     required 
@@ -33,32 +37,32 @@
                 >
             </div>
 
-            <div class="form-group" style="margin-bottom: 1.5rem;">
-                <label for="password" class="form-label" style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.4rem;">Mật khẩu</label>
+            <div style="margin-bottom: 1.75rem;">
+                <label for="password" style="display: block; font-size: 0.775rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.4rem;">Mật khẩu</label>
                 <input 
                     type="password" 
                     id="password" 
                     name="password" 
-                    class="form-input" 
+                    class="form-input-xai" 
                     placeholder="••••••••••••" 
                     required
                 >
             </div>
 
-            <button type="submit" class="btn btn-primary btn-block" style="padding: 0.85rem; font-weight: 700; box-shadow: 0 4px 20px -4px rgba(14, 165, 233, 0.5);">
+            <button type="submit" class="btn-pill-white" style="width: 100%; padding: 0.85rem; font-size: 0.95rem;">
                 Đăng Nhập Vào Hệ Thống ➜
             </button>
         </form>
 
-        <div style="margin-top: 1.25rem; text-align: center; font-size: 0.875rem;">
+        <div style="margin-top: 1.5rem; text-align: center; font-size: 0.875rem;">
             <span style="color: var(--text-dim);">Chưa có tài khoản phụ huynh?</span>
-            <a href="/register" style="color: var(--accent-cyan); text-decoration: none; font-weight: 600; margin-left: 0.25rem;">
+            <a href="/register" style="color: #fff; text-decoration: none; font-weight: 600; margin-left: 0.35rem; border-bottom: 1px dotted rgba(255, 255, 255, 0.4);">
                 Đăng ký tài khoản mới
             </a>
         </div>
 
-        <div style="margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border-subtle); font-size: 0.8125rem; color: var(--text-dim); text-align: center; font-family: 'Geist Mono', monospace;">
-            Tài khoản mẫu: <code style="color: var(--accent-cyan);">admin</code> hoặc <code style="color: var(--accent-cyan);">parent_admin</code> &bull; Mật khẩu: <code style="color: var(--accent-cyan);">Admin@123456</code>
+        <div style="margin-top: 1.75rem; padding-top: 1.25rem; border-top: 1px solid var(--border-subtle); font-size: 0.8rem; color: var(--text-dim); text-align: center; font-family: 'Geist Mono', monospace;">
+            Tài khoản mẫu: <code style="color: #fff;">admin</code> hoặc <code style="color: #fff;">parent_admin</code> &bull; Pass: <code style="color: #fff;">Admin@123456</code>
         </div>
     </div>
 </div>

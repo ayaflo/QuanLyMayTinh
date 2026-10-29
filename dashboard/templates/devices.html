@@ -4,140 +4,144 @@
 
 {% block content %}
 <!-- ========================================================================
-     VIEW 1: MÀN HÌNH CHÍNH (Chỉ hiển thị danh sách máy tính)
+     VIEW 1: MÀN HÌNH CHÍNH (Giao diện chính - Chỉ có danh sách máy tính)
      ======================================================================== -->
 <div id="viewMainDeviceList">
-    <!-- Dashboard Header -->
-    <div class="dashboard-header" style="margin-bottom: 2rem;">
-        <div class="dashboard-title-group">
-            <h1 style="font-size: 2.1rem; font-weight: 800; letter-spacing: -0.03em; color: #fff;">Quản Lý Máy Tính Trẻ Em</h1>
-            <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 0.4rem;">
-                Hệ thống đồng hành, giám sát thời lượng và bảo vệ không gian mạng cho con
-            </p>
+    <!-- Hero Section (Exact xai247 Style) -->
+    <div class="xai-hero">
+        <div class="xai-badge-pill">
+            <span class="live-dot"></span>
+            <span>Open Guardian Kids &bull; Giám Sát An Toàn Cho Con Trẻ</span>
         </div>
-        <button id="btnOpenPairModal" class="btn btn-primary" style="box-shadow: 0 4px 20px -4px rgba(14, 165, 233, 0.5); padding: 0.75rem 1.4rem; font-weight: 700;">
-            <span>➕</span> Thêm Máy Tính Mới
-        </button>
+
+        <h1 class="xai-hero-title">
+            Bảo Vệ Không Gian Mạng<br>
+            <span style="color: #fff;">Đồng Hành Cùng Con Trẻ.</span>
+        </h1>
+
+        <p class="xai-hero-subtitle">
+            Hệ thống quản lý thời lượng sử dụng máy tính, lọc web độc hại tự động và khóa ứng dụng đa nền tảng. Minh bạch hai chiều, tôn trọng sự phát triển của trẻ.
+        </p>
+
+        <div class="xai-hero-actions">
+            <button id="btnOpenPairModal" class="btn-pill-white">
+                <span>➕</span> Thêm Máy Tính Mới
+            </button>
+            <a href="#mainDeviceGrid" class="btn-pill-dark">
+                <span>🖥️</span> Xem Danh Sách Máy ({{ devices|length }})
+            </a>
+        </div>
+
+        <!-- Minimalist Stats Row -->
+        <div class="xai-stats-row">
+            <div class="xai-stat-item">
+                <div class="xai-stat-number">{{ devices|length }}</div>
+                <div class="xai-stat-label">Tổng Thiết Bị</div>
+            </div>
+            <div class="xai-stat-item">
+                <div class="xai-stat-number" style="color: #10b981; display: flex; align-items: center; gap: 8px;">
+                    <span class="live-dot"></span> {{ online_count|default(0) }}
+                </div>
+                <div class="xai-stat-label">Đang Trực Tuyến</div>
+            </div>
+            <div class="xai-stat-item">
+                <div class="xai-stat-number" style="color: var(--text-dim);">{{ offline_count|default(0) }}</div>
+                <div class="xai-stat-label">Ngoại Tuyến</div>
+            </div>
+        </div>
     </div>
 
-    <!-- Quick Statistics Cards -->
-    <div class="stats-grid" style="margin-bottom: 2rem;">
-        <div class="stat-card" style="border-radius: 18px; background: rgba(18, 20, 26, 0.85); border: 1px solid rgba(255, 255, 255, 0.08);">
-            <div class="stat-icon-wrapper stat-icon-blue" style="border-radius: 14px;">💻</div>
+    <!-- Main Section: Danh Sách Máy Tính (Chỉ có phần này, không có tên miền/ứng dụng bên ngoài) -->
+    <div id="mainDeviceGrid" style="margin-bottom: 3.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.75rem;">
             <div>
-                <div class="stat-value" style="font-family: 'Geist Mono', monospace; font-size: 1.85rem;">{{ devices|length }}</div>
-                <div class="stat-label" style="font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em;">Tổng Máy Tính</div>
-            </div>
-        </div>
-        <div class="stat-card" style="border-radius: 18px; background: rgba(18, 20, 26, 0.85); border: 1px solid rgba(255, 255, 255, 0.08);">
-            <div class="stat-icon-wrapper stat-icon-green" style="border-radius: 14px;">
-                <span class="live-dot"></span>
-            </div>
-            <div>
-                <div class="stat-value" style="font-family: 'Geist Mono', monospace; font-size: 1.85rem; color: #10b981;">{{ online_count|default(0) }}</div>
-                <div class="stat-label" style="font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em;">Đang Hoạt Động</div>
-            </div>
-        </div>
-        <div class="stat-card" style="border-radius: 18px; background: rgba(18, 20, 26, 0.85); border: 1px solid rgba(255, 255, 255, 0.08);">
-            <div class="stat-icon-wrapper stat-icon-gray" style="border-radius: 14px;">⚪</div>
-            <div>
-                <div class="stat-value" style="font-family: 'Geist Mono', monospace; font-size: 1.85rem; color: var(--text-muted);">{{ offline_count|default(0) }}</div>
-                <div class="stat-label" style="font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em;">Ngoại Tuyến</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Main Section: Danh Sách Máy Tính Của Con -->
-    <div class="section-card" style="margin-bottom: 2.5rem; background: rgba(18, 20, 26, 0.85); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px;">
-        <div class="section-header" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.9rem; margin-bottom: 1.4rem;">
-            <div>
-                <h2 class="section-title" style="font-size: 1.25rem; font-weight: 700; color: #fff;">Danh Sách Máy Tính Của Con</h2>
-                <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.25rem;">
-                    Chọn máy tính bên dưới để vào trung tâm điều khiển, xem báo cáo, cấu hình tên miền và quản lý ứng dụng
+                <h2 style="font-size: 1.4rem; font-weight: 800; color: #fff; letter-spacing: -0.02em;">Danh Sách Máy Tính Đang Quản Lý</h2>
+                <p style="color: var(--text-muted); font-size: 0.875rem; margin-top: 0.25rem;">
+                    Chọn một máy tính bên dưới để vào bảng điều khiển chi tiết, cấu hình tên miền và quản lý ứng dụng
                 </p>
             </div>
             {% if devices and devices|length > 0 %}
-                <span class="badge-subtle" style="font-family: 'Geist Mono', monospace;">{{ devices|length }} máy tính</span>
+                <span class="badge-subtle" style="font-family: 'Geist Mono', monospace;">{{ devices|length }} thiết bị</span>
             {% endif %}
         </div>
 
         {% if devices and devices|length > 0 %}
-            <div class="device-cards-grid">
+            <div class="device-grid-main">
                 {% for dev in devices %}
                     {% set pol = policies_map[dev.id] if policies_map and dev.id in policies_map else None %}
                     {% set rep = reports_map[dev.id] if reports_map and dev.id in reports_map else None %}
                     {% set used_min = (rep.total_screen_time_sec / 60)|round|int if rep else 0 %}
                     {% set quota_today = pol.weekday_quota_minutes if pol else 90 %}
                     {% set percent_used = (used_min / quota_today * 100)|round|int if quota_today > 0 else 0 %}
-                    
-                    <div class="device-card-item" id="main-card-device-{{ dev.id }}" onclick="openDeviceCockpit({{ dev.id }})">
-                        <div class="device-card-top">
+
+                    <div class="device-card-xai" id="main-card-device-{{ dev.id }}" onclick="openDeviceCockpit({{ dev.id }})">
+                        <div class="device-card-header">
                             <div style="display: flex; align-items: center; gap: 0.85rem;">
-                                <div class="device-avatar-glow">🖥️</div>
+                                <div class="device-icon-box">🖥️</div>
                                 <div>
-                                    <div style="font-weight: 700; font-size: 1.1rem; color: #fff;">{{ dev.device_name }}</div>
-                                    <div style="font-size: 0.775rem; color: var(--text-dim); font-family: 'Geist Mono', monospace; margin-top: 0.2rem;">
-                                        ID: #{{ dev.id }} · Nhịp tim: {{ dev.last_seen|local_time('%H:%M:%S') }}
+                                    <div class="device-name-title">{{ dev.device_name }}</div>
+                                    <div class="device-meta-sub">
+                                        ID: #{{ dev.id }} &bull; Nhịp tim: {{ dev.last_seen|local_time('%H:%M:%S') }}
                                     </div>
                                 </div>
                             </div>
 
                             <div>
                                 {% if dev.status == 'online' %}
-                                    <span class="badge-status badge-online" style="display: inline-flex; align-items: center; gap: 6px;">
+                                    <span class="badge-status badge-online">
                                         <span class="live-dot"></span> Trực tuyến
                                     </span>
                                 {% else %}
-                                    <span class="badge-status badge-offline" style="display: inline-flex; align-items: center; gap: 6px;">
+                                    <span class="badge-status badge-offline">
                                         <span class="live-dot offline"></span> Ngoại tuyến
                                     </span>
                                 {% endif %}
                             </div>
                         </div>
 
-                        <!-- Usage Progress Bar Mini -->
-                        <div style="background: rgba(255,255,255,0.03); padding: 0.85rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.06);">
-                            <div style="display: flex; justify-content: space-between; font-size: 0.825rem; margin-bottom: 0.4rem;">
-                                <span style="color: var(--text-muted);">Đã dùng hôm nay:</span>
+                        <!-- Quota Progress Box -->
+                        <div class="quota-box">
+                            <div class="quota-box-header">
+                                <span style="color: var(--text-muted);">Thời lượng dùng hôm nay:</span>
                                 <span style="font-family: 'Geist Mono', monospace; font-weight: 600; color: {% if percent_used >= 100 %}#ef4444{% elif percent_used >= 80 %}#f59e0b{% else %}#10b981{% endif %};">
                                     {{ used_min }} / {{ quota_today }} phút
                                 </span>
                             </div>
                             <div class="quota-bar-wrapper">
-                                <div class="quota-bar-fill" style="width: {{ [percent_used, 100]|min }}%; background: {% if percent_used >= 100 %}#ef4444{% elif percent_used >= 80 %}#f59e0b{% else %}linear-gradient(90deg, #0ea5e9, #10b981){% endif %};"></div>
+                                <div class="quota-bar-fill" style="width: {{ [percent_used, 100]|min }}%; background: {% if percent_used >= 100 %}#ef4444{% elif percent_used >= 80 %}#f59e0b{% else %}#10b981{% endif %};"></div>
                             </div>
                         </div>
 
-                        <!-- Quick Emergency Controls -->
-                        <div style="display: flex; gap: 0.45rem; margin-top: 0.2rem;" onclick="event.stopPropagation();">
-                            <button class="btn-xs btn-danger-soft" style="flex: 1; padding: 0.5rem;" onclick="sendEmergencyCommand({{ dev.id }}, 'lock_now')" title="Khóa màn hình máy tính con ngay lập tức">
+                        <!-- Quick Emergency Actions -->
+                        <div style="display: flex; gap: 0.45rem; flex-wrap: wrap;" onclick="event.stopPropagation();">
+                            <button class="btn-pill-danger" style="flex: 1;" onclick="sendEmergencyCommand({{ dev.id }}, 'lock_now')" title="Khóa màn hình máy tính con ngay lập tức">
                                 🔒 Khóa Ngay
                             </button>
-                            <button class="btn-xs btn-success-soft" style="flex: 1; padding: 0.5rem;" onclick="sendEmergencyCommand({{ dev.id }}, 'unlock')" title="Mở khóa màn hình máy con">
+                            <button class="btn-pill-success" style="flex: 1;" onclick="sendEmergencyCommand({{ dev.id }}, 'unlock')" title="Mở khóa màn hình máy con">
                                 🔓 Mở Khóa
                             </button>
-                            <button class="btn-xs btn-amber-soft" style="flex: 1; padding: 0.5rem;" onclick="sendEmergencyCommand({{ dev.id }}, 'add_time', 15)" title="Thưởng thêm 15 phút sử dụng">
+                            <button class="btn-pill-amber" style="flex: 1;" onclick="sendEmergencyCommand({{ dev.id }}, 'add_time', 15)" title="Thưởng thêm 15 phút sử dụng">
                                 ⏳ +15 Phút
                             </button>
                         </div>
 
-                        <!-- Manage Button CTA -->
-                        <button class="btn-manage-pc">
-                            <span>⚡ Quản Lý & Cấu Hình Máy Này</span>
-                            <span class="arrow-move">➜</span>
+                        <!-- Prominent White Pill Action CTA -->
+                        <button class="btn-pill-white" style="width: 100%; margin-top: 0.25rem;">
+                            <span>⚡ Quản Lý Máy Tính Này</span>
+                            <span>➜</span>
                         </button>
                     </div>
                 {% endfor %}
             </div>
         {% else %}
             <!-- Empty State -->
-            <div class="empty-state">
+            <div class="xai-card empty-state">
                 <div class="empty-icon">🛡️</div>
                 <h3 class="empty-title">Chưa có máy tính nào được kết nối</h3>
                 <p class="empty-desc">
-                    Nhấn vào nút <strong>"Thêm Máy Tính Mới"</strong> để nhận mã ghép đôi 8 ký tự và nhập vào phần mềm Agent trên máy tính của con.
+                    Nhấn vào nút bên dưới để nhận mã ghép đôi gồm 8 ký tự và nhập vào phần mềm Agent trên máy tính của con.
                 </p>
-                <button class="btn btn-primary btn-open-modal-trigger" style="box-shadow: 0 4px 20px -4px rgba(14, 165, 233, 0.5); padding: 0.75rem 1.4rem; font-weight: 700;">
+                <button class="btn-pill-white btn-open-modal-trigger">
                     <span>➕</span> Tạo Mã Ghép Đôi Đầu Tiên
                 </button>
             </div>
@@ -146,34 +150,34 @@
 </div>
 
 <!-- ========================================================================
-     VIEW 2: MÀN HÌNH CHI TIẾT MÁY TÍNH (Device Management Cockpit)
-     Xuất hiện khi người dùng ấn vào một máy tính cụ thể
+     VIEW 2: MÀN HÌNH CHI TIẾT MÁY TÍNH (Device Cockpit)
+     Chỉ xuất hiện khi ấn vào máy tính cụ thể
      ======================================================================== -->
-<div id="viewDeviceCockpit" style="display: none;">
+<div id="viewDeviceCockpit" class="cockpit-view-wrapper" style="display: none;">
     <!-- Top Cockpit Bar -->
-    <div class="cockpit-top-bar">
+    <div class="cockpit-navbar">
         <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
-            <button class="btn-back-cockpit" onclick="backToDeviceList()">
+            <button class="btn-pill-dark" onclick="backToDeviceList()">
                 <span>←</span> Quay Lại Danh Sách Máy
             </button>
             <div style="display: flex; align-items: center; gap: 0.75rem;">
-                <span style="font-size: 1.5rem;">💻</span>
+                <div class="device-icon-box" style="width: 38px; height: 38px;">🖥️</div>
                 <div>
                     <div style="display: flex; align-items: center; gap: 0.6rem;">
-                        <h2 id="cockpitDeviceName" style="font-size: 1.35rem; font-weight: 800; color: #fff; margin: 0;"></h2>
+                        <h2 id="cockpitDeviceName" style="font-size: 1.3rem; font-weight: 800; color: #fff; margin: 0;"></h2>
                         <span id="cockpitDeviceBadge"></span>
                     </div>
-                    <div id="cockpitDeviceIdHeartbeat" style="font-size: 0.775rem; color: var(--text-dim); font-family: 'Geist Mono', monospace;"></div>
+                    <div id="cockpitDeviceIdHeartbeat" style="font-size: 0.775rem; color: var(--text-dim); font-family: 'Geist Mono', monospace; margin-top: 2px;"></div>
                 </div>
             </div>
         </div>
 
-        <!-- Quick Switcher Between Multiple PCs (if > 1) -->
+        <!-- Switcher between PCs -->
         {% if devices and devices|length > 1 %}
-            <div style="display: flex; align-items: center; gap: 0.45rem; flex-wrap: wrap;">
-                <span style="font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; font-weight: 600;">Chuyển máy:</span>
+            <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                <span style="font-size: 0.775rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700;">Chuyển máy:</span>
                 {% for dev in devices %}
-                    <button class="btn-xs btn-secondary cockpit-switcher-btn" id="switcher-btn-{{ dev.id }}" onclick="openDeviceCockpit({{ dev.id }})" style="border-radius: 8px;">
+                    <button class="btn-pill-dark cockpit-switcher-btn" id="switcher-btn-{{ dev.id }}" style="padding: 0.4rem 0.9rem; font-size: 0.8rem;" onclick="openDeviceCockpit({{ dev.id }})">
                         🖥️ {{ dev.device_name }}
                     </button>
                 {% endfor %}
@@ -181,7 +185,7 @@
         {% endif %}
     </div>
 
-    <!-- Render Each Machine's Cockpit Body -->
+    <!-- Render Each Machine's Dedicated Cockpit Body -->
     {% for dev in devices %}
         {% set pol = policies_map[dev.id] if policies_map and dev.id in policies_map else None %}
         {% set rep = reports_map[dev.id] if reports_map and dev.id in reports_map else None %}
@@ -189,32 +193,32 @@
         {% set dev_audit = audit_logs | selectattr('device_id', 'equalto', dev.id) | list %}
 
         <div class="device-cockpit-panel" id="device-cockpit-{{ dev.id }}" style="display: none;">
-            <!-- Cockpit Navigation Tabs -->
-            <div class="cockpit-tabs-container">
-                <button class="cockpit-tab-item active" onclick="switchCockpitTab('domains', {{ dev.id }})">
+            <!-- xai247 Tab Pills Row -->
+            <div class="cockpit-tabs-pill-row">
+                <button class="cockpit-tab-pill active" onclick="switchCockpitTab('domains', {{ dev.id }})">
                     <span>🌐</span> Cấu Hình Tên Miền & Lọc Web
                 </button>
-                <button class="cockpit-tab-item" onclick="switchCockpitTab('apps', {{ dev.id }})">
+                <button class="cockpit-tab-pill" onclick="switchCockpitTab('apps', {{ dev.id }})">
                     <span>🛑</span> Quản Lý & Khóa Ứng Dụng
                 </button>
-                <button class="cockpit-tab-item" onclick="switchCockpitTab('reports', {{ dev.id }})">
+                <button class="cockpit-tab-pill" onclick="switchCockpitTab('reports', {{ dev.id }})">
                     <span>📊</span> Báo Cáo Sử Dụng
                 </button>
-                <button class="cockpit-tab-item" onclick="switchCockpitTab('schedule', {{ dev.id }})">
+                <button class="cockpit-tab-pill" onclick="switchCockpitTab('schedule', {{ dev.id }})">
                     <span>⏰</span> Lịch Biểu & Hạn Ngạch
                 </button>
-                <button class="cockpit-tab-item" onclick="switchCockpitTab('requests', {{ dev.id }})">
+                <button class="cockpit-tab-pill" onclick="switchCockpitTab('requests', {{ dev.id }})">
                     <span>📬</span> Hộp Thư Yêu Cầu
                     {% set pending_for_dev = dev_requests | selectattr('status', 'equalto', 'pending') | list %}
                     {% if pending_for_dev|length > 0 %}
-                        <span class="badge badge-amber" style="margin-left: 4px; padding: 0.15rem 0.45rem; font-size: 0.7rem;">{{ pending_for_dev|length }}</span>
+                        <span class="badge-amber" style="margin-left: 4px; padding: 0.15rem 0.45rem; border-radius: 9999px;">{{ pending_for_dev|length }}</span>
                     {% endif %}
                 </button>
-                <button class="cockpit-tab-item" onclick="switchCockpitTab('audit', {{ dev.id }})">
+                <button class="cockpit-tab-pill" onclick="switchCockpitTab('audit', {{ dev.id }})">
                     <span>📋</span> Nhật Ký Hoạt Động
                 </button>
-                <button class="cockpit-tab-item" onclick="switchCockpitTab('settings', {{ dev.id }})">
-                    <span>⚙️</span> Cài Đặt & Gỡ Bỏ
+                <button class="cockpit-tab-pill" onclick="switchCockpitTab('settings', {{ dev.id }})">
+                    <span>⚙️</span> Cài Đặt Thiết Bị
                 </button>
             </div>
 
@@ -222,10 +226,11 @@
                  TAB 1: Cấu Hình Tên Miền & Lọc Web
                  ============================================================ -->
             <div class="cockpit-tab-content" id="tab-domains-{{ dev.id }}">
-                <div class="section-card" style="border-radius: 18px; margin-bottom: 2rem;">
-                    <div class="section-header" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.85rem; margin-bottom: 1.25rem;">
+                <div class="xai-card" style="margin-bottom: 2rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.75rem;">
                         <div>
-                            <h2 class="section-title" style="font-size: 1.25rem; font-weight: 700; color: #fff;">Danh Mục Tên Miền & Lọc DNS Sinkhole</h2>
+                            <div class="xai-card-tag">DNS SINKHOLE FILTERING</div>
+                            <h3 style="font-size: 1.3rem; font-weight: 800; color: #fff;">Danh Mục Tên Miền & Lọc DNS Sinkhole</h3>
                             <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.2rem;">
                                 Tên miền độc hại, khiêu dâm, lừa đảo được tự động chặn triệt để qua DNS Sinkhole nội bộ của máy
                             </p>
@@ -234,7 +239,7 @@
                     </div>
 
                     <!-- Category Filter Chips -->
-                    <div class="category-chips-bar" style="margin-bottom: 1.25rem;">
+                    <div class="category-chips-bar" style="margin-bottom: 1.5rem;">
                         <button class="category-chip active" onclick="filterDomainCategory('ALL')">
                             Tất cả ({{ total_domain_rules }})
                         </button>
@@ -246,9 +251,9 @@
                     </div>
 
                     <!-- Add New Domain Rule Form -->
-                    <form id="formAddDomainRule" onsubmit="handleAddDomainRule(event)" style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.5rem; background: rgba(255,255,255,0.025); padding: 1rem; border-radius: 14px; border: 1px solid rgba(255,255,255,0.06);">
-                        <input type="text" id="inputNewDomain" class="form-input" style="flex: 2; min-width: 220px;" placeholder="Nhập tên miền (ví dụ: tiktok.com hoặc facebook.com)" required>
-                        <select id="selectNewDomainCategory" class="form-input" style="flex: 1; min-width: 150px;">
+                    <form onsubmit="handleAddDomainRule(event)" style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.5rem; background: rgba(255,255,255,0.02); padding: 1.1rem; border-radius: 16px; border: 1px solid rgba(255,255,255,0.06);">
+                        <input type="text" id="inputNewDomain" class="form-input-xai" style="flex: 2; min-width: 220px;" placeholder="Nhập tên miền (ví dụ: tiktok.com hoặc facebook.com)" required>
+                        <select id="selectNewDomainCategory" class="form-input-xai" style="flex: 1; min-width: 150px;">
                             <option value="Độc hại">Độc hại</option>
                             <option value="Khiêu dâm">Khiêu dâm</option>
                             <option value="Mạng xã hội">Mạng xã hội</option>
@@ -256,18 +261,18 @@
                             <option value="Gian lận & Lừa đảo">Gian lận & Lừa đảo</option>
                             <option value="Giáo dục">Giáo dục (Cho phép)</option>
                         </select>
-                        <select id="selectNewDomainAction" class="form-input" style="width: 130px;">
+                        <select id="selectNewDomainAction" class="form-input-xai" style="width: 140px;">
                             <option value="block">Chặn (Block)</option>
                             <option value="allow">Miễn dịch (Allow)</option>
                         </select>
-                        <button type="submit" class="btn btn-primary" style="padding: 0.65rem 1.25rem;">
+                        <button type="submit" class="btn-pill-white" style="padding: 0.65rem 1.4rem;">
                             <span>➕</span> Thêm Tên Miền
                         </button>
                     </form>
 
                     <!-- Domain Rules Table -->
-                    <div class="table-container" style="border-radius: 12px; border: 1px solid var(--border-subtle); max-height: 480px; overflow-y: auto;">
-                        <table class="table" style="width: 100%;">
+                    <div class="table-xai-container" style="max-height: 480px; overflow-y: auto;">
+                        <table class="table-xai">
                             <thead>
                                 <tr>
                                     <th>Tên Miền</th>
@@ -277,7 +282,7 @@
                                     <th style="text-align: right;">Thao Tác</th>
                                 </tr>
                             </thead>
-                            <tbody id="domainRulesTableBody">
+                            <tbody>
                                 {% for rule in domain_rules %}
                                     <tr class="domain-row" data-category="{{ rule.category }}" data-domain="{{ rule.domain }}">
                                         <td style="font-family: 'Geist Mono', monospace; font-weight: 600; color: #fff;">
@@ -288,18 +293,18 @@
                                         </td>
                                         <td>
                                             {% if rule.action == 'block' %}
-                                                <span class="badge badge-danger">Chặn</span>
+                                                <span class="badge-danger">Chặn</span>
                                             {% else %}
-                                                <span class="badge badge-success">Cho phép</span>
+                                                <span class="badge-success">Cho phép</span>
                                             {% endif %}
                                         </td>
                                         <td>
-                                            <span style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.8rem; color: #10b981;">
+                                            <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem; color: #10b981;">
                                                 <span class="live-dot" style="width: 6px; height: 6px;"></span> Đang áp dụng
                                             </span>
                                         </td>
                                         <td style="text-align: right;">
-                                            <button class="btn-xs btn-danger-soft" onclick="deleteDomainRule({{ rule.id }})" title="Xóa tên miền này">
+                                            <button class="btn-pill-danger" onclick="deleteDomainRule({{ rule.id }})" style="padding: 0.25rem 0.75rem; font-size: 0.75rem;">
                                                 ✕ Xóa
                                             </button>
                                         </td>
@@ -315,37 +320,38 @@
                  TAB 2: Quản Lý & Khóa Ứng Dụng
                  ============================================================ -->
             <div class="cockpit-tab-content" id="tab-apps-{{ dev.id }}" style="display: none;">
-                <div class="section-card" style="border-radius: 18px; margin-bottom: 2rem;">
-                    <div class="section-header" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.85rem; margin-bottom: 1.25rem;">
+                <div class="xai-card" style="margin-bottom: 2rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.75rem;">
                         <div>
-                            <h2 class="section-title" style="font-size: 1.25rem; font-weight: 700; color: #fff;">Danh Sách Khóa Ứng Dụng</h2>
+                            <div class="xai-card-tag">PROCESS SCANNER & ENFORCEMENT</div>
+                            <h3 style="font-size: 1.3rem; font-weight: 800; color: #fff;">Danh Sách Khóa Ứng Dụng</h3>
                             <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.2rem;">
-                                Tự động quét và lập tức đóng các phần mềm bị cấm, game hoặc các trình duyệt bypass trên máy con
+                                Quét định kỳ và tự động đóng các chương trình cấm, game hoặc các trình duyệt bypass trên máy con
                             </p>
                         </div>
                         <span class="badge-subtle" style="font-family: 'Geist Mono', monospace;">{{ app_rules|length }} ứng dụng</span>
                     </div>
 
-                    <!-- Policy Info Alert -->
-                    <div style="background: rgba(14, 165, 233, 0.08); border: 1px solid rgba(14, 165, 233, 0.25); padding: 0.9rem 1.2rem; border-radius: 12px; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
-                        <span style="font-size: 1.25rem;">🛡️</span>
-                        <div style="font-size: 0.85rem; color: #e2e8f0;">
-                            <strong>Chế độ khóa bảo vệ:</strong> Các trình duyệt ẩn danh không kiểm soát (Opera, Tor Browser, Epic Browser) và chế độ ẩn danh (Incognito) trên Chrome, Edge, Brave đã được khóa tự động ở tầng hệ thống Registry.
+                    <!-- Incognito & Bypass Warning Card -->
+                    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.09); padding: 1rem 1.25rem; border-radius: 16px; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.85rem;">
+                        <span style="font-size: 1.35rem;">🛡️</span>
+                        <div style="font-size: 0.85rem; color: #e2e8f0; line-height: 1.5;">
+                            <strong>Khóa triệt để chế độ ẩn danh:</strong> Chế độ Incognito/Private trên Chrome, Edge, Brave và các trình duyệt bypass (Opera, Tor Browser, Epic) đã được khóa tự động ở cấp độ Windows Registry.
                         </div>
                     </div>
 
                     <!-- Add Blocked App Form -->
-                    <form id="formAddAppRule-{{ dev.id }}" onsubmit="handleAddAppRule(event)" style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.5rem; background: rgba(255,255,255,0.025); padding: 1rem; border-radius: 14px; border: 1px solid rgba(255,255,255,0.06);">
-                        <input type="text" id="inputNewAppName" class="form-input" style="flex: 2; min-width: 220px;" placeholder="Tên tệp thực thi (ví dụ: notepad.exe, roblox.exe, game.exe)" required>
-                        <input type="text" id="inputNewAppDesc" class="form-input" style="flex: 2; min-width: 200px;" placeholder="Ghi chú lý do chặn (ví dụ: Giờ học không chơi game)">
-                        <button type="submit" class="btn btn-primary" style="padding: 0.65rem 1.25rem;">
+                    <form onsubmit="handleAddAppRule(event)" style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.5rem; background: rgba(255,255,255,0.02); padding: 1.1rem; border-radius: 16px; border: 1px solid rgba(255,255,255,0.06);">
+                        <input type="text" id="inputNewAppName" class="form-input-xai" style="flex: 2; min-width: 220px;" placeholder="Tên tệp thực thi (ví dụ: notepad.exe, roblox.exe, game.exe)" required>
+                        <input type="text" id="inputNewAppDesc" class="form-input-xai" style="flex: 2; min-width: 200px;" placeholder="Ghi chú lý do chặn (ví dụ: Giờ học không chơi game)">
+                        <button type="submit" class="btn-pill-white" style="padding: 0.65rem 1.4rem;">
                             <span>➕</span> Thêm Ứng Dụng Chặn
                         </button>
                     </form>
 
                     <!-- Blocked Apps Table -->
-                    <div class="table-container" style="border-radius: 12px; border: 1px solid var(--border-subtle); max-height: 480px; overflow-y: auto;">
-                        <table class="table" style="width: 100%;">
+                    <div class="table-xai-container" style="max-height: 480px; overflow-y: auto;">
+                        <table class="table-xai">
                             <thead>
                                 <tr>
                                     <th>Ứng Dụng (.exe)</th>
@@ -362,18 +368,18 @@
                                             📦 {{ app.app_name }}
                                         </td>
                                         <td style="color: var(--text-muted); font-size: 0.85rem;">
-                                            {{ app.description or 'Chặn theo chính sách gia đình' }}
+                                            {{ app.description or 'Chặn theo quy định của cha mẹ' }}
                                         </td>
                                         <td>
-                                            <span class="badge badge-danger">Khóa ngay</span>
+                                            <span class="badge-danger">Khóa ngay</span>
                                         </td>
                                         <td>
-                                            <span style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.8rem; color: #10b981;">
+                                            <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem; color: #10b981;">
                                                 <span class="live-dot" style="width: 6px; height: 6px;"></span> Đang giám sát
                                             </span>
                                         </td>
                                         <td style="text-align: right;">
-                                            <button class="btn-xs btn-danger-soft" onclick="deleteAppRule({{ app.id }})" title="Gỡ bỏ lệnh chặn ứng dụng này">
+                                            <button class="btn-pill-danger" onclick="deleteAppRule({{ app.id }})" style="padding: 0.25rem 0.75rem; font-size: 0.75rem;">
                                                 ✕ Gỡ Khóa
                                             </button>
                                         </td>
@@ -389,34 +395,33 @@
                  TAB 3: Báo Cáo Sử Dụng & Minh Bạch
                  ============================================================ -->
             <div class="cockpit-tab-content" id="tab-reports-{{ dev.id }}" style="display: none;">
-                <div class="section-card" style="border-radius: 18px; margin-bottom: 2rem;">
-                    <div class="section-header" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.85rem; margin-bottom: 1.25rem;">
-                        <div>
-                            <h2 class="section-title" style="font-size: 1.25rem; font-weight: 700; color: #fff;">Báo Cáo Sử Dụng & Minh Bạch</h2>
-                            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.2rem;">
-                                Biểu đồ trực quan hóa thời lượng, Top ứng dụng và Website con truy cập trong ngày
-                            </p>
-                        </div>
+                <div class="xai-card" style="margin-bottom: 2rem;">
+                    <div style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+                        <div class="xai-card-tag">ACTIVITY & TRANSPARENCY</div>
+                        <h3 style="font-size: 1.3rem; font-weight: 800; color: #fff;">Báo Cáo Sử Dụng & Minh Bạch</h3>
+                        <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.2rem;">
+                            Biểu đồ thời lượng 7 ngày qua, Top ứng dụng và Website con truy cập trong ngày
+                        </p>
                     </div>
 
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 1.5rem;">
-                        <!-- Chart Column -->
-                        <div style="background: rgba(255,255,255,0.02); padding: 1.25rem; border-radius: 14px; border: 1px solid rgba(255,255,255,0.06);">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                                <h3 style="font-size: 0.95rem; font-weight: 700; color: #fff;">Thời lượng dùng máy 7 ngày qua (phút)</h3>
+                        <!-- Chart Card -->
+                        <div style="background: rgba(255,255,255,0.02); padding: 1.5rem; border-radius: 16px; border: 1px solid rgba(255,255,255,0.06);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                                <h4 style="font-size: 0.95rem; font-weight: 700; color: #fff;">Thời lượng dùng máy 7 ngày qua (phút)</h4>
                                 <span style="font-size: 0.75rem; color: var(--text-dim); font-family: 'Geist Mono', monospace;">{{ dev.device_name }}</span>
                             </div>
-                            <div style="height: 240px; position: relative;">
+                            <div style="height: 250px; position: relative;">
                                 <canvas id="weeklyUsageChart-{{ dev.id }}"></canvas>
                             </div>
                         </div>
 
-                        <!-- Top Apps & Top Domains Column -->
+                        <!-- Top Apps & Top Domains -->
                         <div style="display: flex; flex-direction: column; gap: 1.25rem;">
                             <!-- Top Apps Today -->
-                            <div style="background: rgba(255,255,255,0.02); padding: 1.25rem; border-radius: 14px; border: 1px solid rgba(255,255,255,0.06);">
+                            <div style="background: rgba(255,255,255,0.02); padding: 1.25rem; border-radius: 16px; border: 1px solid rgba(255,255,255,0.06);">
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem;">
-                                    <h4 style="font-size: 0.825rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent-cyan); font-weight: 700;">Top 5 Ứng Dụng Hôm Nay</h4>
+                                    <span style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-dim); font-weight: 700;">Top Ứng Dụng Hôm Nay</span>
                                     {% if rep %}
                                         <span class="badge-subtle" style="font-family: 'Geist Mono', monospace; color: #10b981;">{{ (rep.total_screen_time_sec / 60)|round(1) }} phút</span>
                                     {% endif %}
@@ -424,12 +429,12 @@
                                 {% if rep and rep.top_apps and rep.top_apps|length > 0 %}
                                     <div style="display: flex; flex-direction: column; gap: 0.5rem;">
                                         {% for app in rep.top_apps %}
-                                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0.75rem; background: rgba(255,255,255,0.03); border-radius: 8px;">
-                                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.55rem 0.85rem; background: rgba(255,255,255,0.03); border-radius: 10px;">
+                                                <div style="display: flex; align-items: center; gap: 0.6rem;">
                                                     <span>📦</span>
                                                     <span style="font-family: 'Geist Mono', monospace; font-size: 0.85rem; color: #fff;">{{ app.name }}</span>
                                                 </div>
-                                                <span style="font-family: 'Geist Mono', monospace; font-size: 0.825rem; color: var(--accent-cyan); font-weight: 600;">
+                                                <span style="font-family: 'Geist Mono', monospace; font-size: 0.825rem; color: #fff; font-weight: 600;">
                                                     {{ app.minutes }} phút
                                                 </span>
                                             </div>
@@ -437,25 +442,25 @@
                                     </div>
                                 {% else %}
                                     <div style="color: var(--text-dim); font-size: 0.85rem; text-align: center; padding: 1.5rem 0;">
-                                        Hôm nay chưa ghi nhận dữ liệu sử dụng ứng dụng.
+                                        Hôm nay chưa ghi nhận dữ liệu ứng dụng.
                                     </div>
                                 {% endif %}
                             </div>
 
                             <!-- Top Domains Today -->
-                            <div style="background: rgba(255,255,255,0.02); padding: 1.25rem; border-radius: 14px; border: 1px solid rgba(255,255,255,0.06);">
+                            <div style="background: rgba(255,255,255,0.02); padding: 1.25rem; border-radius: 16px; border: 1px solid rgba(255,255,255,0.06);">
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem;">
-                                    <h4 style="font-size: 0.825rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent-cyan); font-weight: 700;">Top 5 Tên Miền Truy Cập</h4>
+                                    <span style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-dim); font-weight: 700;">Top Tên Miền Truy Cập Hôm Nay</span>
                                 </div>
                                 {% if rep and rep.top_domains and rep.top_domains|length > 0 %}
                                     <div style="display: flex; flex-direction: column; gap: 0.5rem;">
                                         {% for dom in rep.top_domains %}
-                                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0.75rem; background: rgba(255,255,255,0.03); border-radius: 8px;">
-                                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.55rem 0.85rem; background: rgba(255,255,255,0.03); border-radius: 10px;">
+                                                <div style="display: flex; align-items: center; gap: 0.6rem;">
                                                     <span>🌐</span>
                                                     <span style="font-family: 'Geist Mono', monospace; font-size: 0.85rem; color: #fff;">{{ dom.domain }}</span>
                                                 </div>
-                                                <span style="font-family: 'Geist Mono', monospace; font-size: 0.825rem; color: var(--accent-cyan); font-weight: 600;">
+                                                <span style="font-family: 'Geist Mono', monospace; font-size: 0.825rem; color: #fff; font-weight: 600;">
                                                     {{ dom.count }} lượt
                                                 </span>
                                             </div>
@@ -463,7 +468,7 @@
                                     </div>
                                 {% else %}
                                     <div style="color: var(--text-dim); font-size: 0.85rem; text-align: center; padding: 1.5rem 0;">
-                                        Hôm nay chưa có lượt truy cập tên miền web nào.
+                                        Hôm nay chưa có lượt truy cập website nào.
                                     </div>
                                 {% endif %}
                             </div>
@@ -476,46 +481,42 @@
                  TAB 4: Lịch Biểu & Hạn Ngạch
                  ============================================================ -->
             <div class="cockpit-tab-content" id="tab-schedule-{{ dev.id }}" style="display: none;">
-                <div class="section-card" style="border-radius: 18px; margin-bottom: 2rem;">
-                    <div class="section-header" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.85rem; margin-bottom: 1.25rem;">
-                        <div>
-                            <h2 class="section-title" style="font-size: 1.25rem; font-weight: 700; color: #fff;">Quy Định Giờ & Lịch Dùng Máy</h2>
-                            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.2rem;">
-                                Thiết lập tổng số phút mỗi ngày và các khung giờ được phép bật máy trong tuần
-                            </p>
-                        </div>
+                <div class="xai-card" style="margin-bottom: 2rem;">
+                    <div style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+                        <div class="xai-card-tag">USAGE TIME GOVERNANCE</div>
+                        <h3 style="font-size: 1.3rem; font-weight: 800; color: #fff;">Quy Định Giờ & Lịch Dùng Máy</h3>
+                        <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.2rem;">
+                            Thiết lập tổng số phút mỗi ngày và các khung giờ được phép bật máy trong tuần
+                        </p>
                     </div>
 
                     <!-- Quota Settings Inputs -->
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; background: rgba(255,255,255,0.025); padding: 1.25rem; border-radius: 14px; border: 1px solid rgba(255,255,255,0.06);">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.25rem; margin-bottom: 1.75rem; background: rgba(255,255,255,0.02); padding: 1.25rem; border-radius: 16px; border: 1px solid rgba(255,255,255,0.06);">
                         <div>
-                            <label class="form-label" style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Hạn Ngạch Ngày Thường (Thứ 2 - Thứ 6)</label>
-                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.4rem;">
-                                <input type="number" id="inputWeekdayQuota-{{ dev.id }}" class="form-input" value="{{ pol.weekday_quota_minutes if pol else 90 }}" min="0" max="1440" step="15" style="width: 130px;">
+                            <label style="font-size: 0.775rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 0.4rem;">Hạn Ngạch Ngày Thường (Thứ 2 - Thứ 6)</label>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <input type="number" id="inputWeekdayQuota-{{ dev.id }}" class="form-input-xai" value="{{ pol.weekday_quota_minutes if pol else 90 }}" min="0" max="1440" step="15" style="width: 140px;">
                                 <span style="color: var(--text-muted); font-size: 0.875rem;">phút / ngày</span>
                             </div>
                         </div>
 
                         <div>
-                            <label class="form-label" style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Hạn Ngạch Cuối Tuần (Thứ 7 - CN)</label>
-                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.4rem;">
-                                <input type="number" id="inputWeekendQuota-{{ dev.id }}" class="form-input" value="{{ pol.weekend_quota_minutes if pol else 150 }}" min="0" max="1440" step="15" style="width: 130px;">
+                            <label style="font-size: 0.775rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 0.4rem;">Hạn Ngạch Cuối Tuần (Thứ 7 - CN)</label>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <input type="number" id="inputWeekendQuota-{{ dev.id }}" class="form-input-xai" value="{{ pol.weekend_quota_minutes if pol else 150 }}" min="0" max="1440" step="15" style="width: 140px;">
                                 <span style="color: var(--text-muted); font-size: 0.875rem;">phút / ngày</span>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Presets & Matrix Action -->
-                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem;">
-                        <h3 style="font-size: 0.95rem; font-weight: 700; color: #fff;">Khung Giờ Cho Phép Sử Dụng (Ma Trận 336 Khung 30 Phút)</h3>
-                        <div style="display: flex; gap: 0.5rem;">
-                            <button type="button" class="btn-xs btn-secondary" onclick="openPolicyModal({{ dev.id }})">
-                                ⚙️ Mở Ma Trận Lịch Biểu Nâng Cao
-                            </button>
-                            <button type="button" class="btn-xs btn-primary" onclick="saveQuickQuota({{ dev.id }})">
-                                💾 Lưu Hạn Ngạch Giờ
-                            </button>
-                        </div>
+                    <!-- Action Row -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
+                        <button type="button" class="btn-pill-dark" onclick="openPolicyModal({{ dev.id }})">
+                            <span>⚙️</span> Mở Ma Trận Lịch Biểu 336 Khung Giờ
+                        </button>
+                        <button type="button" class="btn-pill-white" onclick="saveQuickQuota({{ dev.id }})">
+                            <span>💾</span> Lưu Hạn Ngạch Giờ
+                        </button>
                     </div>
                 </div>
             </div>
@@ -524,39 +525,38 @@
                  TAB 5: Hộp Thư Yêu Cầu Của Con
                  ============================================================ -->
             <div class="cockpit-tab-content" id="tab-requests-{{ dev.id }}" style="display: none;">
-                <div class="section-card" style="border-radius: 18px; margin-bottom: 2rem;">
-                    <div class="section-header" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.85rem; margin-bottom: 1.25rem;">
-                        <div>
-                            <h2 class="section-title" style="font-size: 1.25rem; font-weight: 700; color: #fff;">Hộp Thư Yêu Cầu Của Trẻ</h2>
-                            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.2rem;">
-                                Trẻ gửi yêu cầu xin thêm giờ dùng máy hoặc xin mở website phục vụ việc học
-                            </p>
-                        </div>
+                <div class="xai-card" style="margin-bottom: 2rem;">
+                    <div style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+                        <div class="xai-card-tag">CHILD REQUEST INBOX</div>
+                        <h3 style="font-size: 1.3rem; font-weight: 800; color: #fff;">Hộp Thư Yêu Cầu Của Trẻ</h3>
+                        <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.2rem;">
+                            Trẻ gửi yêu cầu xin thêm giờ dùng máy hoặc xin mở website phục vụ việc học
+                        </p>
                     </div>
 
                     {% if dev_requests and dev_requests|length > 0 %}
                         <div style="display: flex; flex-direction: column; gap: 0.85rem;">
                             {% for req in dev_requests %}
-                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem; background: rgba(255,255,255,0.025); border-radius: 14px; border: 1px solid rgba(255,255,255,0.06); flex-wrap: wrap; gap: 0.75rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 1.1rem 1.4rem; background: rgba(255,255,255,0.02); border-radius: 16px; border: 1px solid rgba(255,255,255,0.06); flex-wrap: wrap; gap: 0.75rem;">
                                     <div style="display: flex; align-items: flex-start; gap: 0.85rem;">
-                                        <div style="font-size: 1.5rem; margin-top: 2px;">
+                                        <div style="font-size: 1.6rem; margin-top: 2px;">
                                             {% if req.request_type == 'add_time' %}⏳{% else %}🌐{% endif %}
                                         </div>
                                         <div>
                                             <div style="display: flex; align-items: center; gap: 0.6rem;">
-                                                <span style="font-weight: 700; color: #fff; font-size: 0.95rem;">
+                                                <span style="font-weight: 700; color: #fff; font-size: 1rem;">
                                                     {% if req.request_type == 'add_time' %}
                                                         Xin thêm {{ req.target }} phút
                                                     {% else %}
-                                                        Xin mở trang web: <code style="color: var(--accent-cyan); font-family: 'Geist Mono', monospace;">{{ req.target }}</code>
+                                                        Xin mở trang web: <code style="color: #fff; font-family: 'Geist Mono', monospace;">{{ req.target }}</code>
                                                     {% endif %}
                                                 </span>
                                                 {% if req.status == 'pending' %}
-                                                    <span class="badge badge-amber">Chờ duyệt</span>
+                                                    <span class="badge-amber">Chờ duyệt</span>
                                                 {% elif req.status == 'approved' %}
-                                                    <span class="badge badge-success">Đã đồng ý</span>
+                                                    <span class="badge-success">Đã đồng ý</span>
                                                 {% else %}
-                                                    <span class="badge badge-danger">Từ chối</span>
+                                                    <span class="badge-danger">Từ chối</span>
                                                 {% endif %}
                                             </div>
                                             <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem;">
@@ -570,10 +570,10 @@
 
                                     {% if req.status == 'pending' %}
                                         <div style="display: flex; gap: 0.5rem;">
-                                            <button class="btn btn-sm btn-success" onclick="reviewChildRequest({{ req.id }}, 'approved')">
+                                            <button class="btn-pill-success" onclick="reviewChildRequest({{ req.id }}, 'approved')">
                                                 ✓ Đồng Ý
                                             </button>
-                                            <button class="btn btn-sm btn-danger" onclick="reviewChildRequest({{ req.id }}, 'rejected')">
+                                            <button class="btn-pill-danger" onclick="reviewChildRequest({{ req.id }}, 'rejected')">
                                                 ✕ Từ Chối
                                             </button>
                                         </div>
@@ -593,10 +593,11 @@
                  TAB 6: Nhật Ký Hoạt Động & Bảo Mật
                  ============================================================ -->
             <div class="cockpit-tab-content" id="tab-audit-{{ dev.id }}" style="display: none;">
-                <div class="section-card" style="border-radius: 18px; margin-bottom: 2rem;">
-                    <div class="section-header" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.85rem; margin-bottom: 1.25rem;">
+                <div class="xai-card" style="margin-bottom: 2rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.75rem;">
                         <div>
-                            <h2 class="section-title" style="font-size: 1.25rem; font-weight: 700; color: #fff;">Nhật Ký Bảo Mật & Hoạt Động</h2>
+                            <div class="xai-card-tag">SECURITY AUDIT LOGS</div>
+                            <h3 style="font-size: 1.3rem; font-weight: 800; color: #fff;">Nhật Ký Bảo Mật & Hoạt Động</h3>
                             <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.2rem;">
                                 Lưu vết minh bạch các thay đổi chính sách, ghép đôi và lệnh khẩn cấp
                             </p>
@@ -605,13 +606,13 @@
                     </div>
 
                     {% if dev_audit and dev_audit|length > 0 %}
-                        <div class="table-container" style="border-radius: 12px; border: 1px solid var(--border-subtle); max-height: 480px; overflow-y: auto;">
-                            <table class="table" style="width: 100%;">
+                        <div class="table-xai-container" style="max-height: 480px; overflow-y: auto;">
+                            <table class="table-xai">
                                 <thead>
                                     <tr>
                                         <th>Thời Gian</th>
                                         <th>Hành Động</th>
-                                        <th>Chi Tiết</th>
+                                        <th>Chi Tiết Thao Tác</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -643,39 +644,38 @@
                  TAB 7: Cài Đặt & Gỡ Bỏ Thiết Bị
                  ============================================================ -->
             <div class="cockpit-tab-content" id="tab-settings-{{ dev.id }}" style="display: none;">
-                <div class="section-card" style="border-radius: 18px; margin-bottom: 2rem; border-color: rgba(239, 68, 68, 0.25);">
-                    <div class="section-header" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.85rem; margin-bottom: 1.25rem;">
-                        <div>
-                            <h2 class="section-title" style="font-size: 1.25rem; font-weight: 700; color: #ef4444;">Vùng Nguy Hiểm & Quản Lý Dữ Liệu</h2>
-                            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.2rem;">
-                                Quyền xóa dữ liệu cá nhân theo Nghị định 13/2023/NĐ-CP và hủy liên kết máy tính
-                            </p>
-                        </div>
+                <div class="xai-card" style="margin-bottom: 2rem; border-color: rgba(239, 68, 68, 0.25);">
+                    <div style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+                        <div class="xai-card-tag" style="color: #ef4444;">DATA PRIVACY & DEVICE UNPAIR</div>
+                        <h3 style="font-size: 1.3rem; font-weight: 800; color: #ef4444;">Vùng Nguy Hiểm & Quản Lý Dữ Liệu</h3>
+                        <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.2rem;">
+                            Quyền xóa dữ liệu cá nhân theo Nghị định 13/2023/NĐ-CP và hủy liên kết máy tính
+                        </p>
                     </div>
 
                     <div style="display: flex; flex-direction: column; gap: 1.25rem;">
                         <!-- Erase Data Option -->
-                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1.25rem; background: rgba(239, 68, 68, 0.04); border: 1px solid rgba(239, 68, 68, 0.15); border-radius: 14px; flex-wrap: wrap; gap: 1rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1.25rem; background: rgba(239, 68, 68, 0.04); border: 1px solid rgba(239, 68, 68, 0.15); border-radius: 16px; flex-wrap: wrap; gap: 1rem;">
                             <div>
                                 <h4 style="font-weight: 700; color: #fff; font-size: 0.95rem;">Xóa Toàn Bộ Dữ Liệu Thiết Bị</h4>
                                 <p style="font-size: 0.825rem; color: var(--text-dim); margin-top: 0.25rem;">
                                     Xóa vĩnh viễn nhật ký sử dụng, lịch sử ứng dụng và web của máy này trên máy chủ và máy con.
                                 </p>
                             </div>
-                            <button class="btn btn-danger" onclick="openEraseModal({{ dev.id }}, '{{ dev.device_name }}')">
+                            <button class="btn-pill-danger" onclick="openEraseModal({{ dev.id }}, '{{ dev.device_name }}')">
                                 🗑️ Xóa Vĩnh Viễn Dữ Liệu
                             </button>
                         </div>
 
                         <!-- Remove Device Option -->
-                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1.25rem; background: rgba(255, 255, 255, 0.025); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; flex-wrap: wrap; gap: 1rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1.25rem; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; flex-wrap: wrap; gap: 1rem;">
                             <div>
                                 <h4 style="font-weight: 700; color: #fff; font-size: 0.95rem;">Gỡ Bỏ Máy Tính Khỏi Tài Khoản</h4>
                                 <p style="font-size: 0.825rem; color: var(--text-dim); margin-top: 0.25rem;">
                                     Ngừng quản lý máy tính này. Nếu muốn kết nối lại, phụ huynh sẽ cần tạo mã ghép đôi mới.
                                 </p>
                             </div>
-                            <button class="btn btn-secondary" onclick="handleDeleteDevice({{ dev.id }}, '{{ dev.device_name }}')" style="border-color: rgba(239, 68, 68, 0.4); color: #fca5a5;">
+                            <button class="btn-pill-dark" onclick="handleDeleteDevice({{ dev.id }}, '{{ dev.device_name }}')" style="border-color: rgba(239, 68, 68, 0.3); color: #fca5a5;">
                                 ✕ Gỡ Bỏ Thiết Bị
                             </button>
                         </div>
@@ -687,39 +687,39 @@
 </div>
 
 <!-- ========================================================================
-     MODAL 1: TẠO MÃ GHÉP ĐÔI (Tự động gọi /api/v1/enroll/create-code)
+     MODAL 1: TẠO MÃ GHÉP ĐÔI (xai247 Exact Card Style)
      ======================================================================== -->
 <div class="modal-backdrop" id="pairingModal">
-    <div class="modal-card" style="border-radius: 22px; max-width: 480px;">
+    <div class="modal-card">
         <div class="modal-header">
-            <h3 class="modal-title" style="display: flex; align-items: center; gap: 0.6rem; font-size: 1.3rem;">
-                <span>🔗</span> Ghép Đôi Máy Tính Mới
-            </h3>
+            <div>
+                <div class="xai-card-tag">DEVICE ENROLLMENT</div>
+                <h3 style="font-size: 1.35rem; font-weight: 800; color: #fff;">Ghép Đôi Máy Tính Mới</h3>
+            </div>
             <button class="modal-close" id="btnCloseModal">✕</button>
         </div>
-        <div class="modal-body" style="text-align: center; padding: 1.5rem 1rem;">
-            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.25rem;">
-                Nhập mã gồm 8 ký tự bên dưới vào phần mềm Agent trên máy con để hoàn tất liên kết:
+        <div style="text-align: center; padding: 1.25rem 0;">
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem; line-height: 1.6;">
+                Mở phần mềm <strong>OGK Agent</strong> trên máy tính của con, nhập mã 8 ký tự bên dưới để kết nối:
             </p>
 
-            <div style="position: relative; margin: 1rem 0;">
-                <div id="pairingCodeDisplay" class="code-big" style="letter-spacing: 0.35em; font-size: 2.3rem; padding: 1rem; border-radius: 14px; background: rgba(14, 165, 233, 0.08); border: 2px dashed rgba(14, 165, 233, 0.5); color: #38bdf8;">
+            <div style="background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.25); border-radius: 18px; padding: 1.5rem; margin-bottom: 1.25rem;">
+                <div id="pairingCodeDisplay" style="font-family: 'Geist Mono', monospace; font-size: 2.5rem; font-weight: 800; letter-spacing: 0.35em; color: #fff;">
                     --------
                 </div>
-                <button type="button" id="btnCopyCode" class="btn-xs btn-secondary" style="margin-top: 0.75rem; border-radius: 8px;" onclick="copyPairingCode()">
+                <button type="button" class="btn-pill-dark" style="margin-top: 1rem; padding: 0.5rem 1.25rem; font-size: 0.825rem;" onclick="copyPairingCode()">
                     📋 Sao Chép Mã
                 </button>
             </div>
 
-            <div style="display: flex; justify-content: center; align-items: center; gap: 0.5rem; margin-top: 1rem; font-size: 0.85rem; color: var(--text-dim);">
-                <span>⏱️ Mã có hiệu lực trong:</span>
-                <span id="countdownTimer" style="font-family: 'Geist Mono', monospace; font-weight: 700; color: #f59e0b;">--:--</span>
+            <div style="display: flex; justify-content: center; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: var(--text-dim);">
+                <span>⏱️ Mã tự động hết hạn sau:</span>
+                <span id="countdownTimer" style="font-family: 'Geist Mono', monospace; font-weight: 700; color: #fff;">--:--</span>
             </div>
-            <div id="pairingTimeRange" style="font-size: 0.775rem; color: var(--text-dim); margin-top: 0.35rem; font-family: 'Geist Mono', monospace;"></div>
         </div>
-        <div class="modal-footer" style="display: flex; justify-content: space-between;">
-            <button type="button" class="btn btn-secondary" onclick="closePairModal()">Đóng</button>
-            <button type="button" class="btn btn-primary" id="btnDoneModal" onclick="closePairModal(); window.location.reload();">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; border-top: 1px solid var(--border-subtle); padding-top: 1.25rem;">
+            <button type="button" class="btn-pill-dark" onclick="closePairModal()">Đóng</button>
+            <button type="button" class="btn-pill-white" id="btnDoneModal" onclick="closePairModal(); window.location.reload();">
                 ✓ Hoàn Tất Ghép Đôi
             </button>
         </div>
@@ -730,37 +730,38 @@
      MODAL 2: MA TRẬN LỊCH BIỂU CHI TIẾT
      ======================================================================== -->
 <div class="modal-backdrop" id="policyModal">
-    <div class="modal-card" style="border-radius: 22px; max-width: 900px; width: 95%;">
+    <div class="modal-card" style="max-width: 900px; width: 95%;">
         <div class="modal-header">
-            <h3 class="modal-title" style="display: flex; align-items: center; gap: 0.6rem; font-size: 1.25rem;">
-                <span>⏰</span> Ma Trận Lịch Biểu 336 Khung Giờ
-            </h3>
+            <div>
+                <div class="xai-card-tag">SCHEDULE MATRIX</div>
+                <h3 style="font-size: 1.3rem; font-weight: 800; color: #fff;">Ma Trận Lịch Biểu 336 Khung Giờ</h3>
+            </div>
             <button class="modal-close" id="btnClosePolicyModal">✕</button>
         </div>
-        <div class="modal-body" style="padding: 1.25rem;">
+        <div>
             <input type="hidden" id="policyDeviceId">
             <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem;">
-                <button type="button" class="btn-xs btn-secondary" onclick="applySchedulePreset('all')">✓ Cho phép cả ngày</button>
-                <button type="button" class="btn-xs btn-secondary" onclick="applySchedulePreset('school')">🎒 Giờ học tập (8h - 17h)</button>
-                <button type="button" class="btn-xs btn-secondary" onclick="applySchedulePreset('night_block')">🌙 Khóa ban đêm (22h - 6h)</button>
+                <button type="button" class="btn-pill-dark" style="padding: 0.4rem 0.9rem; font-size: 0.8rem;" onclick="applySchedulePreset('all')">✓ Cho phép cả ngày</button>
+                <button type="button" class="btn-pill-dark" style="padding: 0.4rem 0.9rem; font-size: 0.8rem;" onclick="applySchedulePreset('school')">🎒 Giờ học tập (8h - 17h)</button>
+                <button type="button" class="btn-pill-dark" style="padding: 0.4rem 0.9rem; font-size: 0.8rem;" onclick="applySchedulePreset('night_block')">🌙 Khóa ban đêm (22h - 6h)</button>
             </div>
 
-            <div class="schedule-grid" id="scheduleMatrixGrid" style="max-height: 400px; overflow-y: auto;"></div>
+            <div class="schedule-grid" id="scheduleMatrixGrid" style="max-height: 380px; overflow-y: auto;"></div>
 
-            <div style="display: flex; gap: 1.25rem; font-size: 0.8rem; margin-top: 0.85rem; color: var(--text-muted);">
+            <div style="display: flex; gap: 1.5rem; font-size: 0.8rem; margin-top: 1rem; color: var(--text-muted);">
                 <div style="display: flex; align-items: center; gap: 0.4rem;">
                     <div style="width: 14px; height: 14px; background: #10b981; border-radius: 3px;"></div>
                     <span>Cho phép dùng máy</span>
                 </div>
                 <div style="display: flex; align-items: center; gap: 0.4rem;">
-                    <div style="width: 14px; height: 14px; background: rgba(255,255,255,0.08); border-radius: 3px;"></div>
+                    <div style="width: 14px; height: 14px; background: rgba(255,255,255,0.06); border-radius: 3px;"></div>
                     <span>Chặn dùng máy</span>
                 </div>
             </div>
         </div>
-        <div class="modal-footer" style="display: flex; justify-content: space-between;">
-            <button type="button" class="btn btn-secondary" id="btnCancelPolicyModal">Hủy</button>
-            <button type="button" class="btn btn-primary" onclick="savePolicyChanges()">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; border-top: 1px solid var(--border-subtle); padding-top: 1.25rem;">
+            <button type="button" class="btn-pill-dark" id="btnCancelPolicyModal">Hủy</button>
+            <button type="button" class="btn-pill-white" onclick="savePolicyChanges()">
                 💾 Lưu Ma Trận Lịch Biểu
             </button>
         </div>
@@ -771,27 +772,28 @@
      MODAL 3: XÁC NHẬN XÓA DỮ LIỆU
      ======================================================================== -->
 <div class="modal-backdrop" id="eraseDataModal">
-    <div class="modal-card" style="border-radius: 22px; max-width: 480px;">
+    <div class="modal-card">
         <div class="modal-header">
-            <h3 class="modal-title" style="color: #ef4444; font-size: 1.2rem;">
-                <span>⚠️</span> Xác Nhận Xóa Dữ Liệu
-            </h3>
+            <div>
+                <div class="xai-card-tag" style="color: #ef4444;">DATA REMOVAL</div>
+                <h3 style="font-size: 1.3rem; font-weight: 800; color: #ef4444;">Xác Nhận Xóa Dữ Liệu</h3>
+            </div>
             <button class="modal-close" onclick="closeEraseModal()">✕</button>
         </div>
         <form onsubmit="handleConfirmErase(event)">
             <input type="hidden" id="eraseTargetDevId">
-            <div class="modal-body" style="padding: 1.25rem;">
-                <p style="font-size: 0.875rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1rem;">
+            <div style="margin-bottom: 1.5rem;">
+                <p style="font-size: 0.875rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1rem;">
                     Hành động này sẽ xóa toàn bộ lịch sử ứng dụng, sự kiện mạng của thiết bị <strong id="eraseTargetDevName" style="color: #fff;"></strong> trên cả máy chủ và máy tính con.
                 </p>
-                <div class="form-group">
-                    <label class="form-label" style="font-size: 0.8rem; font-weight: 600; text-transform: uppercase;">Nhập mật khẩu phụ huynh để xác nhận:</label>
-                    <input type="password" id="eraseParentPassword" class="form-input" placeholder="••••••••••••" required>
+                <div>
+                    <label style="font-size: 0.775rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 0.4rem;">Nhập mật khẩu phụ huynh để xác nhận:</label>
+                    <input type="password" id="eraseParentPassword" class="form-input-xai" placeholder="••••••••••••" required>
                 </div>
             </div>
-            <div class="modal-footer" style="display: flex; justify-content: space-between;">
-                <button type="button" class="btn btn-secondary" onclick="closeEraseModal()">Hủy</button>
-                <button type="submit" id="btnSubmitErase" class="btn btn-danger">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-subtle); padding-top: 1.25rem;">
+                <button type="button" class="btn-pill-dark" onclick="closeEraseModal()">Hủy</button>
+                <button type="submit" id="btnSubmitErase" class="btn-pill-danger">
                     <span>🗑️</span> Xác Nhận Xóa Vĩnh Viễn
                 </button>
             </div>
@@ -851,10 +853,10 @@
         // 3. Update top bar details
         const mainCard = document.getElementById(`main-card-device-${devId}`);
         if (mainCard) {
-            const devName = mainCard.querySelector('.device-card-top strong, .device-card-top div div')?.textContent || `Thiết bị #${devId}`;
+            const devName = mainCard.querySelector('.device-name-title')?.textContent || `Thiết bị #${devId}`;
             const devBadge = mainCard.querySelector('.badge-status')?.outerHTML || '';
-            const hbText = mainCard.querySelector('.device-card-top div div:nth-child(2)')?.textContent || `ID: #${devId}`;
-            
+            const hbText = mainCard.querySelector('.device-meta-sub')?.textContent || `ID: #${devId}`;
+
             document.getElementById('cockpitDeviceName').textContent = devName.trim();
             document.getElementById('cockpitDeviceBadge').innerHTML = devBadge;
             document.getElementById('cockpitDeviceIdHeartbeat').textContent = hbText.trim();
@@ -862,16 +864,14 @@
 
         // 4. Update switcher buttons
         document.querySelectorAll('.cockpit-switcher-btn').forEach(btn => {
-            btn.classList.remove('btn-primary');
-            btn.classList.add('btn-secondary');
+            btn.classList.remove('active');
         });
         const activeSwitcher = document.getElementById(`switcher-btn-${devId}`);
         if (activeSwitcher) {
-            activeSwitcher.classList.remove('btn-secondary');
-            activeSwitcher.classList.add('btn-primary');
+            activeSwitcher.classList.add('active');
         }
 
-        // 5. Default tab is domains (or keep current active)
+        // 5. Default tab is domains
         switchCockpitTab('domains', devId);
 
         // 6. Scroll smoothly to top
@@ -890,8 +890,8 @@
         if (!panel) return;
 
         // 1. Update tab buttons
-        panel.querySelectorAll('.cockpit-tab-item').forEach(btn => btn.classList.remove('active'));
-        const activeBtn = Array.from(panel.querySelectorAll('.cockpit-tab-item')).find(b => b.getAttribute('onclick')?.includes(tabName));
+        panel.querySelectorAll('.cockpit-tab-pill').forEach(btn => btn.classList.remove('active'));
+        const activeBtn = Array.from(panel.querySelectorAll('.cockpit-tab-pill')).find(b => b.getAttribute('onclick')?.includes(tabName));
         if (activeBtn) activeBtn.classList.add('active');
 
         // 2. Update content sections
@@ -908,7 +908,7 @@
     }
 
     // ========================================================================
-    // Chart.js Weekly Usage Renderer
+    // Chart.js Weekly Usage Renderer (xai247 Monochrome Cyber Theme)
     // ========================================================================
     function renderWeeklyChart(devId) {
         const canvasId = `weeklyUsageChart-${devId}`;
@@ -929,8 +929,8 @@
                 datasets: [{
                     label: 'Số phút sử dụng',
                     data: dataVals,
-                    backgroundColor: 'rgba(14, 165, 233, 0.75)',
-                    borderColor: '#0ea5e9',
+                    backgroundColor: '#ffffff',
+                    borderColor: '#ffffff',
                     borderWidth: 1,
                     borderRadius: 6
                 }]
@@ -957,7 +957,7 @@
     }
 
     // ========================================================================
-    // Pairing Modal Logic (Fixed endpoint /api/v1/enroll/create-code)
+    // Pairing Modal Logic (/api/v1/enroll/create-code)
     // ========================================================================
     const pairModal = document.getElementById('pairingModal');
     const btnOpenPair = document.getElementById('btnOpenPairModal');
@@ -982,13 +982,11 @@
         timerDisplay.textContent = "--:--";
 
         try {
-            // First try primary route /api/v1/enroll/create-code
             let res = await fetch('/api/v1/enroll/create-code', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' }
             });
 
-            // Fallback to alias if needed
             if (!res.ok) {
                 res = await fetch('/api/v1/enrollment/pairing-codes', {
                     method: 'POST',
@@ -998,23 +996,12 @@
 
             if (!res.ok) {
                 const errData = await res.json().catch(() => ({}));
-                throw new Error(errData.detail || "Không thể tạo mã ghép đôi. Vui lòng kiểm tra quyền đăng nhập.");
+                throw new Error(errData.detail || "Không thể tạo mã ghép đôi.");
             }
 
             const data = await res.json();
             currentCode = data.code;
             codeDisplay.textContent = currentCode;
-
-            if (data.created_at && data.expires_at) {
-                const fmtLocal = (iso) => {
-                    const d = new Date(iso);
-                    return d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
-                };
-                const tr = document.getElementById('pairingTimeRange');
-                if (tr) {
-                    tr.textContent = `Tạo lúc: ${fmtLocal(data.created_at)} · Hết hạn: ${fmtLocal(data.expires_at)}`;
-                }
-            }
 
             const expireDate = new Date(data.expires_at).getTime();
             startCountdown(expireDate);
@@ -1059,14 +1046,14 @@
     function copyPairingCode() {
         if (!currentCode) return;
         navigator.clipboard.writeText(currentCode).then(() => {
-            showToast('Đã sao chép mã ghép đôi vào bộ nhớ tạm.');
+            showToast('Đã sao chép mã ghép đôi vào clipboard.');
         }).catch(() => {
-            showToast('Không thể tự động sao chép. Vui lòng chọn và chép thủ công.', false);
+            showToast('Không thể sao chép tự động. Vui lòng chọn và chép thủ công.', false);
         });
     }
 
     // ========================================================================
-    // Emergency Commands (Khóa ngay, Mở khóa, Thêm giờ)
+    // Emergency Commands
     // ========================================================================
     async function sendEmergencyCommand(deviceId, action, extra = null) {
         const payload = { action };
@@ -1086,9 +1073,8 @@
                 throw new Error(err.detail || "Không thể gửi lệnh khẩn cấp.");
             }
 
-            const data = await res.json();
             const actionText = action === 'lock_now' ? 'Khóa màn hình' : action === 'unlock' ? 'Mở khóa' : `Cộng thêm ${extra} phút`;
-            showToast(`Đã gửi lệnh "${actionText}" xuống máy con thành công!`);
+            showToast(`Đã gửi lệnh "${actionText}" xuống máy con!`);
         } catch (err) {
             showToast(`Lỗi: ${err.message}`, false);
         }
