@@ -6,7 +6,9 @@ DoH Canary domain blocking, and permanent educational/111 hotline whitelisting.
 import socket
 import threading
 import logging
-from typing import Optional, Set, Callable, Dict, Any
+import time
+from concurrent.futures import ThreadPoolExecutor
+from typing import Optional, Set, Callable, Dict, Any, Tuple
 from dnslib import DNSRecord, DNSQuestion, RR, QTYPE, A, AAAA, RCODE
 
 logger = logging.getLogger("OGK_DNSProxy")
@@ -66,9 +68,8 @@ def is_youtube_domain(domain: str) -> bool:
     return clean in ("youtube.com", "www.youtube.com", "m.youtube.com", "youtube-nocookie.com")
 
 
-
 class DNSProxyServer:
-    """Lightweight UDP DNS Proxy Server running on 127.0.0.1 (F2)."""
+    """High-performance multi-threaded UDP DNS Proxy Server running on 127.0.0.1 & [::1] (F2)."""
 
     def __init__(
         self,
@@ -76,13 +77,15 @@ class DNSProxyServer:
         port: int = 53,
         upstream_ip: str = DEFAULT_UPSTREAM_DNS,
         upstream_port: int = 53,
-        on_event_callback: Optional[Callable[[str, str], None]] = None
+        on_event_callback: Optional[Callable[[str, str], None]] = None,
+        max_workers: int = 32
     ):
         self.host = host
         self.port = port
         self.upstream_ip = upstream_ip
         self.upstream_port = upstream_port
         self.on_event_callback = on_event_callback
+        self.max_workers = max_workers
 
         self.blocked_domains: Set[str] = set()
         self.permanent_whitelist: Set[str] = {
@@ -94,8 +97,12 @@ class DNSProxyServer:
         self.enforce_safesearch: bool = True
 
         self._running = False
-        self._thread: Optional[threading.Thread] = None
+        self._threads: list[threading.Thread] = []
         self._sock: Optional[socket.socket] = None
+        self._sock_v6: Optional[socket.socket] = None
+        self._executor: Optional[ThreadPoolExecutor] = None
+        self._cache: Dict[Tuple[str, int], Tuple[float, bytes]] = {}
+        self._cache_lock = threading.Lock()
 
     def update_rules(
         self,
@@ -108,6 +115,8 @@ class DNSProxyServer:
         if whitelist:
             self.permanent_whitelist.update({normalize_domain(d) for d in whitelist})
         self.enforce_safesearch = enforce_safesearch
+        with self._cache_lock:
+            self._cache.clear()
 
     def process_dns_query(self, data: bytes) -> bytes:
         """Parse incoming DNS packet, evaluate rules, and return response bytes."""
@@ -133,7 +142,7 @@ class DNSProxyServer:
         if match_domain(clean_domain, self.permanent_whitelist):
             if self.on_event_callback:
                 self.on_event_callback("web_access", clean_domain)
-            return self.forward_upstream(data)
+            return self._forward_with_cache(clean_domain, qtype, data)
 
         # 3. DNS Sinkholing (T3_031): Intercept blocked domains & subdomains (T3_030)
         if match_domain(clean_domain, self.blocked_domains):
@@ -173,71 +182,139 @@ class DNSProxyServer:
         if self.on_event_callback:
             self.on_event_callback("web_access", clean_domain)
 
-        return self.forward_upstream(data)
+        return self._forward_with_cache(clean_domain, qtype, data)
+
+    def _forward_with_cache(self, clean_domain: str, qtype: int, data: bytes) -> bytes:
+        """Resolve query via short-lived in-memory cache or upstream servers with fast failover."""
+        now = time.time()
+        cache_key = (clean_domain, qtype)
+
+        with self._cache_lock:
+            if cache_key in self._cache:
+                exp, cached_raw = self._cache[cache_key]
+                if now < exp and len(cached_raw) >= 12 and len(data) >= 2:
+                    # Rewrite the 16-bit query ID in the cached answer to match caller request ID (RFC 1035)
+                    return data[:2] + cached_raw[2:]
+
+        resp = self.forward_upstream(data)
+        if resp and len(resp) >= 12 and (resp[3] & 0x0F) == 0:
+            with self._cache_lock:
+                self._cache[cache_key] = (now + 60.0, resp)
+        return resp
 
     def forward_upstream(self, data: bytes) -> bytes:
-        """Forward raw DNS query packet to upstream recursive resolver with timeout (T3_034)."""
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        sock.settimeout(2.0)
-        try:
-            sock.sendto(data, (self.upstream_ip, self.upstream_port))
-            response, _ = sock.recvfrom(4096)
-            return response
-        except (socket.timeout, Exception):
-            try:
-                # Fallback to secondary upstream
-                sock.sendto(data, (DEFAULT_FALLBACK_DNS, 53))
-                response, _ = sock.recvfrom(4096)
-                return response
-            except Exception:
-                try:
-                    req = DNSRecord.parse(data)
-                    fail_reply = req.reply()
-                    fail_reply.header.rcode = RCODE.SERVFAIL
-                    return fail_reply.pack()
-                except Exception:
-                    return b""
-        finally:
-            sock.close()
+        """Forward raw DNS query packet to upstream recursive resolver with fast multi-server failover (T3_034)."""
+        upstreams = [
+            (self.upstream_ip, self.upstream_port),
+            (DEFAULT_FALLBACK_DNS, 53),
+            ("1.1.1.1", 53),
+            ("8.8.4.4", 53)
+        ]
+        seen = set()
+        targets = []
+        for u in upstreams:
+            if u not in seen:
+                seen.add(u)
+                targets.append(u)
 
-    def _serve_loop(self):
-        """Worker loop receiving UDP packets."""
+        for target_ip, target_port in targets:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            sock.settimeout(1.2)
+            try:
+                sock.sendto(data, (target_ip, target_port))
+                response, _ = sock.recvfrom(4096)
+                if response:
+                    return response
+            except Exception:
+                continue
+            finally:
+                try:
+                    sock.close()
+                except Exception:
+                    pass
+
+        try:
+            req = DNSRecord.parse(data)
+            fail_reply = req.reply()
+            fail_reply.header.rcode = RCODE.SERVFAIL
+            return fail_reply.pack()
+        except Exception:
+            return b""
+
+    def _handle_packet(self, sock: socket.socket, data: bytes, addr: tuple):
+        """Worker thread handler to process incoming DNS queries in parallel without blocking."""
+        try:
+            resp = self.process_dns_query(data)
+            if resp and self._running:
+                sock.sendto(resp, addr)
+        except Exception as e:
+            logger.debug(f"Error handling DNS packet from {addr}: {e}")
+
+    def _serve_loop(self, sock: socket.socket):
+        """Worker loop receiving UDP packets and dispatching to ThreadPoolExecutor."""
         while self._running:
             try:
-                data, addr = self._sock.recvfrom(4096)
+                data, addr = sock.recvfrom(4096)
                 if not data:
                     continue
-                resp = self.process_dns_query(data)
-                if resp and self._sock:
-                    self._sock.sendto(resp, addr)
+                if self._executor and self._running:
+                    self._executor.submit(self._handle_packet, sock, data, addr)
+                else:
+                    resp = self.process_dns_query(data)
+                    if resp:
+                        sock.sendto(resp, addr)
             except (socket.error, OSError):
                 break
             except Exception as e:
                 logger.error(f"Error handling DNS packet: {e}")
 
     def start(self):
-        """Bind socket and start background listening thread (T3_029)."""
+        """Bind sockets and start concurrent background listening threads (T3_029)."""
         if self._running:
             return
 
+        self._running = True
+        self._executor = ThreadPoolExecutor(max_workers=self.max_workers, thread_name_prefix="DNSWorker")
+
+        # 1. Bind IPv4 Loopback (127.0.0.1:53)
         self._sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self._sock.bind((self.host, self.port))
-        self._running = True
+        t4 = threading.Thread(target=self._serve_loop, args=(self._sock,), daemon=True, name="OGK_DNS_Proxy_v4")
+        t4.start()
+        self._threads.append(t4)
+        logger.info(f"[*] DNS Proxy Server started on IPv4 {self.host}:{self.port}")
 
-        self._thread = threading.Thread(target=self._serve_loop, daemon=True, name="OGK_DNS_Proxy")
-        self._thread.start()
-        logger.info(f"[*] DNS Proxy Server started on {self.host}:{self.port}")
+        # 2. Bind IPv6 Loopback ([::1]:53) to eliminate IPv6 resolution blackholes on Windows
+        try:
+            self._sock_v6 = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
+            self._sock_v6.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            self._sock_v6.bind(("::1", self.port))
+            t6 = threading.Thread(target=self._serve_loop, args=(self._sock_v6,), daemon=True, name="OGK_DNS_Proxy_v6")
+            t6.start()
+            self._threads.append(t6)
+            logger.info(f"[*] DNS Proxy Server started on IPv6 [::1]:{self.port}")
+        except Exception as e:
+            logger.debug(f"[*] IPv6 loopback [::1]:53 not available or bound: {e}")
 
     def stop(self):
-        """Stop proxy server and close socket gracefully."""
+        """Stop proxy server, close sockets, and gracefully terminate thread pool."""
         self._running = False
-        if self._sock:
-            try:
-                self._sock.close()
-            except Exception:
-                pass
-            self._sock = None
-        if self._thread and self._thread.is_alive():
-            self._thread.join(timeout=1.0)
+        for s in (self._sock, self._sock_v6):
+            if s:
+                try:
+                    s.close()
+                except Exception:
+                    pass
+        self._sock = None
+        self._sock_v6 = None
+
+        if self._executor:
+            self._executor.shutdown(wait=False, cancel_futures=True)
+            self._executor = None
+
+        for t in self._threads:
+            if t and t.is_alive():
+                t.join(timeout=0.5)
+        self._threads.clear()
         logger.info("[*] DNS Proxy Server stopped.")

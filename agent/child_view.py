@@ -66,40 +66,28 @@ class ChildViewWindow:
         content.pack(fill=tk.BOTH, expand=True)
 
         # 1. Screen Time Usage Box
-        today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-        usage = get_daily_usage(today_str)
-        used_min = round(usage["used_seconds"] / 60, 1)
-        bonus_min = usage.get("bonus_minutes", 0)
-
-        policy = load_policy_cache()
-        quota_min = 90
-        if policy:
-            weekday = datetime.now().weekday()
-            quota_min = policy["weekend_quota_minutes"] if weekday >= 5 else policy["weekday_quota_minutes"]
-
-        total_allowed = quota_min + bonus_min
-        remaining_min = max(0, total_allowed - int(used_min))
-
+        self.today_str = datetime.now().strftime("%Y-%m-%d")
         stat_card = tk.Frame(content, bg="#1e293b", padx=12, pady=10, relief=tk.FLAT)
         stat_card.pack(fill=tk.X, pady=(0, 10))
 
-        stat_title = tk.Label(
+        self.stat_title = tk.Label(
             stat_card,
-            text=f"⏱️ Thời Gian Dùng Máy Hôm Nay: {used_min} / {total_allowed} phút",
+            text="⏱️ Đang tải thời gian sử dụng...",
             font=("Segoe UI", 10, "bold"),
             fg="#38bdf8",
             bg="#1e293b"
         )
-        stat_title.pack(anchor=tk.W)
+        self.stat_title.pack(anchor=tk.W)
 
-        rem_lbl = tk.Label(
+        self.rem_lbl = tk.Label(
             stat_card,
-            text=f"Còn lại: {remaining_min} phút {'(Được cộng thêm ' + str(bonus_min) + 'p)' if bonus_min > 0 else ''}",
+            text="",
             font=("Segoe UI", 9),
-            fg="#10b981" if remaining_min > 0 else "#ef4444",
+            fg="#10b981",
             bg="#1e293b"
         )
-        rem_lbl.pack(anchor=tk.W, pady=(2, 0))
+        self.rem_lbl.pack(anchor=tk.W, pady=(2, 0))
+        self._update_usage_display()
 
         # 2. Privacy Commitment Box (NT1 & NT2)
         privacy_card = tk.Frame(content, bg="#1e293b", padx=12, pady=8)
@@ -167,20 +155,106 @@ class ChildViewWindow:
         )
         btn_unblock.pack(side=tk.RIGHT, fill=tk.X, expand=True)
 
-        # 4. Close Button
+        # 4. Action Buttons (Refresh & Close)
+        btn_box = tk.Frame(content, bg="#0f172a")
+        btn_box.pack(side=tk.BOTTOM, fill=tk.X, pady=(6, 0))
+
+        btn_refresh = tk.Button(
+            btn_box,
+            text="🔄 Làm Mới Dữ Liệu",
+            font=("Segoe UI", 9),
+            bg="#0369a1",
+            fg="#ffffff",
+            pady=4,
+            relief=tk.FLAT,
+            command=self._manual_refresh
+        )
+        btn_refresh.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 6))
+
         btn_close = tk.Button(
-            content,
+            btn_box,
             text="Đóng Cửa Sổ",
             font=("Segoe UI", 9),
             bg="#334155",
             fg="#ffffff",
-            pady=5,
+            pady=4,
             relief=tk.FLAT,
             command=self.root.destroy
         )
-        btn_close.pack(side=tk.BOTTOM, fill=tk.X)
+        btn_close.pack(side=tk.RIGHT, fill=tk.X, expand=True)
+
+        # Start periodic background refresh every 2.5 seconds
+        self._schedule_periodic_refresh()
 
         self.root.mainloop()
+
+    def _update_usage_display(self):
+        """Update screen time metrics on the UI."""
+        self.today_str = datetime.now().strftime("%Y-%m-%d")
+        usage = get_daily_usage(self.today_str)
+        used_min = round(usage.get("used_seconds", 0) / 60, 1)
+        bonus_min = usage.get("bonus_minutes", 0)
+
+        policy = load_policy_cache()
+        quota_min = 90
+        if policy:
+            weekday = datetime.now().weekday()
+            quota_min = policy["weekend_quota_minutes"] if weekday >= 5 else policy["weekday_quota_minutes"]
+
+        total_allowed = quota_min + bonus_min
+        remaining_min = max(0, total_allowed - int(used_min))
+
+        if self.stat_title:
+            self.stat_title.config(text=f"⏱️ Thời Gian Dùng Máy Hôm Nay: {used_min} / {total_allowed} phút")
+        if self.rem_lbl:
+            bonus_info = f" (Được cộng thêm {bonus_min} phút từ cha mẹ)" if bonus_min > 0 else ""
+            self.rem_lbl.config(
+                text=f"Còn lại: {remaining_min} phút{bonus_info}",
+                fg="#10b981" if remaining_min > 0 else "#ef4444"
+            )
+
+    def _manual_refresh(self):
+        """Manual refresh triggered by child."""
+        self._update_usage_display()
+        # Also check server for any newly approved requests
+        self._check_server_requests()
+
+    def _schedule_periodic_refresh(self):
+        if self.root and self.root.winfo_exists():
+            self._update_usage_display()
+            self.root.after(2500, self._schedule_periodic_refresh)
+
+    def _check_server_requests(self):
+        """Check if pending request was approved and apply bonus if needed."""
+        try:
+            creds = load_credentials()
+            if not creds:
+                return
+            dev_id = creds.get("device_id", 1)
+            token = creds.get("access_token")
+            headers = {"Authorization": f"Bearer {token}"} if token else {}
+            res = requests.get(f"{self.server_url}/api/v1/requests?device_id={dev_id}", headers=headers, timeout=5)
+            if res.status_code == 200:
+                requests_data = res.json()
+                for req in requests_data:
+                    if req.get("status") == "approved" and req.get("request_type") == "add_time":
+                        # Check local bonus
+                        usage = get_daily_usage(self.today_str)
+                        current_bonus = usage.get("bonus_minutes", 0)
+                        if current_bonus == 0:
+                            # Auto apply 15 minutes locally as sync safeguard
+                            from .storage import update_daily_usage
+                            update_daily_usage(
+                                date_str=self.today_str,
+                                used_seconds=usage.get("used_seconds", 0),
+                                bonus_minutes=15,
+                                is_locked=0
+                            )
+                            self._update_usage_display()
+                            messagebox.showinfo("Tuyệt Vời!", "Cha mẹ đã đồng ý thưởng thêm 15 phút cho em học tập!")
+                            break
+        except Exception:
+            pass
 
     def _send_request(self, request_type: str, target: str, reason: str):
         """Submit access request to the central server (NT3)."""

@@ -47,6 +47,29 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(_
 TEMPLATES_DIR = os.path.join(PROJECT_ROOT, "dashboard", "templates")
 templates = Jinja2Templates(directory=TEMPLATES_DIR)
 
+VN_TZ = timezone(timedelta(hours=7))
+
+
+def format_local_time(dt, fmt: str = "%H:%M:%S %d/%m/%Y") -> str:
+    """Format a UTC datetime or ISO timestamp string into Vietnam Local Time (UTC+7 / ICT)."""
+    if not dt:
+        return "Chưa có" if "%H" in fmt and "%d" not in fmt else ""
+    if isinstance(dt, str):
+        try:
+            dt = datetime.fromisoformat(dt.replace("Z", "+00:00"))
+        except Exception:
+            return dt
+    if not isinstance(dt, datetime):
+        return str(dt)
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    local_dt = dt.astimezone(VN_TZ)
+    return local_dt.strftime(fmt)
+
+
+templates.env.filters["local_time"] = format_local_time
+templates.env.filters["vn_time"] = format_local_time
+
 router = APIRouter()
 
 

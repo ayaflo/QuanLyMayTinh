@@ -60,6 +60,25 @@ def get_file_sha256(filepath: str) -> Optional[str]:
         return None
 
 
+def stop_associated_windows_service(app_name: str):
+    """Stop auto-restarting Windows services for known VPNs to prevent infinite respawn loops."""
+    if sys.platform != "win32":
+        return
+    import subprocess
+    KNOWN_SERVICES = {
+        "warp-svc.exe": ["CloudflareWARP"],
+        "cloudflare warp.exe": ["CloudflareWARP"],
+        "protonvpn.launcher.exe": ["ProtonVPN Service"],
+        "protonvpn.exe": ["ProtonVPN Service"],
+    }
+    svc_list = KNOWN_SERVICES.get(app_name.lower(), [])
+    for svc in svc_list:
+        try:
+            subprocess.run(["sc.exe", "stop", svc], capture_output=True, timeout=2)
+        except Exception:
+            pass
+
+
 class AppController:
     """Monitors and enforces application execution rules by SHA-256 hash (F2)."""
 
@@ -79,6 +98,7 @@ class AppController:
         self._thread: Optional[threading.Thread] = None
         self._hash_cache: Dict[str, tuple[float, str]] = {}  # {filepath: (mtime, hash)}
         self._recently_notified: Dict[str, float] = {}       # {app_name: last_notified_ts}
+        self._recently_logged: Dict[str, float] = {}         # {app_name_lower: last_logged_ts}
         self._last_usage_sampled: float = time.time()
 
     def _get_cached_sha256(self, filepath: str) -> Optional[str]:
@@ -141,9 +161,6 @@ class AppController:
 
                 if rule_info:
                     reason = rule_info.get("description") or "Quy định của cha mẹ"
-                    logger.warning(
-                        f"[APP BLOCKED] Terminating PID {pid} ({app_name}) | Hash: {str(file_hash)[:12]}... | Reason: {reason}"
-                    )
 
                     # Terminate process (T3_040)
                     try:
@@ -154,6 +171,9 @@ class AppController:
                         except Exception:
                             pass
 
+                    # Stop Windows service if it's a persistent auto-restarting service (e.g. Cloudflare WARP)
+                    stop_associated_windows_service(app_name)
+
                     terminated_apps.append({
                         "pid": pid,
                         "app_name": app_name,
@@ -161,6 +181,19 @@ class AppController:
                         "hash": file_hash,
                         "reason": reason
                     })
+
+                    # Rate-limit console warning logs (prevent terminal flooding every 3s)
+                    now = time.time()
+                    last_log_ts = self._recently_logged.get(app_name.lower(), 0.0)
+                    if (now - last_log_ts) >= 30.0:
+                        self._recently_logged[app_name.lower()] = now
+                        logger.warning(
+                            f"[APP BLOCKED] Terminating PID {pid} ({app_name}) | Hash: {str(file_hash)[:12]}... | Reason: {reason}"
+                        )
+                    else:
+                        logger.debug(
+                            f"[APP BLOCKED] Terminating PID {pid} ({app_name}) | Hash: {str(file_hash)[:12]}... | Reason: {reason}"
+                        )
 
                     # Trigger explanation popup / notification (NT4)
                     now = time.time()

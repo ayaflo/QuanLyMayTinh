@@ -4,7 +4,7 @@ Complies with Principle NT2 (Data Minimisation): only sends minimal telemetry (s
 
 import time
 import threading
-from typing import Optional, Dict, Any, Tuple
+from typing import Optional, Dict, Any, Tuple, Callable
 import requests
 
 try:
@@ -66,7 +66,8 @@ def send_heartbeat(
 def run_heartbeat_loop(
     stop_event: Optional[threading.Event] = None,
     interval_seconds: int = HEARTBEAT_INTERVAL,
-    server_url: str = SERVER_URL
+    server_url: str = SERVER_URL,
+    on_response_callback: Optional[Callable[[Dict[str, Any]], None]] = None
 ) -> None:
     """Run continuous heartbeat loop every `interval_seconds` until `stop_event` is set.
 
@@ -89,10 +90,15 @@ def run_heartbeat_loop(
         token = creds.get("access_token", "")
         success, result = send_heartbeat(access_token=token, server_url=server_url)
 
-        if success:
-            policy_ver = result.get("policy_version", 1) if result else 1
+        if success and result:
+            policy_ver = result.get("policy_version", 1)
             print(f" [♥] Nhịp tim thành công -> Máy chủ xác nhận (Policy v{policy_ver})")
-        else:
+            if on_response_callback:
+                try:
+                    on_response_callback(result)
+                except Exception as cb_err:
+                    print(f" [!] Lỗi xử lý phản hồi nhịp tim: {cb_err}")
+        elif not success:
             print(" [!] Gửi nhịp tim không thành công (máy chủ tạm thời không phản hồi)")
 
         # Wait for next cycle or exit signal
@@ -104,13 +110,14 @@ def run_heartbeat_loop(
 
 def start_heartbeat_thread(
     interval_seconds: int = HEARTBEAT_INTERVAL,
-    server_url: str = SERVER_URL
+    server_url: str = SERVER_URL,
+    on_response_callback: Optional[Callable[[Dict[str, Any]], None]] = None
 ) -> Tuple[threading.Thread, threading.Event]:
     """Start the heartbeat loop in a background daemon thread."""
     stop_event = threading.Event()
     thread = threading.Thread(
         target=run_heartbeat_loop,
-        args=(stop_event, interval_seconds, server_url),
+        args=(stop_event, interval_seconds, server_url, on_response_callback),
         daemon=True,
         name="OGK-HeartbeatThread"
     )

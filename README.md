@@ -146,6 +146,23 @@ python agent/main.py
 - Nhập mã 8 ký tự vừa lấy trên Dashboard.
 - **Hoàn tất!** Biểu tượng chiếc khiên xanh sẽ xuất hiện trên khay hệ thống, card mạng được trỏ về `127.0.0.1`, và máy tính của con lập tức được bảo vệ an toàn.
 
+### 4.3. Gỡ cài đặt sạch & Khôi phục nguyên bản để Demo lại từ đầu (Demo Reset)
+Khi cần chuẩn bị báo cáo hoặc trình diễn quy trình ghép đôi từ con số 0 cho Hội đồng / Thầy cô xem:
+1. Nhấp đúp vào tệp [**`uninstall_agent.bat`**](file:///d:/CD%20TN%20MMT/QuanLyMayTinh/uninstall_agent.bat) (hoặc [**`go_cai_dat_agent.bat`**](file:///d:/CD%20TN%20MMT/QuanLyMayTinh/go_cai_dat_agent.bat)) — script sẽ tự động xin quyền Administrator.
+2. Hoặc mở dòng lệnh chạy:
+   ```powershell
+   python agent/uninstall.py
+   ```
+3. Công cụ sẽ tự động dọn dẹp sạch sành sạch toàn bộ hệ thống:
+   - Dừng mọi tiến trình Agent và DNS Proxy đang chạy ngầm.
+   - Trả DNS của toàn bộ card mạng (Wi-Fi, Ethernet) về **DHCP tự động**.
+   - Dọn sạch tệp `C:\Windows\System32\drivers\etc\hosts`.
+   - Gỡ bỏ chính sách chặn DoH trên Chrome, Edge, Brave khỏi Windows Registry.
+   - Gỡ bỏ tự động khởi động cùng Windows (Registry HKCU/HKLM Run & thư mục Startup VBS).
+   - Xóa tệp cơ sở dữ liệu đệm cục bộ `agent/agent_cache.db` (đưa máy về trạng thái chưa từng ghép đôi).
+   - Làm mới bộ nhớ đệm phân giải tên miền (`ipconfig /flushdns`).
+4. Để demo lại: Chỉ cần tạo mã 8 ký tự trên Web Dashboard và nhấp đúp vào [**`chay_agent.bat`**](file:///d:/CD%20TN%20MMT/QuanLyMayTinh/chay_agent.bat) để xem giao diện ghép đôi đồ họa hiện lên từ đầu!
+
 ---
 
 ## 5. HƯỚNG DẪN CHẠY BỘ KIỂM THỬ TỰ ĐỘNG & ĐO LƯỜNG HIỆU NĂNG

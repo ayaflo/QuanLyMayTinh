@@ -1,18 +1,27 @@
-"""Windows DNS Adapter Configurator for Open Guardian Kids (T3_036).
+"""Windows DNS Adapter & Web Filtering Configurator for Open Guardian Kids (T3_036).
 Directs primary network interface DNS to 127.0.0.1 during active agent session,
-and restores DHCP upon graceful termination.
+disables browser DoH bypass, synchronizes blocked domains to Windows hosts file as defense-in-depth,
+flushes DNS cache, and cleanly restores DHCP/original state upon termination.
 """
 
+import os
+import re
 import sys
 import subprocess
 import logging
-from typing import Optional, List
+from typing import Optional, List, Set, Iterable
 
 logger = logging.getLogger("OGK_DNSConfig")
 
+HOSTS_MARKER_START = "# === OPEN GUARDIAN KIDS BLOCKED DOMAINS (DO NOT EDIT) ==="
+HOSTS_MARKER_END = "# === END OPEN GUARDIAN KIDS BLOCKED DOMAINS ==="
+WINDOWS_HOSTS_PATH = r"C:\Windows\System32\drivers\etc\hosts"
+
 
 def get_active_interfaces() -> List[str]:
-    """Discover names of active network interfaces (e.g. 'Wi-Fi', 'Ethernet') on Windows."""
+    """Discover names of active physical network interfaces (e.g. 'Wi-Fi', 'Ethernet') on Windows.
+    Strictly filters out virtual adapters, VPN tunnels (Tailscale, TAP/TUN), WSL, and Wi-Fi Direct.
+    """
     if sys.platform != "win32":
         return ["MockInterface"]
 
@@ -29,7 +38,13 @@ def get_active_interfaces() -> List[str]:
                 parts = line.split()
                 if len(parts) >= 5:
                     iface_name = " ".join(parts[4:])
-                    if iface_name and iface_name not in interfaces and "loopback" not in iface_name.lower():
+                    lower_name = iface_name.lower()
+                    if "*" in iface_name or any(v in lower_name for v in [
+                        "loopback", "tailscale", "tap", "tun", "wsl", "hyper-v",
+                        "virtual", "vmware", "vethernet", "pseudo", "direct"
+                    ]):
+                        continue
+                    if iface_name and iface_name not in interfaces:
                         interfaces.append(iface_name)
     except Exception as e:
         logger.warning(f"Could not discover network interfaces via netsh: {e}")
@@ -38,8 +53,22 @@ def get_active_interfaces() -> List[str]:
     return interfaces or ["Wi-Fi"]
 
 
+def flush_dns_cache() -> bool:
+    """Flush the Windows local DNS resolver cache to clear pre-existing IP records."""
+    if sys.platform != "win32":
+        return True
+
+    try:
+        res = subprocess.run(["ipconfig", "/flushdns"], capture_output=True, text=True, timeout=5)
+        logger.info("[DNS] Đã làm mới bộ nhớ đệm DNS hệ thống (ipconfig /flushdns).")
+        return res.returncode == 0
+    except Exception as e:
+        logger.warning(f"[DNS] Không thể flush DNS cache: {e}")
+        return False
+
+
 def set_dns_to_localhost(interface_name: Optional[str] = None) -> bool:
-    """Configure network adapter DNS to 127.0.0.1 (T3_036)."""
+    """Configure network adapter DNS to 127.0.0.1 (IPv4) and ::1 (IPv6) (T3_036)."""
     if sys.platform != "win32":
         logger.info(f"[SIMULATED] Set DNS to 127.0.0.1 on {interface_name or 'MockInterface'}")
         return True
@@ -48,22 +77,34 @@ def set_dns_to_localhost(interface_name: Optional[str] = None) -> bool:
     success = False
 
     for iface in targets:
+        # 1. Set IPv4 DNS to 127.0.0.1
         try:
             cmd = f'netsh interface ipv4 set dns name="{iface}" static 127.0.0.1 primary'
             res = subprocess.run(cmd, shell=True, capture_output=True, text=True)
             if res.returncode == 0:
-                logger.info(f"Successfully configured DNS on interface '{iface}' to 127.0.0.1")
+                logger.info(f"[DNS] Đã trỏ IPv4 DNS trên '{iface}' về 127.0.0.1.")
                 success = True
             else:
-                logger.warning(f"netsh returned code {res.returncode} for interface '{iface}': {res.stderr.strip()}")
+                logger.warning(f"[DNS] netsh ipv4 trả về mã {res.returncode} cho '{iface}': {res.stderr.strip()}")
         except Exception as e:
-            logger.error(f"Failed to configure DNS for '{iface}': {e}")
+            logger.error(f"[DNS] Lỗi cấu hình IPv4 DNS cho '{iface}': {e}")
+
+        # 2. Set IPv6 DNS to ::1 (loopback) to prevent IPv6 DNS bypass
+        try:
+            cmd_v6 = f'netsh interface ipv6 set dnsservers name="{iface}" static ::1 primary'
+            subprocess.run(cmd_v6, shell=True, capture_output=True, text=True)
+        except Exception:
+            pass
+
+    # 3. Disable browser DoH and flush cache
+    disable_browser_doh()
+    flush_dns_cache()
 
     return success
 
 
 def restore_dns_to_dhcp(interface_name: Optional[str] = None) -> bool:
-    """Restore network adapter DNS to automatic DHCP (T3_036)."""
+    """Restore network adapter DNS to automatic DHCP (T3_036) and clean up policies."""
     if sys.platform != "win32":
         logger.info(f"[SIMULATED] Restore DNS to DHCP on {interface_name or 'MockInterface'}")
         return True
@@ -76,9 +117,149 @@ def restore_dns_to_dhcp(interface_name: Optional[str] = None) -> bool:
             cmd = f'netsh interface ipv4 set dns name="{iface}" dhcp'
             res = subprocess.run(cmd, shell=True, capture_output=True, text=True)
             if res.returncode == 0:
-                logger.info(f"Successfully restored DNS on interface '{iface}' to DHCP")
+                logger.info(f"[DNS] Đã khôi phục IPv4 DNS trên '{iface}' về DHCP.")
                 success = True
         except Exception as e:
-            logger.error(f"Failed to restore DHCP for '{iface}': {e}")
+            logger.error(f"[DNS] Lỗi khôi phục DHCP IPv4 cho '{iface}': {e}")
+
+        try:
+            cmd_v6 = f'netsh interface ipv6 set dnsservers name="{iface}" dhcp'
+            subprocess.run(cmd_v6, shell=True, capture_output=True, text=True)
+        except Exception:
+            pass
+
+    # Clean up browser policies and hosts file
+    restore_browser_doh()
+    restore_hosts_file()
+    flush_dns_cache()
 
     return success
+
+
+def disable_browser_doh() -> bool:
+    """Disable DNS-over-HTTPS in Chrome, Edge, and Brave via Windows Registry policies.
+    Forces browsers to use system DNS (127.0.0.1) instead of bypassing to Cloudflare/Google DoH.
+    """
+    if sys.platform != "win32":
+        return True
+
+    try:
+        import winreg
+        policies = [
+            r"SOFTWARE\Policies\Google\Chrome",
+            r"SOFTWARE\Policies\Microsoft\Edge",
+            r"SOFTWARE\Policies\BraveSoftware\Brave"
+        ]
+        for subkey in policies:
+            try:
+                key = winreg.CreateKeyEx(winreg.HKEY_LOCAL_MACHINE, subkey, 0, winreg.KEY_SET_VALUE)
+                winreg.SetValueEx(key, "DnsOverHttpsMode", 0, winreg.REG_SZ, "off")
+                winreg.CloseKey(key)
+            except Exception:
+                pass
+        return True
+    except Exception as e:
+        logger.debug(f"[DNS] Could not write DoH policy to registry: {e}")
+        return False
+
+
+def restore_browser_doh() -> bool:
+    """Remove DnsOverHttpsMode policy override from Windows Registry upon agent shutdown."""
+    if sys.platform != "win32":
+        return True
+
+    try:
+        import winreg
+        policies = [
+            r"SOFTWARE\Policies\Google\Chrome",
+            r"SOFTWARE\Policies\Microsoft\Edge",
+            r"SOFTWARE\Policies\BraveSoftware\Brave"
+        ]
+        for subkey in policies:
+            try:
+                key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, subkey, 0, winreg.KEY_SET_VALUE)
+                winreg.DeleteValue(key, "DnsOverHttpsMode")
+                winreg.CloseKey(key)
+            except Exception:
+                pass
+        return True
+    except Exception as e:
+        return False
+
+
+def sync_hosts_file(blocked_domains: Iterable[str], hosts_path: str = WINDOWS_HOSTS_PATH) -> bool:
+    """Synchronize blocked domains into Windows hosts file as bulletproof defense-in-depth (F2).
+    
+    Guarantees that blocked domains resolve to 0.0.0.0 at the Windows OS socket layer,
+    even before any network query is made.
+    """
+    if sys.platform != "win32" and hosts_path == WINDOWS_HOSTS_PATH:
+        # Simulated environment
+        return True
+
+    if not os.path.exists(hosts_path):
+        return False
+
+    try:
+        with open(hosts_path, "r", encoding="utf-8", errors="ignore") as f:
+            content = f.read()
+
+        # Remove existing OGK block if present
+        pattern = re.compile(re.escape(HOSTS_MARKER_START) + r".*?" + re.escape(HOSTS_MARKER_END), re.DOTALL)
+        clean_content = pattern.sub("", content).strip()
+
+        # Build new OGK block
+        unique_domains = sorted({d.strip().lower() for d in blocked_domains if d.strip()})
+        if not unique_domains:
+            # Nothing to add, just save clean content
+            with open(hosts_path, "w", encoding="utf-8") as f:
+                f.write(clean_content + "\n")
+            return True
+
+        block_lines = [HOSTS_MARKER_START]
+        for d in unique_domains:
+            block_lines.append(f"0.0.0.0 {d}")
+            if not d.startswith("www."):
+                block_lines.append(f"0.0.0.0 www.{d}")
+        block_lines.append(HOSTS_MARKER_END)
+
+        new_content = clean_content + "\n\n" + "\n".join(block_lines) + "\n"
+
+        with open(hosts_path, "w", encoding="utf-8") as f:
+            f.write(new_content)
+
+        flush_dns_cache()
+        logger.info(f"[HOSTS] Đã ghi nhận {len(unique_domains)} tên miền chặn vào file hosts Windows.")
+        return True
+    except PermissionError:
+        logger.warning("[HOSTS] Cần quyền Administrator để đồng bộ file hosts Windows.")
+        return False
+    except Exception as e:
+        logger.error(f"[HOSTS] Lỗi cập nhật file hosts: {e}")
+        return False
+
+
+def restore_hosts_file(hosts_path: str = WINDOWS_HOSTS_PATH) -> bool:
+    """Remove Open Guardian Kids blocked domain block from Windows hosts file."""
+    if sys.platform != "win32" and hosts_path == WINDOWS_HOSTS_PATH:
+        return True
+
+    if not os.path.exists(hosts_path):
+        return False
+
+    try:
+        with open(hosts_path, "r", encoding="utf-8", errors="ignore") as f:
+            content = f.read()
+
+        pattern = re.compile(re.escape(HOSTS_MARKER_START) + r".*?" + re.escape(HOSTS_MARKER_END), re.DOTALL)
+        clean_content = pattern.sub("", content).strip()
+
+        with open(hosts_path, "w", encoding="utf-8") as f:
+            f.write(clean_content + "\n")
+
+        flush_dns_cache()
+        logger.info("[HOSTS] Đã khôi phục file hosts Windows về trạng thái ban đầu.")
+        return True
+    except Exception as e:
+        logger.debug(f"[HOSTS] Lỗi khôi phục file hosts: {e}")
+        return False

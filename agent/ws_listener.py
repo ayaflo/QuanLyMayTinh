@@ -77,12 +77,31 @@ class WebSocketListener:
             try:
                 print(f"[WS] Connecting to {ws_url}...")
                 self._ws = websocket.create_connection(ws_url, timeout=REQUEST_TIMEOUT)
+                # Keep socket alive indefinitely without timing out on idle
+                self._ws.settimeout(None)
                 print("[WS] Connected successfully! Ready for emergency commands (< 5s).")
+
+                # Background keepalive ping thread to keep NAT / proxy connection open
+                current_ws = self._ws
+                def _ping_worker():
+                    while self.running and self._ws == current_ws:
+                        time.sleep(20.0)
+                        try:
+                            if self._ws == current_ws:
+                                current_ws.send("ping")
+                        except Exception:
+                            break
+
+                ping_thread = threading.Thread(target=_ping_worker, daemon=True, name="WSPingWorker")
+                ping_thread.start()
 
                 while self.running:
                     msg_text = self._ws.recv()
                     if not msg_text:
                         break
+
+                    if msg_text == "pong":
+                        continue
 
                     try:
                         data = json.loads(msg_text)

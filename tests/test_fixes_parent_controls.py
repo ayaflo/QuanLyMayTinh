@@ -1,0 +1,324 @@
+"""Tests for Parent Control Fixes:
+1. Lock warning countdown and cancellation
+2. Pending command sync (WebSocket connect + Heartbeat fallback)
+3. Hosts file synchronization and cleanup
+"""
+
+import json
+import time
+import pytest
+from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
+
+from datetime import datetime, timezone
+from server.database import Base, get_db
+from server.main import app
+from server.models import Parent, Device, DeviceCommand, AccessRequest, AuditLog
+from server.security import hash_password, create_access_token
+from server.routes.dashboard import format_local_time
+from agent.lock_warning_dialog import LockWarningController
+from agent.dns_configurator import sync_hosts_file, restore_hosts_file
+
+SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL,
+    connect_args={"check_same_thread": False},
+    poolclass=StaticPool
+)
+TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+
+@pytest.fixture(autouse=True)
+def setup_database():
+    Base.metadata.create_all(bind=engine)
+    yield
+    Base.metadata.drop_all(bind=engine)
+
+
+@pytest.fixture
+def client(monkeypatch):
+    """Test client with isolated database dependency override."""
+    def override_get_db():
+        db = TestingSessionLocal()
+        try:
+            yield db
+        finally:
+            db.close()
+
+    app.dependency_overrides[get_db] = override_get_db
+    monkeypatch.setattr("server.routes.ws.SessionLocal", TestingSessionLocal)
+    with TestClient(app) as test_client:
+        yield test_client
+    app.dependency_overrides.clear()
+
+
+def test_lock_warning_countdown_and_cancel():
+    """Verify lock warning controller runs countdown and can be cancelled."""
+    controller = LockWarningController()
+    ticks = []
+    locked = []
+
+    controller.start_countdown(
+        seconds=2,
+        reason="Thử nghiệm khóa máy",
+        on_lock_callback=lambda: locked.append(True),
+        on_tick_callback=lambda rem: ticks.append(rem),
+        show_gui=False
+    )
+
+    # Cancel immediately
+    controller.cancel()
+    time.sleep(0.5)
+
+    assert controller._cancelled is True
+    assert len(locked) == 0
+
+
+def test_lock_warning_countdown_finishes():
+    """Verify lock warning controller triggers lock callback when countdown reaches 0."""
+    controller = LockWarningController()
+    locked = []
+
+    controller.start_countdown(
+        seconds=1,
+        reason="Hết giờ",
+        on_lock_callback=lambda: locked.append(True),
+        show_gui=False
+    )
+
+    time.sleep(1.3)
+    assert len(locked) == 1
+
+
+def test_pending_commands_delivered_on_websocket_connect(client):
+    """Verify pending commands dispatched while device is offline are delivered on connect."""
+    db = TestingSessionLocal()
+    parent = Parent(username="parent_pending", password_hash=hash_password("Pass@123"))
+    db.add(parent)
+    db.commit()
+
+    device = Device(parent_id=parent.id, device_fingerprint="DEV-PENDING-001", device_name="Kid PC")
+    db.add(device)
+    db.commit()
+    dev_id = device.id
+
+    # Create a pending add_time command before device connects
+    cmd = DeviceCommand(
+        device_id=dev_id,
+        command_type="add_time",
+        payload=json.dumps({"minutes": 15}),
+        status="pending"
+    )
+    db.add(cmd)
+    db.commit()
+    cmd_id = cmd.id
+    db.close()
+
+    dev_token = create_access_token({"sub": f"device:{dev_id}", "device_id": dev_id})
+
+    # Device connects -> Server should flush pending command immediately
+    with client.websocket_connect(f"/ws/device/{dev_id}?token={dev_token}") as ws:
+        msg_str = ws.receive_text()
+        msg = json.loads(msg_str)
+        assert msg["action"] == "add_time"
+        assert msg["payload"]["minutes"] == 15
+
+    # Check status changed to delivered
+    db2 = TestingSessionLocal()
+    updated_cmd = db2.query(DeviceCommand).filter(DeviceCommand.id == cmd_id).first()
+    assert updated_cmd.status == "delivered"
+    assert updated_cmd.delivered_at is not None
+    db2.close()
+
+
+def test_pending_commands_delivered_in_heartbeat(client):
+    """Verify pending commands are returned in heartbeat response as fallback."""
+    db = TestingSessionLocal()
+    parent = Parent(username="parent_hb", password_hash=hash_password("Pass@123"))
+    db.add(parent)
+    db.commit()
+
+    device = Device(parent_id=parent.id, device_fingerprint="DEV-HB-001", device_name="Kid PC")
+    db.add(device)
+    db.commit()
+    dev_id = device.id
+
+    cmd = DeviceCommand(
+        device_id=dev_id,
+        command_type="add_time",
+        payload=json.dumps({"minutes": 15}),
+        status="pending"
+    )
+    db.add(cmd)
+    db.commit()
+    cmd_id = cmd.id
+    db.close()
+
+    dev_token = create_access_token({"sub": f"device:{dev_id}", "device_id": dev_id})
+
+    # Send heartbeat
+    res = client.post(
+        "/api/v1/heartbeat",
+        headers={"Authorization": f"Bearer {dev_token}"},
+        json={"device_fingerprint": "DEV-HB-001"}
+    )
+    assert res.status_code == 200
+    data = res.json()
+    assert "pending_commands" in data
+    assert len(data["pending_commands"]) == 1
+    assert data["pending_commands"][0]["action"] == "add_time"
+    assert data["pending_commands"][0]["payload"]["minutes"] == 15
+
+    # Check marked delivered
+    db2 = TestingSessionLocal()
+    updated_cmd = db2.query(DeviceCommand).filter(DeviceCommand.id == cmd_id).first()
+    assert updated_cmd.status == "delivered"
+    db2.close()
+
+
+def test_sync_hosts_file_and_cleanup(tmp_path):
+    """Verify hosts file synchronization writes blocked entries and cleans up cleanly."""
+    fake_hosts = tmp_path / "hosts"
+    initial_content = "127.0.0.1 localhost\n::1 localhost\n"
+    fake_hosts.write_text(initial_content, encoding="utf-8")
+
+    blocked = ["facebook.com", "tiktok.com"]
+    ok = sync_hosts_file(blocked, hosts_path=str(fake_hosts))
+    assert ok is True
+
+    updated_content = fake_hosts.read_text(encoding="utf-8")
+    assert "0.0.0.0 facebook.com" in updated_content
+    assert "0.0.0.0 www.facebook.com" in updated_content
+    assert "0.0.0.0 tiktok.com" in updated_content
+
+    # Restore hosts file
+    restore_ok = restore_hosts_file(hosts_path=str(fake_hosts))
+    assert restore_ok is True
+    cleaned_content = fake_hosts.read_text(encoding="utf-8")
+    assert "facebook.com" not in cleaned_content
+    assert "tiktok.com" not in cleaned_content
+    assert "127.0.0.1 localhost" in cleaned_content
+
+
+def test_vietnam_local_time_formatting():
+    """Verify UTC datetime is correctly converted to Vietnam local time (UTC+7 / ICT)."""
+    # 08:16:00 UTC -> 15:16:00 Vietnam time
+    utc_naive = datetime(2026, 10, 29, 8, 16, 0)
+    assert format_local_time(utc_naive, "%H:%M %d/%m") == "15:16 29/10"
+    assert format_local_time(utc_naive, "%H:%M:%S") == "15:16:00"
+    assert format_local_time(utc_naive, "%H:%M:%S %d/%m/%Y") == "15:16:00 29/10/2026"
+
+    # With explicit UTC timezone
+    utc_aware = datetime(2026, 10, 29, 8, 16, 0, tzinfo=timezone.utc)
+    assert format_local_time(utc_aware, "%H:%M %d/%m") == "15:16 29/10"
+
+    # None input handling
+    assert format_local_time(None, "%H:%M:%S") == "Chưa có"
+    assert format_local_time(None, "%H:%M %d/%m") == ""
+
+
+def test_dashboard_renders_vietnam_time_for_requests_and_audit(client):
+    """Verify web dashboard renders requests and audit logs in Vietnam Local Time (UTC+7)."""
+    db = TestingSessionLocal()
+    parent = Parent(username="vn_parent", password_hash=hash_password("password123"))
+    db.add(parent)
+    db.commit()
+
+    # UTC 08:16:00 should display as 15:16:00
+    test_utc_dt = datetime(2026, 10, 29, 8, 16, 0, tzinfo=timezone.utc)
+    dev = Device(
+        parent_id=parent.id,
+        device_fingerprint="DEV-TIME-001",
+        device_name="Máy Con Học Tập",
+        status="online",
+        last_seen=test_utc_dt
+    )
+    db.add(dev)
+    db.commit()
+
+    req = AccessRequest(
+        device_id=dev.id,
+        request_type="add_time",
+        target="15",
+        reason="Con xin thêm 15p học bài",
+        status="pending",
+        created_at=test_utc_dt
+    )
+    db.add(req)
+
+    audit = AuditLog(
+        parent_id=parent.id,
+        device_id=dev.id,
+        action="enroll_device",
+        new_value="Ghép đôi thiết bị 'Máy Con Học Tập' thành công",
+        created_at=test_utc_dt
+    )
+    db.add(audit)
+    db.commit()
+    parent_id = parent.id
+    db.close()
+
+    # Log in and check /devices
+    token = create_access_token({"sub": f"parent:{parent_id}", "parent_id": parent_id, "role": "parent"})
+    client.cookies.set("access_token", token)
+    res = client.get("/devices")
+    assert res.status_code == 200
+    html = res.text
+
+    # Heartbeat must display 15:16:00 (not 08:16:00)
+    assert "Nhịp tim: 15:16:00" in html
+
+    # Child request must display 'Gửi lúc: 15:16 29/10' (not 08:16 29/10)
+    assert "Gửi lúc: 15:16 29/10" in html
+
+    # Audit log must display '15:16:00 29/10/2026' (not 08:16:00)
+    assert "15:16:00 29/10/2026" in html
+
+
+def test_pairing_code_timezone_and_audit_log(client):
+    """Verify pairing code returns timezone-aware expires_at and pairing creates AuditLog."""
+    db = TestingSessionLocal()
+    parent = Parent(username="enroll_parent", password_hash=hash_password("password123"))
+    db.add(parent)
+    db.commit()
+    parent_id = parent.id
+    db.close()
+
+    token = create_access_token({"sub": f"parent:{parent_id}", "parent_id": parent_id, "role": "parent"})
+
+    # 1. Parent generates pairing code
+    create_res = client.post(
+        "/api/v1/enroll/create-code",
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    assert create_res.status_code == 200
+    code_data = create_res.json()
+    assert "code" in code_data
+    assert "expires_at" in code_data
+    assert code_data["expires_at"].endswith("Z") or "+00:00" in code_data["expires_at"]
+    pair_code = code_data["code"]
+
+    # 2. Child agent claims code
+    claim_res = client.post(
+        "/api/v1/enroll/claim",
+        json={
+            "code": pair_code,
+            "device_fingerprint": "DEV-FINGERPRINT-NEW",
+            "device_name": "Máy Con Windows"
+        }
+    )
+    assert claim_res.status_code == 200
+
+    # 3. Verify audit log entry was created for enroll_device
+    db2 = TestingSessionLocal()
+    enroll_log = db2.query(AuditLog).filter(
+        AuditLog.parent_id == parent_id,
+        AuditLog.action == "enroll_device"
+    ).first()
+    assert enroll_log is not None
+    assert "Ghép đôi thiết bị 'Máy Con Windows' thành công" in enroll_log.new_value
+    db2.close()
+
+

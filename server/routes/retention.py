@@ -102,3 +102,38 @@ async def erase_child_data(
         return result
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.delete("/{device_id}", summary="Phụ huynh gỡ bỏ hoàn toàn thiết bị khỏi tài khoản")
+def delete_device_by_parent(
+    request: Request,
+    device_id: int = Path(..., description="ID thiết bị cần gỡ bỏ"),
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security_scheme),
+    db: Session = Depends(get_db)
+):
+    """Allows authenticated parent to permanently remove an enrolled device."""
+    parent = _get_parent_from_request(request, credentials, db)
+    if not parent:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Yêu cầu đăng nhập tài khoản phụ huynh để thực hiện gỡ thiết bị"
+        )
+    device = db.query(Device).filter(Device.id == device_id).first()
+    if not device:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Không tìm thấy thiết bị"
+        )
+    if device.parent_id != parent.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Bạn không có quyền gỡ bỏ thiết bị này"
+        )
+
+    from server.services.enrollment_service import unenroll_device
+    unenroll_device(db, device_id=device_id)
+    return {
+        "status": "success",
+        "device_id": device_id,
+        "message": f"Đã gỡ bỏ thiết bị #{device_id} khỏi tài khoản phụ huynh thành công."
+    }

@@ -67,7 +67,7 @@
                                     <div class="device-avatar">🖥️</div>
                                     <div>
                                         <div class="device-title">{{ dev.device_name }}</div>
-                                        <div class="device-sub">ID: #{{ dev.id }} · Nhịp tim: {{ dev.last_seen.strftime('%H:%M:%S') if dev.last_seen else 'Chưa có' }}</div>
+                                        <div class="device-sub">ID: #{{ dev.id }} · Nhịp tim: {{ dev.last_seen|local_time('%H:%M:%S') }}</div>
                                     </div>
                                 </div>
                             </td>
@@ -114,6 +114,9 @@
                                     <button class="btn-xs btn-danger-soft" onclick="openEraseModal({{ dev.id }}, '{{ dev.device_name }}')" title="Xóa toàn bộ dữ liệu lịch sử của thiết bị theo Nghị định 13/2023">
                                         🗑️ Xóa Dữ Liệu Con (NĐ 13)
                                     </button>
+                                    <button class="btn-xs btn-danger-soft" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.35); color: #f87171;" onclick="handleDeleteDevice({{ dev.id }}, '{{ dev.device_name }}')" title="Gỡ bỏ hoàn toàn thiết bị này khỏi danh sách quản lý">
+                                        ❌ Gỡ Thiết Bị
+                                    </button>
                                 </div>
                             </td>
                         </tr>
@@ -159,7 +162,7 @@
                     {% for log in audit_logs %}
                         <tr>
                             <td class="text-dim" style="white-space: nowrap;">
-                                {{ log.created_at.strftime('%H:%M:%S %d/%m/%Y') }}
+                                {{ log.created_at|local_time('%H:%M:%S %d/%m/%Y') }}
                             </td>
                             <td>
                                 <strong>#{{ log.device_id }}</strong>
@@ -230,7 +233,7 @@
                     {% endif %}
 
                     <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: var(--text-dim); margin-top: 0.25rem;">
-                        <span>Gửi lúc: {{ req.created_at.strftime('%H:%M %d/%m') if req.created_at else '' }}</span>
+                        <span>Gửi lúc: {{ req.created_at|local_time('%H:%M %d/%m') }}</span>
                         {% if req.status == 'approved' %}
                             <span style="color: #10b981; font-weight: 600;">✅ Đã duyệt</span>
                         {% elif req.status == 'rejected' %}
@@ -621,6 +624,9 @@
                 <span>⏱️ Hiệu lực:</span>
                 <strong id="countdownTimer" style="font-family: 'JetBrains Mono', monospace;">10:00</strong>
             </div>
+            <div id="pairingTimeRange" style="font-size: 0.8125rem; color: var(--text-dim); margin-top: 0.5rem; text-align: center;">
+                Tạo lúc: --:-- · Hết hạn: --:--
+            </div>
         </div>
 
         <ol class="instructions-list">
@@ -762,6 +768,26 @@
             const data = await res.json();
             currentCode = data.code;
             codeDisplay.textContent = data.code;
+
+            // Hiển thị giờ tạo và giờ hết hạn theo giờ Việt Nam
+            const now = new Date();
+            let expireDate = new Date(now.getTime() + 10 * 60 * 1000);
+            if (data.expires_at) {
+                const rawIso = (data.expires_at.endsWith('Z') || data.expires_at.includes('+')) 
+                    ? data.expires_at 
+                    : data.expires_at + 'Z';
+                const parsed = new Date(rawIso);
+                if (!isNaN(parsed.getTime())) {
+                    expireDate = parsed;
+                }
+            }
+            const pad = (n) => n.toString().padStart(2, '0');
+            const formatTime = (d) => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+            const timeRangeEl = document.getElementById('pairingTimeRange');
+            if (timeRangeEl) {
+                timeRangeEl.textContent = `Tạo lúc: ${formatTime(now)} · Hết hạn: ${formatTime(expireDate)}`;
+            }
+
             startCountdown(600);
         } catch (err) {
             codeDisplay.textContent = "LỖI";
@@ -812,12 +838,12 @@
     });
 
     // Emergency command dispatcher (< 5s via WebSocket)
-    async function sendEmergencyCommand(deviceId, commandType, minutes = 15) {
+    async function sendEmergencyCommand(deviceId, commandType, minutes = 15, countdown = 30) {
         try {
             const res = await fetch(`/api/v1/devices/${deviceId}/command`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ command_type: commandType, minutes: minutes })
+                body: JSON.stringify({ command_type: commandType, minutes: minutes, countdown: countdown })
             });
 
             if (!res.ok) {
@@ -826,7 +852,7 @@
             }
 
             const actionNames = {
-                'lock_now': 'Khóa máy ngay lập tức',
+                'lock_now': `Thông báo cảnh báo và Khóa máy (${countdown}s đếm ngược)`,
                 'unlock': 'Mở khóa máy tính',
                 'add_time': `Cộng thêm ${minutes} phút`
             };
@@ -1193,6 +1219,29 @@
         } finally {
             btn.disabled = false;
             btn.innerHTML = '<span>🗑️</span> Xác Nhận Xóa Vĩnh Viễn';
+        }
+    }
+
+    async function handleDeleteDevice(devId, devName) {
+        if (!confirm(`Bạn có chắc chắn muốn gỡ bỏ thiết bị "${devName}" (#${devId}) không?\n\nSau khi gỡ, thiết bị sẽ lập tức biến mất khỏi danh sách quản lý. Để kết nối lại, bạn cần cấp mã ghép đôi mới.`)) {
+            return;
+        }
+
+        try {
+            const res = await fetch(`/api/v1/devices/${devId}`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                throw new Error(err.detail || "Không thể gỡ bỏ thiết bị.");
+            }
+
+            showToast(`Đã gỡ bỏ thiết bị "${devName}" (#${devId}) thành công.`);
+            setTimeout(() => window.location.reload(), 1000);
+        } catch (err) {
+            showToast(`Lỗi: ${err.message}`, false);
         }
     }
 </script>

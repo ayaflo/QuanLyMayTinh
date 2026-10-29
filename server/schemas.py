@@ -61,6 +61,13 @@ class ClaimDeviceResponse(BaseModel):
     token_type: str = "bearer"
 
 
+class UnenrollDeviceRequest(BaseModel):
+    """Schema sent by Agent or Parent to unenroll/delete a device."""
+    device_id: Optional[int] = Field(None, description="Device ID to unenroll")
+    device_fingerprint: Optional[str] = Field(None, description="Hardware fingerprint for verification")
+    reason: Optional[str] = Field("uninstalled_by_user", description="Reason for unenrollment")
+
+
 # ============================================================================
 # Phase 2 / T012: Heartbeat Schemas
 # ============================================================================
@@ -76,6 +83,7 @@ class HeartbeatResponse(BaseModel):
     status: str = "ok"
     policy_version: int = Field(default=1, description="Latest policy version for synchronization")
     server_time: datetime = Field(default_factory=utc_now, description="Server UTC time for monotonic drift check")
+    pending_commands: Optional[list[Dict[str, Any]]] = Field(default=None, description="Pending commands for fallback delivery")
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -128,6 +136,7 @@ class CommandCreateRequest(BaseModel):
     """Schema for creating an emergency command from Dashboard."""
     command_type: str = Field(..., description="Action: 'lock_now', 'unlock', 'add_time'")
     minutes: Optional[int] = Field(15, ge=1, le=180, description="Additional minutes if command_type is 'add_time'")
+    countdown: Optional[int] = Field(30, ge=0, le=300, description="Countdown seconds before locking for 'lock_now'")
 
 
 class CommandResponse(BaseModel):

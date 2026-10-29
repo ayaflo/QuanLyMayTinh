@@ -6,6 +6,14 @@ import os
 import sys
 import argparse
 
+# Force UTF-8 on Windows console output to prevent encoding crashes
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 # Ensure project root is in sys.path
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if PROJECT_ROOT not in sys.path:
@@ -23,10 +31,17 @@ try:
     from agent.policy_syncer import sync_policy_from_server
     from agent.ws_listener import WebSocketListener
     from agent.dns_proxy import DNSProxyServer
-    from agent.dns_configurator import set_dns_to_localhost, restore_dns_to_dhcp
+    from agent.dns_configurator import (
+        set_dns_to_localhost,
+        restore_dns_to_dhcp,
+        sync_hosts_file,
+        restore_hosts_file,
+        flush_dns_cache
+    )
     from agent.dns_watchdog import DNSWatchdog
     from agent.app_controller import AppController
     from agent.event_collector import EventCollector
+    from agent.lock_warning_dialog import lock_warning_controller
     from agent.storage import (
         save_dns_rules_cache,
         load_dns_rules_cache,
@@ -54,10 +69,17 @@ except ImportError:
     from policy_syncer import sync_policy_from_server
     from ws_listener import WebSocketListener
     from dns_proxy import DNSProxyServer
-    from dns_configurator import set_dns_to_localhost, restore_dns_to_dhcp
+    from dns_configurator import (
+        set_dns_to_localhost,
+        restore_dns_to_dhcp,
+        sync_hosts_file,
+        restore_hosts_file,
+        flush_dns_cache
+    )
     from dns_watchdog import DNSWatchdog
     from app_controller import AppController
     from event_collector import EventCollector
+    from lock_warning_dialog import lock_warning_controller
 
 
 
@@ -129,6 +151,7 @@ def main():
     parser.add_argument("--re-pair", action="store_true", help="Xóa thông tin cũ và ghép đôi lại với máy chủ mới")
     parser.add_argument("--headless", action="store_true", help="Run without system tray GUI")
     parser.add_argument("--cli", action="store_true", help="Sử dụng chế độ dòng lệnh (CLI) thay vì giao diện đồ họa")
+    parser.add_argument("--elevated", action="store_true", help=argparse.SUPPRESS)
     args = parser.parse_args()
 
     print_banner()
@@ -177,6 +200,18 @@ def main():
 
     print(f"\n [✓] Đã xác thực thiết bị ID: #{creds['device_id']} ({creds.get('device_name', DEVICE_NAME)})")
 
+    # Check Administrator elevation on Windows
+    if sys.platform == "win32":
+        try:
+            import ctypes
+            if ctypes.windll.shell32.IsUserAnAdmin():
+                print(" [✓] Quyền Administrator: Đã kích hoạt đầy đủ (Cấu hình DNS & Chặn Web hoạt động tối ưu).")
+            else:
+                print(" [!] LƯU Ý: Agent chưa có quyền Administrator.")
+                print("     Để tính năng chặn web và bảo vệ mạng có hiệu lực 100%, hãy chạy qua 'chay_agent.bat' (Run as Administrator).")
+        except Exception:
+            pass
+
     # Ensure autostart with Windows is enabled
     try:
         try:
@@ -217,17 +252,39 @@ def main():
     # Step 4: Initialize WebSocket Emergency Command Listener (< 5s)
     def handle_ws_command(action: str, payload: dict):
         if action == "lock_now":
-            tracker.is_locked = True
-            system_locker.lock_now("Khóa máy khẩn cấp từ phụ huynh")
-            if tray_icon_holder[0]:
-                show_tray_notification(tray_icon_holder[0], "Lệnh Khẩn Cấp", "Phụ huynh đã khóa màn hình máy tính!")
+            countdown = payload.get("countdown", 30) if payload else 30
+            if countdown > 0:
+                print(f"\n [!] CẢNH BÁO TỪ PHỤ HUYNH: Bắt đầu đếm ngược {countdown} giây trước khi khóa máy...")
+                if tray_icon_holder[0]:
+                    show_tray_notification(
+                        tray_icon_holder[0],
+                        "⚠️ Sắp Khóa Máy Tính",
+                        f"Phụ huynh đã yêu cầu khóa máy. Màn hình sẽ khóa sau {countdown} giây để em lưu bài tập!"
+                    )
+
+                def do_lock():
+                    tracker.is_locked = True
+                    system_locker.lock_now("Khóa máy sau thời gian cảnh báo từ phụ huynh")
+
+                lock_warning_controller.start_countdown(
+                    seconds=countdown,
+                    reason=payload.get("reason", "Phụ huynh đã kích hoạt lệnh khóa máy tính."),
+                    on_lock_callback=do_lock
+                )
+            else:
+                tracker.is_locked = True
+                system_locker.lock_now("Khóa máy khẩn cấp từ phụ huynh")
+                if tray_icon_holder[0]:
+                    show_tray_notification(tray_icon_holder[0], "Lệnh Khẩn Cấp", "Phụ huynh đã khóa màn hình máy tính!")
         elif action == "unlock":
+            lock_warning_controller.cancel()
             tracker.is_locked = False
             tracker.grace_period_active = False
             if tray_icon_holder[0]:
                 show_tray_notification(tray_icon_holder[0], "Lệnh Khẩn Cấp", "Phụ huynh đã mở khóa màn hình cho em.")
         elif action == "add_time":
-            mins = payload.get("minutes", 15)
+            lock_warning_controller.cancel()
+            mins = payload.get("minutes", 15) if payload else 15
             tracker.add_bonus_minutes(mins)
             if tray_icon_holder[0]:
                 show_tray_notification(tray_icon_holder[0], "Thưởng Thời Gian", f"Phụ huynh đã cộng thêm {mins} phút sử dụng!")
@@ -311,6 +368,8 @@ def main():
                 blocked = set(data.get("blocked_domains", []))
                 whitelist = set(data.get("permanent_whitelist", []))
                 dns_proxy.update_rules(blocked=blocked, whitelist=whitelist)
+                sync_hosts_file(blocked)
+                flush_dns_cache()
                 app_rules = [{"sha256": a["sha256"], "name": a["name"], "action": "block", "description": a.get("description", "")} for a in data.get("app_blocklist", [])]
                 save_app_rules_cache(app_rules)
                 save_dns_rules_cache([{"domain": d, "action": "block"} for d in blocked] + [{"domain": d, "action": "allow", "is_permanent_whitelist": True} for d in whitelist])
@@ -323,7 +382,18 @@ def main():
     sync_filtering_rules()
 
     # Step 6: Start all background workers
-    hb_thread, stop_event = start_heartbeat_thread()
+    def handle_heartbeat_response(result: dict):
+        if not result:
+            return
+        pending_cmds = result.get("pending_commands") or []
+        for pcmd in pending_cmds:
+            p_action = pcmd.get("action")
+            p_payload = pcmd.get("payload") or {}
+            if p_action:
+                print(f" [♥] Nhận lệnh chờ từ máy chủ qua nhịp tim: {p_action} (payload={p_payload})")
+                handle_ws_command(p_action, p_payload)
+
+    hb_thread, stop_event = start_heartbeat_thread(on_response_callback=handle_heartbeat_response)
     tracker.start()
     system_locker.start_enforcement()
     ws_listener.start()
@@ -342,6 +412,7 @@ def main():
 
     def on_exit():
         stop_event.set()
+        lock_warning_controller.cancel()
         dns_watchdog.stop()
         tracker.stop()
         system_locker.stop_enforcement()
@@ -350,6 +421,24 @@ def main():
         dns_proxy.stop()
         restore_dns_to_dhcp()
         event_collector.stop()
+
+    import atexit
+    atexit.register(on_exit)
+
+    if sys.platform == "win32":
+        try:
+            import ctypes
+            HandlerRoutine = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.c_ulong)
+            def _console_ctrl_handler(ctrl_type):
+                try:
+                    on_exit()
+                except Exception:
+                    pass
+                return False
+            _global_ctrl_handler = HandlerRoutine(_console_ctrl_handler)
+            ctypes.windll.kernel32.SetConsoleCtrlHandler(_global_ctrl_handler, True)
+        except Exception:
+            pass
 
     # Step 6: Run tray icon or headless wait loop
     if args.headless:

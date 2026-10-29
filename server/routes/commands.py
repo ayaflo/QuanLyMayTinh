@@ -90,6 +90,7 @@ async def send_emergency_command(
         parent_id=parent.id,
         command_type=cmd_req.command_type,
         minutes=cmd_req.minutes,
+        countdown=cmd_req.countdown,
         ip_address=client_ip
     )
 

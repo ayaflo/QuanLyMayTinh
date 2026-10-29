@@ -2,18 +2,20 @@
 Maintains persistent bidirectional channel with child agents for emergency actions (< 5s).
 """
 
+import json
+from datetime import datetime, timezone
 from typing import Optional
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query, status
 from sqlalchemy.orm import Session
 
 try:
     from ..database import SessionLocal
-    from ..models import Device
+    from ..models import Device, DeviceCommand
     from ..security import decode_access_token
     from ..services.connection_manager import ws_manager
 except (ImportError, ValueError):
     from server.database import SessionLocal
-    from server.models import Device
+    from server.models import Device, DeviceCommand
     from server.security import decode_access_token
     from server.services.connection_manager import ws_manager
 
@@ -54,6 +56,33 @@ async def websocket_device_endpoint(
 
     # 2. Register connection
     await ws_manager.connect(device_id, websocket)
+
+    # 3. Deliver any pending emergency commands immediately
+    db = SessionLocal()
+    try:
+        pending_cmds = db.query(DeviceCommand).filter(
+            DeviceCommand.device_id == device_id,
+            DeviceCommand.status == "pending"
+        ).order_by(DeviceCommand.created_at.asc()).all()
+
+        now = datetime.now(timezone.utc)
+        for cmd in pending_cmds:
+            payload_dict = json.loads(cmd.payload) if cmd.payload else {}
+            ws_msg = {
+                "action": cmd.command_type,
+                "payload": payload_dict,
+                "command_id": cmd.id,
+                "timestamp": now.isoformat()
+            }
+            await websocket.send_text(json.dumps(ws_msg))
+            cmd.status = "delivered"
+            cmd.delivered_at = now
+        if pending_cmds:
+            db.commit()
+    except Exception as e:
+        print(f"[WS] Error delivering pending commands to device #{device_id}: {e}")
+    finally:
+        db.close()
 
     try:
         while True:

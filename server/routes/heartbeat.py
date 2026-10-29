@@ -11,12 +11,12 @@ from sqlalchemy.orm import Session
 
 try:
     from ..database import get_db
-    from ..models import Device, HeartbeatLog, Policy
+    from ..models import Device, HeartbeatLog, Policy, DeviceCommand
     from ..schemas import HeartbeatRequest, HeartbeatResponse
     from ..security import decode_access_token
 except (ImportError, ValueError):
     from server.database import get_db
-    from server.models import Device, HeartbeatLog, Policy
+    from server.models import Device, HeartbeatLog, Policy, DeviceCommand
     from server.schemas import HeartbeatRequest, HeartbeatResponse
     from server.security import decode_access_token
 
@@ -85,8 +85,28 @@ def receive_heartbeat(
     current_policy = db.query(Policy).filter(Policy.device_id == device.id).first()
     policy_version = current_policy.version if current_policy else 1
 
+    # Query pending emergency commands for fallback delivery (< 60s)
+    pending_cmds = db.query(DeviceCommand).filter(
+        DeviceCommand.device_id == device.id,
+        DeviceCommand.status == "pending"
+    ).order_by(DeviceCommand.created_at.asc()).all()
+
+    pending_list = []
+    for c in pending_cmds:
+        payload_dict = json.loads(c.payload) if c.payload else {}
+        pending_list.append({
+            "action": c.command_type,
+            "payload": payload_dict,
+            "command_id": c.id
+        })
+        c.status = "delivered"
+        c.delivered_at = now
+    if pending_cmds:
+        db.commit()
+
     return HeartbeatResponse(
         status="ok",
         policy_version=policy_version,
-        server_time=now
+        server_time=now,
+        pending_commands=pending_list if pending_list else None
     )

@@ -9,10 +9,10 @@ from typing import Optional, Tuple
 from sqlalchemy.orm import Session
 
 try:
-    from ..models import Device, PairingCode
+    from ..models import Device, PairingCode, AuditLog
     from ..security import create_access_token
 except (ImportError, ValueError):
-    from server.models import Device, PairingCode
+    from server.models import Device, PairingCode, AuditLog
     from server.security import create_access_token
 
 # Unambiguous characters avoiding 0/O, 1/I/L to make manual typing painless
@@ -105,6 +105,19 @@ def claim_device_code(
 
     # Invalidate code
     pairing.is_used = True
+    db.flush()
+
+    # Record pairing in AuditLog (NT5)
+    audit = AuditLog(
+        parent_id=pairing.parent_id,
+        device_id=device.id,
+        action="enroll_device",
+        new_value=f"Ghép đôi thiết bị '{device.device_name}' thành công",
+        ip_address="127.0.0.1",
+        created_at=now
+    )
+    db.add(audit)
+
     db.commit()
     db.refresh(device)
 
@@ -121,7 +134,60 @@ def claim_device_code(
     return device, access_token, refresh_token
 
 
+def unenroll_device(
+    db: Session,
+    device_id: int,
+    device_fingerprint: Optional[str] = None
+) -> bool:
+    """Permanently delete a device from parent account and wipe all associated records.
+
+    Ensures the device completely disappears from the parent's dashboard upon uninstall.
+    """
+    query = db.query(Device).filter(Device.id == device_id)
+    if device_fingerprint:
+        query = query.filter(Device.device_fingerprint == device_fingerprint)
+    device = query.first()
+
+    if not device and device_fingerprint:
+        # Fallback search by unique fingerprint only
+        device = db.query(Device).filter(Device.device_fingerprint == device_fingerprint).first()
+
+    if not device:
+        return False
+
+    dev_id = device.id
+
+    # Cascade delete records for consistency across all database engines
+    try:
+        from server.models import (
+            AuditLog, HeartbeatLog, ActivityEvent,
+            AccessRequest, DeviceCommand, Policy, AppRule
+        )
+        db.query(AuditLog).filter(AuditLog.device_id == dev_id).delete(synchronize_session=False)
+        db.query(HeartbeatLog).filter(HeartbeatLog.device_id == dev_id).delete(synchronize_session=False)
+        db.query(ActivityEvent).filter(ActivityEvent.device_id == dev_id).delete(synchronize_session=False)
+        db.query(AccessRequest).filter(AccessRequest.device_id == dev_id).delete(synchronize_session=False)
+        db.query(DeviceCommand).filter(DeviceCommand.device_id == dev_id).delete(synchronize_session=False)
+        db.query(Policy).filter(Policy.device_id == dev_id).delete(synchronize_session=False)
+        db.query(AppRule).filter(AppRule.device_id == dev_id).delete(synchronize_session=False)
+    except Exception:
+        pass
+
+    db.delete(device)
+    db.commit()
+
+    # Disconnect any active real-time WebSocket connection
+    try:
+        from server.services.connection_manager import ws_manager
+        ws_manager.disconnect(dev_id)
+    except Exception:
+        pass
+
+    return True
+
+
 # Aliases for specification consistency
 generate_pairing_code = create_pairing_code
 verify_and_claim_code = claim_device_code
+delete_enrolled_device = unenroll_device
 

@@ -220,3 +220,82 @@ def test_pairing_window_input_sanitization():
         assert app.success is True
     finally:
         root.destroy()
+
+
+def test_unenroll_device_by_agent_with_token(client, parent_token, setup_test_db):
+    """Test child agent unenrolls itself upon uninstall, removing device from parent dashboard."""
+    # 1. Parent creates code
+    create_res = client.post("/api/v1/enroll/create-code", headers={"Authorization": f"Bearer {parent_token}"})
+    code = create_res.json()["code"]
+
+    # 2. Child agent claims code
+    claim_res = client.post(
+        "/api/v1/enroll/claim",
+        json={"code": code, "device_fingerprint": "UNINSTALL-TEST-FINGERPRINT", "device_name": "Test Child PC"}
+    )
+    assert claim_res.status_code == 200
+    agent_token = claim_res.json()["access_token"]
+    device_id = claim_res.json()["device_id"]
+
+    # Verify device exists in DB
+    db = setup_test_db
+    assert db.query(Device).filter(Device.id == device_id).count() == 1
+
+    # 3. Agent calls unenroll with Bearer token
+    unenroll_res = client.post(
+        "/api/v1/enroll/unenroll",
+        headers={"Authorization": f"Bearer {agent_token}"},
+        json={"device_id": device_id, "reason": "uninstalled_by_user"}
+    )
+    assert unenroll_res.status_code == 200
+    assert unenroll_res.json()["status"] == "success"
+
+    # 4. Verify device is completely gone from DB
+    assert db.query(Device).filter(Device.id == device_id).first() is None
+
+
+def test_unenroll_device_by_agent_with_fingerprint(client, parent_token, setup_test_db):
+    """Test child agent unenrolls using fingerprint when access token is not present."""
+    create_res = client.post("/api/v1/enroll/create-code", headers={"Authorization": f"Bearer {parent_token}"})
+    code = create_res.json()["code"]
+
+    claim_res = client.post(
+        "/api/v1/enroll/claim",
+        json={"code": code, "device_fingerprint": "UNINSTALL-FP-ONLY", "device_name": "Child PC 2"}
+    )
+    device_id = claim_res.json()["device_id"]
+
+    db = setup_test_db
+    assert db.query(Device).filter(Device.id == device_id).count() == 1
+
+    # Unenroll using fingerprint in body (no Bearer token)
+    unenroll_res = client.post(
+        "/api/v1/enroll/unenroll",
+        json={"device_fingerprint": "UNINSTALL-FP-ONLY", "reason": "uninstalled_by_user"}
+    )
+    assert unenroll_res.status_code == 200
+    assert db.query(Device).filter(Device.id == device_id).first() is None
+
+
+def test_delete_device_by_parent_endpoint(client, parent_token, setup_test_db):
+    """Test parent directly deletes device from dashboard via DELETE /api/v1/devices/{device_id}."""
+    create_res = client.post("/api/v1/enroll/create-code", headers={"Authorization": f"Bearer {parent_token}"})
+    code = create_res.json()["code"]
+
+    claim_res = client.post(
+        "/api/v1/enroll/claim",
+        json={"code": code, "device_fingerprint": "PARENT-DELETE-FP", "device_name": "Child PC 3"}
+    )
+    device_id = claim_res.json()["device_id"]
+
+    db = setup_test_db
+    assert db.query(Device).filter(Device.id == device_id).count() == 1
+
+    # Parent deletes device
+    del_res = client.delete(
+        f"/api/v1/devices/{device_id}",
+        headers={"Authorization": f"Bearer {parent_token}"}
+    )
+    assert del_res.status_code == 200
+    assert del_res.json()["status"] == "success"
+    assert db.query(Device).filter(Device.id == device_id).first() is None
