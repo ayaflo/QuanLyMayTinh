@@ -1389,8 +1389,8 @@
         const scheduleMatrix = currentMatrixArray.join('');
 
         try {
-            const res = await fetch(`/api/v1/policies/devices/${deviceId}`, {
-                method: 'PUT',
+            const res = await fetch(`/api/v1/policy?device_id=${deviceId}`, {
+                method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     weekday_quota_minutes: weekdayQuota,
@@ -1420,8 +1420,8 @@
         const policy = policiesMap[deviceId] || {};
 
         try {
-            const res = await fetch(`/api/v1/policies/devices/${deviceId}`, {
-                method: 'PUT',
+            const res = await fetch(`/api/v1/policy?device_id=${deviceId}`, {
+                method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     weekday_quota_minutes: weekdayQuota,

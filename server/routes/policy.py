@@ -160,3 +160,23 @@ async def update_policy(
     })
 
     return updated_policy
+
+
+@router.put("/devices/{device_id}", response_model=PolicyResponse, summary="Cập nhật chính sách thời gian qua URL path (Phụ huynh)")
+@router.post("/devices/{device_id}", response_model=PolicyResponse, summary="Cập nhật chính sách thời gian qua URL path (Phụ huynh)")
+async def update_policy_by_device_id(
+    device_id: int,
+    update_data: PolicyUpdate,
+    request: Request,
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security_scheme),
+    db: Session = Depends(get_db)
+) -> PolicyResponse:
+    """Convenience endpoint to update policy by device_id in path (supports PUT and POST)."""
+    return await update_policy(
+        update_data=update_data,
+        request=request,
+        device_id=device_id,
+        credentials=credentials,
+        db=db
+    )
+
