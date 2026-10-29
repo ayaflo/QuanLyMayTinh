@@ -7,62 +7,41 @@
      VIEW 1: MÀN HÌNH CHÍNH (Giao diện chính - Chỉ có danh sách máy tính)
      ======================================================================== -->
 <div id="viewMainDeviceList">
-    <!-- Hero Section (Exact xai247 Style) -->
-    <div class="xai-hero">
-        <div class="xai-badge-pill">
-            <span class="live-dot"></span>
-            <span>Open Guardian Kids &bull; Giám Sát An Toàn Cho Con Trẻ</span>
+    <!-- Top Statistics Grid (Căn đều dàn hàng ngang) -->
+    <div class="xai-stats-grid-top">
+        <div class="xai-stat-card">
+            <div class="xai-stat-label">TỔNG THIẾT BỊ</div>
+            <div class="xai-stat-number">{{ devices|length }}</div>
         </div>
-
-        <h1 class="xai-hero-title">
-            Bảo Vệ Không Gian Mạng<br>
-            <span style="color: #fff;">Đồng Hành Cùng Con Trẻ.</span>
-        </h1>
-
-        <p class="xai-hero-subtitle">
-            Hệ thống quản lý thời lượng sử dụng máy tính, lọc web độc hại tự động và khóa ứng dụng đa nền tảng. Minh bạch hai chiều, tôn trọng sự phát triển của trẻ.
-        </p>
-
-        <div class="xai-hero-actions">
-            <button id="btnOpenPairModal" class="btn-pill-white">
-                <span>➕</span> Thêm Máy Tính Mới
-            </button>
-            <a href="#mainDeviceGrid" class="btn-pill-dark">
-                <span>🖥️</span> Xem Danh Sách Máy ({{ devices|length }})
-            </a>
+        <div class="xai-stat-card">
+            <div class="xai-stat-label">ĐANG TRỰC TUYẾN</div>
+            <div class="xai-stat-number" style="color: #10b981; display: flex; align-items: center; gap: 8px;">
+                <span class="live-dot"></span> {{ online_count|default(0) }}
+            </div>
         </div>
-
-        <!-- Minimalist Stats Row -->
-        <div class="xai-stats-row">
-            <div class="xai-stat-item">
-                <div class="xai-stat-number">{{ devices|length }}</div>
-                <div class="xai-stat-label">Tổng Thiết Bị</div>
-            </div>
-            <div class="xai-stat-item">
-                <div class="xai-stat-number" style="color: #10b981; display: flex; align-items: center; gap: 8px;">
-                    <span class="live-dot"></span> {{ online_count|default(0) }}
-                </div>
-                <div class="xai-stat-label">Đang Trực Tuyến</div>
-            </div>
-            <div class="xai-stat-item">
-                <div class="xai-stat-number" style="color: var(--text-dim);">{{ offline_count|default(0) }}</div>
-                <div class="xai-stat-label">Ngoại Tuyến</div>
-            </div>
+        <div class="xai-stat-card">
+            <div class="xai-stat-label">NGOẠI TUYẾN</div>
+            <div class="xai-stat-number" style="color: var(--text-dim);">{{ offline_count|default(0) }}</div>
         </div>
     </div>
 
-    <!-- Main Section: Danh Sách Máy Tính (Chỉ có phần này, không có tên miền/ứng dụng bên ngoài) -->
+    <!-- Main Section: Danh Sách Máy Tính Đang Quản Lý -->
     <div id="mainDeviceGrid" style="margin-bottom: 3.5rem;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.75rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
             <div>
-                <h2 style="font-size: 1.4rem; font-weight: 800; color: #fff; letter-spacing: -0.02em;">Danh Sách Máy Tính Đang Quản Lý</h2>
+                <h2 style="font-size: 1.45rem; font-weight: 800; color: #fff; letter-spacing: -0.02em;">Danh Sách Máy Tính Đang Quản Lý</h2>
                 <p style="color: var(--text-muted); font-size: 0.875rem; margin-top: 0.25rem;">
                     Chọn một máy tính bên dưới để vào bảng điều khiển chi tiết, cấu hình tên miền và quản lý ứng dụng
                 </p>
             </div>
-            {% if devices and devices|length > 0 %}
-                <span class="badge-subtle" style="font-family: 'Geist Mono', monospace;">{{ devices|length }} thiết bị</span>
-            {% endif %}
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                {% if devices and devices|length > 0 %}
+                    <span class="badge-subtle" style="font-family: 'Geist Mono', monospace;">{{ devices|length }} thiết bị</span>
+                {% endif %}
+                <button id="btnOpenPairModal" class="btn-pill-white">
+                    <span>➕</span> Thêm Máy Tính Mới
+                </button>
+            </div>
         </div>
 
         {% if devices and devices|length > 0 %}

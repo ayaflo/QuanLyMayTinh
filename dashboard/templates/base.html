@@ -340,6 +340,38 @@
             margin-bottom: 2.5rem !important;
         }
 
+        /* Top Stats Grid (Evenly spaced horizontally) */
+        .xai-stats-grid-top {
+            display: grid !important;
+            grid-template-columns: repeat(3, 1fr) !important;
+            gap: 1.25rem !important;
+            margin-bottom: 2.25rem !important;
+        }
+
+        @media (max-width: 768px) {
+            .xai-stats-grid-top {
+                grid-template-columns: 1fr !important;
+            }
+        }
+
+        .xai-stat-card {
+            background: #0d0e13 !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            border-radius: 18px !important;
+            padding: 1.35rem 1.75rem !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: center !important;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        }
+
+        .xai-stat-card:hover {
+            border-color: rgba(255, 255, 255, 0.2) !important;
+            transform: translateY(-2px) !important;
+            background: #111218 !important;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.8) !important;
+        }
+
         /* Minimalist Stats Row */
         .xai-stats-row {
             display: flex !important;
