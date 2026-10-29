@@ -114,7 +114,7 @@ def test_login_success(client):
     data = response.json()
     assert "access_token" in data
     assert data["token_type"] == "bearer"
-    assert data["expires_in"] == 900
+    assert data["expires_in"] == 86400  # 1 day validity
 
     # Verify session cookie was set
     assert "access_token" in response.cookies

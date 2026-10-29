@@ -158,19 +158,19 @@ def login(
         "role": "parent"
     })
 
-    # 6. Set Secure HTTP-only Cookie
+    # 6. Set Secure HTTP-only Cookie (1 ngày liên tục = 86400 giây)
     response.set_cookie(
         key="access_token",
         value=access_token,
         httponly=True,
-        max_age=900,
+        max_age=86400,
         samesite="lax"
     )
 
     return TokenResponse(
         access_token=access_token,
         token_type="bearer",
-        expires_in=900
+        expires_in=86400
     )
 
 
@@ -250,18 +250,18 @@ def register(
         "role": "parent"
     })
 
-    # 5. Set Secure HTTP-only Cookie
+    # 5. Set Secure HTTP-only Cookie (1 ngày liên tục = 86400 giây)
     response.set_cookie(
         key="access_token",
         value=access_token,
         httponly=True,
-        max_age=900,
+        max_age=86400,
         samesite="lax"
     )
 
     return TokenResponse(
         access_token=access_token,
         token_type="bearer",
-        expires_in=900
+        expires_in=86400
     )
 

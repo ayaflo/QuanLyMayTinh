@@ -33,7 +33,7 @@ class TokenResponse(BaseModel):
     """Schema for JWT / session token response upon successful login."""
     access_token: str
     token_type: str = "bearer"
-    expires_in: int = 900  # 15 minutes default
+    expires_in: int = 86400  # 1 day (86400 seconds) default
 
 
 # ============================================================================

@@ -226,7 +226,7 @@ def handle_register(
         key="access_token",
         value=access_token,
         httponly=True,
-        max_age=900,
+        max_age=86400,  # 1 ngày liên tục (24 giờ = 86400 giây)
         samesite="lax"
     )
     return redirect
@@ -330,7 +330,7 @@ def handle_login(
         key="access_token",
         value=access_token,
         httponly=True,
-        max_age=900,
+        max_age=86400,  # 1 ngày liên tục (24 giờ = 86400 giây)
         samesite="lax"
     )
     return redirect
