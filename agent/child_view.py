@@ -48,14 +48,14 @@ class ChildViewWindow:
 
         self.root = tk.Tk()
         self.root.title("Open Guardian Kids — Bảng Minh Bạch Cùng Ba Mẹ")
-        self.root.geometry("560x680")
-        self.root.minsize(520, 640)
+        self.root.geometry("720x760")
+        self.root.minsize(660, 700)
         self.root.configure(bg="#000000")
 
         # Center on screen
         self.root.update_idletasks()
-        w = max(560, self.root.winfo_width())
-        h = max(680, self.root.winfo_height())
+        w = max(720, self.root.winfo_width())
+        h = max(760, self.root.winfo_height())
         sw = self.root.winfo_screenwidth()
         sh = self.root.winfo_screenheight()
         x = max(0, (sw - w) // 2)
@@ -106,7 +106,7 @@ class ChildViewWindow:
             font=("Segoe UI", 8),
             fg="#94a3b8",
             bg="#0c0d12",
-            wraplength=400,
+            wraplength=540,
             justify=tk.LEFT
         )
         sub_lbl.pack(anchor=tk.W, pady=(3, 0))
@@ -142,7 +142,7 @@ class ChildViewWindow:
             font=("Segoe UI", 9),
             fg="#10b981",
             bg="#0d0e14",
-            wraplength=460,
+            wraplength=620,
             justify=tk.LEFT
         )
         self.rem_lbl.pack(anchor=tk.W, pady=(4, 0))
@@ -175,7 +175,7 @@ class ChildViewWindow:
             fg="#cbd5e1",
             bg="#0d0e14",
             justify=tk.LEFT,
-            wraplength=460
+            wraplength=620
         )
         p_desc.pack(anchor=tk.W, pady=(6, 0))
 
@@ -205,7 +205,7 @@ class ChildViewWindow:
             font=("Segoe UI", 8),
             fg="#94a3b8",
             bg="#0d0e14",
-            wraplength=460,
+            wraplength=620,
             justify=tk.LEFT
         )
         a_desc.pack(anchor=tk.W, pady=(2, 10))
@@ -430,8 +430,8 @@ class ChildViewWindow:
         """Prompt child for reason to request extra 15 minutes."""
         dlg = tk.Toplevel(self.root)
         dlg.title("Xin Thêm Giờ Học Tập")
-        dlg.geometry("420x220")
-        dlg.configure(bg="#08090c", padx=18, pady=16)
+        dlg.geometry("520x260")
+        dlg.configure(bg="#08090c", padx=22, pady=18)
         dlg.transient(self.root)
         dlg.grab_set()
 
@@ -482,8 +482,8 @@ class ChildViewWindow:
         """Prompt child for target domain/app to report false-positive block."""
         dlg = tk.Toplevel(self.root)
         dlg.title("Báo Chặn Nhầm Web / Ứng Dụng")
-        dlg.geometry("440x280")
-        dlg.configure(bg="#08090c", padx=18, pady=16)
+        dlg.geometry("560x360")
+        dlg.configure(bg="#08090c", padx=22, pady=18)
         dlg.transient(self.root)
         dlg.grab_set()
 

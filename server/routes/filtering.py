@@ -22,6 +22,7 @@ try:
         get_consolidated_filtering_rules,
         create_domain_rule,
         delete_domain_rule,
+        toggle_domain_rule,
         create_app_rule,
         delete_app_rule,
         get_domain_category_summaries
@@ -42,6 +43,7 @@ except (ImportError, ValueError):
         get_consolidated_filtering_rules,
         create_domain_rule,
         delete_domain_rule,
+        toggle_domain_rule,
         create_app_rule,
         delete_app_rule,
         get_domain_category_summaries
@@ -102,6 +104,19 @@ async def remove_domain_rule(rule_id: int, db: Session = Depends(get_db)):
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Không tìm thấy quy tắc tên miền.")
         await _notify_devices_rules_updated()
         return {"status": "success", "message": f"Đã xóa quy tắc #{rule_id}"}
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.post("/domain-rules/{rule_id}/toggle", response_model=DomainRuleResponse, summary="Đảo trạng thái Chặn / Mở khóa tên miền")
+async def toggle_domain_rule_action(rule_id: int, db: Session = Depends(get_db)) -> DomainRuleResponse:
+    """Toggle a domain rule action between 'block' and 'allow'."""
+    try:
+        rule = toggle_domain_rule(db, rule_id)
+        if not rule:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Không tìm thấy quy tắc tên miền.")
+        await _notify_devices_rules_updated()
+        return DomainRuleResponse.model_validate(rule)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 

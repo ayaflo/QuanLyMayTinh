@@ -54,25 +54,25 @@
                     {% set percent_used = (used_min / quota_today * 100)|round|int if quota_today > 0 else 0 %}
 
                     <div class="device-card-xai" id="main-card-device-{{ dev.id }}" onclick="openDeviceCockpit({{ dev.id }})">
-                        <div class="device-card-header">
-                            <div style="display: flex; align-items: center; gap: 0.85rem;">
-                                <div class="device-icon-box">🖥️</div>
-                                <div>
-                                    <div class="device-name-title">{{ dev.device_name }}</div>
+                        <div class="device-card-header" style="align-items: center; justify-content: space-between;">
+                            <div style="display: flex; align-items: center; gap: 0.85rem; min-width: 0;">
+                                <div class="device-icon-box" style="flex-shrink: 0;">🖥️</div>
+                                <div style="min-width: 0;">
+                                    <div class="device-name-title" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ dev.device_name }}</div>
                                     <div class="device-meta-sub">
                                         ID: #{{ dev.id }} &bull; Nhịp tim: {{ dev.last_seen|local_time('%H:%M:%S') }}
                                     </div>
                                 </div>
                             </div>
 
-                            <div>
+                            <div style="flex-shrink: 0; display: flex; align-items: center; justify-content: flex-end; margin-left: 0.75rem;">
                                 {% if dev.status == 'online' %}
-                                    <span class="badge-status badge-online">
-                                        <span class="live-dot"></span> Trực tuyến
+                                    <span class="badge-status badge-online" style="line-height: 1; padding: 0.35rem 0.85rem;">
+                                        <span class="live-dot" style="margin-right: 2px;"></span> Trực tuyến
                                     </span>
                                 {% else %}
-                                    <span class="badge-status badge-offline">
-                                        <span class="live-dot offline"></span> Ngoại tuyến
+                                    <span class="badge-status badge-offline" style="line-height: 1; padding: 0.35rem 0.85rem;">
+                                        <span class="live-dot offline" style="margin-right: 2px;"></span> Ngoại tuyến
                                     </span>
                                 {% endif %}
                             </div>
@@ -282,10 +282,21 @@
                                                 <span class="live-dot" style="width: 6px; height: 6px;"></span> Đang áp dụng
                                             </span>
                                         </td>
-                                        <td style="text-align: right;">
-                                            <button class="btn-pill-danger" onclick="deleteDomainRule({{ rule.id }})" style="padding: 0.25rem 0.75rem; font-size: 0.75rem;">
-                                                ✕ Xóa
-                                            </button>
+                                        <td style="text-align: right; white-space: nowrap;">
+                                            {% if rule.action == 'block' %}
+                                                <button class="btn-pill-success" onclick="toggleDomainRule({{ rule.id }}, 'allow')" title="Đang chặn -> Nhấn để Mở Khóa" style="padding: 0.3rem 0.85rem; font-size: 0.775rem;">
+                                                    🔓 Mở khóa
+                                                </button>
+                                            {% else %}
+                                                <button class="btn-pill-danger" onclick="toggleDomainRule({{ rule.id }}, 'block')" title="Đang cho phép -> Nhấn để Chặn" style="padding: 0.3rem 0.85rem; font-size: 0.775rem;">
+                                                    🔒 Chặn
+                                                </button>
+                                            {% endif %}
+                                            {% if not rule.is_permanent_whitelist %}
+                                                <button class="btn-pill-dark" onclick="deleteDomainRule({{ rule.id }})" title="Gỡ bỏ khỏi danh mục" style="padding: 0.3rem 0.55rem; font-size: 0.775rem; margin-left: 4px;">
+                                                    ✕
+                                                </button>
+                                            {% endif %}
                                         </td>
                                     </tr>
                                 {% endfor %}
@@ -962,8 +973,9 @@
     // ========================================================================
     // Master-Detail Navigation (Main Device Grid <-> Device Cockpit)
     // ========================================================================
-    function openDeviceCockpit(devId) {
+    function openDeviceCockpit(devId, tabName = null) {
         activeCockpitDevId = devId;
+        sessionStorage.setItem('ogk_active_cockpit_dev_id', devId);
 
         // 1. Hide main list, show cockpit
         document.getElementById('viewMainDeviceList').style.display = 'none';
@@ -997,14 +1009,16 @@
             activeSwitcher.classList.add('active');
         }
 
-        // 5. Default tab is domains
-        switchCockpitTab('domains', devId);
+        // 5. Open target tab or restore saved tab
+        const savedTab = tabName || sessionStorage.getItem(`ogk_cockpit_tab_${devId}`) || 'domains';
+        switchCockpitTab(savedTab, devId);
 
         // 6. Scroll smoothly to top
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function backToDeviceList() {
+        sessionStorage.removeItem('ogk_active_cockpit_dev_id');
         document.getElementById('viewDeviceCockpit').style.display = 'none';
         document.getElementById('viewMainDeviceList').style.display = 'block';
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1014,6 +1028,8 @@
     function switchCockpitTab(tabName, devId) {
         const panel = document.getElementById(`device-cockpit-${devId}`);
         if (!panel) return;
+
+        sessionStorage.setItem(`ogk_cockpit_tab_${devId}`, tabName);
 
         // 1. Update tab buttons
         panel.querySelectorAll('.cockpit-tab-pill').forEach(btn => btn.classList.remove('active'));
@@ -1439,6 +1455,22 @@
         }
     }
 
+    async function toggleDomainRule(ruleId, targetAction) {
+        try {
+            const res = await fetch(`/api/v1/filtering/domain-rules/${ruleId}/toggle`, {
+                method: 'POST'
+            });
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                throw new Error(err.detail || "Không thể chuyển trạng thái tên miền.");
+            }
+            showToast(targetAction === 'allow' ? 'Đã chuyển sang: Mở khóa (Cho phép)' : 'Đã chuyển sang: Chặn tên miền');
+            setTimeout(() => window.location.reload(), 600);
+        } catch (e) {
+            showToast(`Lỗi: ${e.message}`, false);
+        }
+    }
+
     async function deleteDomainRule(ruleId) {
         if (!confirm('Bạn có chắc muốn xóa tên miền này?')) return;
         try {
@@ -1577,5 +1609,15 @@
             showToast(`Lỗi: ${err.message}`, false);
         }
     }
+
+    // Tự động khôi phục Cockpit và Tab sau khi reload (không bị văng ra danh sách máy)
+    document.addEventListener('DOMContentLoaded', () => {
+        const savedDevId = sessionStorage.getItem('ogk_active_cockpit_dev_id');
+        if (savedDevId && document.getElementById(`device-cockpit-${savedDevId}`)) {
+            const devIdInt = parseInt(savedDevId, 10);
+            const savedTab = sessionStorage.getItem(`ogk_cockpit_tab_${devIdInt}`) || 'domains';
+            openDeviceCockpit(devIdInt, savedTab);
+        }
+    });
 </script>
 {% endblock %}

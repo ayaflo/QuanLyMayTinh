@@ -43,14 +43,14 @@ class PairingWindow:
 
         self.root = tk.Tk()
         self.root.title(f"{APP_TITLE} — Ghép Đôi Cùng Ba Mẹ")
-        self.root.geometry("560x700")
-        self.root.minsize(520, 660)
+        self.root.geometry("680x760")
+        self.root.minsize(620, 700)
         self.root.configure(bg="#000000")
 
         # Center on screen
         self.root.update_idletasks()
-        w = max(560, self.root.winfo_width())
-        h = max(700, self.root.winfo_height())
+        w = max(680, self.root.winfo_width())
+        h = max(760, self.root.winfo_height())
         sw = self.root.winfo_screenwidth()
         sh = self.root.winfo_screenheight()
         x = max(0, (sw - w) // 2)
@@ -110,7 +110,9 @@ class PairingWindow:
             text="Đồng hành, yêu thương và bảo vệ máy tính của em",
             font=("Segoe UI", 8),
             fg="#94a3b8",
-            bg="#0c0d12"
+            bg="#0c0d12",
+            wraplength=540,
+            justify=tk.LEFT
         )
         sub_lbl.pack(anchor=tk.W, pady=(2, 0))
 
@@ -147,7 +149,7 @@ class PairingWindow:
             row = tk.Frame(guide_card, bg="#0d0e14")
             row.pack(fill=tk.X, pady=3)
             tk.Label(row, text=icon, font=("Segoe UI", 9), bg="#0d0e14", fg="#ffffff").pack(side=tk.LEFT, padx=(0, 8))
-            tk.Label(row, text=txt, font=("Segoe UI", 8), bg="#0d0e14", fg="#cbd5e1", wraplength=440, justify=tk.LEFT).pack(side=tk.LEFT, anchor=tk.W)
+            tk.Label(row, text=txt, font=("Segoe UI", 8), bg="#0d0e14", fg="#cbd5e1", wraplength=540, justify=tk.LEFT).pack(side=tk.LEFT, anchor=tk.W)
 
         # 3. Code Input Section
         code_section = tk.Frame(body, bg="#000000")

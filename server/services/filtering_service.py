@@ -115,6 +115,22 @@ def delete_domain_rule(db: Session, rule_id: int) -> bool:
     return True
 
 
+def toggle_domain_rule(db: Session, rule_id: int) -> Optional[DomainRule]:
+    """Toggle action of a domain rule between 'block' and 'allow'.
+    Enforces NT6: Permanent whitelist entries can never be set to 'block'.
+    """
+    rule = db.query(DomainRule).filter(DomainRule.id == rule_id).first()
+    if not rule:
+        return None
+    new_action = "allow" if rule.action == "block" else "block"
+    if rule.is_permanent_whitelist and new_action == "block":
+        raise ValueError("Tên miền thuộc danh sách trắng vĩnh viễn (NT6), không thể chuyển sang trạng thái chặn.")
+    rule.action = new_action
+    db.commit()
+    db.refresh(rule)
+    return rule
+
+
 def create_app_rule(db: Session, rule_in: AppRuleCreate) -> AppRule:
     """Create a new executable SHA-256 control rule (F2)."""
     import hashlib

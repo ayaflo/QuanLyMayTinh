@@ -95,6 +95,14 @@ class LockWarningController:
         pass
 
 
+def _enable_high_dpi():
+    try:
+        import ctypes
+        ctypes.windll.shcore.SetProcessDpiAwareness(1)
+    except Exception:
+        pass
+
+
 class LockCountdownWindow:
     """Tkinter topmost countdown alert window."""
 
@@ -108,24 +116,29 @@ class LockCountdownWindow:
 
     def show(self):
         import tkinter as tk
+        _enable_high_dpi()
 
         self.root = tk.Tk()
         self.root.title("⚠️ CẢNH BÁO TỪ PHỤ HUYNH")
-        self.root.geometry("480x260")
+        self.root.geometry("560x320")
+        self.root.minsize(520, 280)
         self.root.configure(bg="#0f172a")
-        self.root.resizable(False, False)
 
         # Stay on top of all windows
         self.root.attributes("-topmost", True)
 
         # Center on screen
-        try:
-            self.root.eval('tk::PlaceWindow . center')
-        except Exception:
-            pass
+        self.root.update_idletasks()
+        w = max(560, self.root.winfo_width())
+        h = max(320, self.root.winfo_height())
+        sw = self.root.winfo_screenwidth()
+        sh = self.root.winfo_screenheight()
+        x = max(0, (sw - w) // 2)
+        y = max(0, (sh - h) // 2)
+        self.root.geometry(f"{w}x{h}+{x}+{y}")
 
         # Header Frame
-        header = tk.Frame(self.root, bg="#ef4444", padx=16, pady=10)
+        header = tk.Frame(self.root, bg="#ef4444", padx=18, pady=12)
         header.pack(fill=tk.X)
 
         title = tk.Label(
@@ -138,8 +151,8 @@ class LockCountdownWindow:
         title.pack(anchor=tk.CENTER)
 
         # Body Frame
-        body = tk.Frame(self.root, bg="#1e293b", padx=20, pady=16)
-        body.pack(fill=tk.BOTH, expand=True, padx=12, pady=12)
+        body = tk.Frame(self.root, bg="#1e293b", padx=22, pady=16)
+        body.pack(fill=tk.BOTH, expand=True, padx=14, pady=14)
 
         desc = tk.Label(
             body,
@@ -147,7 +160,8 @@ class LockCountdownWindow:
             font=("Segoe UI", 10),
             fg="#f8fafc",
             bg="#1e293b",
-            justify=tk.CENTER
+            justify=tk.CENTER,
+            wraplength=480
         )
         desc.pack(anchor=tk.CENTER, pady=(0, 6))
 
@@ -155,11 +169,11 @@ class LockCountdownWindow:
         self.timer_label = tk.Label(
             body,
             text=f"{self.remaining} GIÂY",
-            font=("Segoe UI", 26, "bold"),
+            font=("Segoe UI", 28, "bold"),
             fg="#ef4444",
             bg="#1e293b"
         )
-        self.timer_label.pack(anchor=tk.CENTER, pady=(0, 6))
+        self.timer_label.pack(anchor=tk.CENTER, pady=(0, 8))
 
         subtext = tk.Label(
             body,
@@ -167,7 +181,8 @@ class LockCountdownWindow:
             font=("Segoe UI", 9, "italic"),
             fg="#fbbf24",
             bg="#1e293b",
-            justify=tk.CENTER
+            justify=tk.CENTER,
+            wraplength=480
         )
         subtext.pack(anchor=tk.CENTER)
 
