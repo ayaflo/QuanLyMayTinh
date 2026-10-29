@@ -98,16 +98,35 @@ echo       -> [OK] Da xoa danh sach ten mien chan khoi hosts file.
 
 echo.
 echo  [4/6] Go bo chinh sach chan An danh (Incognito) va DoH tren moi trinh duyet...
-reg delete "HKLM\SOFTWARE\Policies\Google\Chrome" /f >nul 2>&1
-reg delete "HKCU\SOFTWARE\Policies\Google\Chrome" /f >nul 2>&1
-reg delete "HKLM\SOFTWARE\Policies\Microsoft\Edge" /f >nul 2>&1
-reg delete "HKCU\SOFTWARE\Policies\Microsoft\Edge" /f >nul 2>&1
-reg delete "HKLM\SOFTWARE\Policies\BraveSoftware\Brave" /f >nul 2>&1
-reg delete "HKCU\SOFTWARE\Policies\BraveSoftware\Brave" /f >nul 2>&1
-reg delete "HKLM\SOFTWARE\Policies\Mozilla\Firefox" /f >nul 2>&1
-reg delete "HKCU\SOFTWARE\Policies\Mozilla\Firefox" /f >nul 2>&1
-reg delete "HKLM\SOFTWARE\Policies\CocCoc\Browser" /f >nul 2>&1
-reg delete "HKCU\SOFTWARE\Policies\CocCoc\Browser" /f >nul 2>&1
+reg delete "HKLM\SOFTWARE\Policies\Google\Chrome" /f /reg:64 >nul 2>&1
+reg delete "HKLM\SOFTWARE\Policies\Google\Chrome" /f /reg:32 >nul 2>&1
+reg delete "HKCU\SOFTWARE\Policies\Google\Chrome" /f /reg:64 >nul 2>&1
+reg delete "HKCU\SOFTWARE\Policies\Google\Chrome" /f /reg:32 >nul 2>&1
+
+reg delete "HKLM\SOFTWARE\Policies\Microsoft\Edge" /f /reg:64 >nul 2>&1
+reg delete "HKLM\SOFTWARE\Policies\Microsoft\Edge" /f /reg:32 >nul 2>&1
+reg delete "HKCU\SOFTWARE\Policies\Microsoft\Edge" /f /reg:64 >nul 2>&1
+reg delete "HKCU\SOFTWARE\Policies\Microsoft\Edge" /f /reg:32 >nul 2>&1
+
+reg delete "HKLM\SOFTWARE\Policies\BraveSoftware\Brave" /f /reg:64 >nul 2>&1
+reg delete "HKLM\SOFTWARE\Policies\BraveSoftware\Brave" /f /reg:32 >nul 2>&1
+reg delete "HKCU\SOFTWARE\Policies\BraveSoftware\Brave" /f /reg:64 >nul 2>&1
+reg delete "HKCU\SOFTWARE\Policies\BraveSoftware\Brave" /f /reg:32 >nul 2>&1
+
+reg delete "HKLM\SOFTWARE\Policies\Mozilla\Firefox" /f /reg:64 >nul 2>&1
+reg delete "HKLM\SOFTWARE\Policies\Mozilla\Firefox" /f /reg:32 >nul 2>&1
+reg delete "HKCU\SOFTWARE\Policies\Mozilla\Firefox" /f /reg:64 >nul 2>&1
+reg delete "HKCU\SOFTWARE\Policies\Mozilla\Firefox" /f /reg:32 >nul 2>&1
+
+reg delete "HKLM\SOFTWARE\Policies\CocCoc\Browser" /f /reg:64 >nul 2>&1
+reg delete "HKLM\SOFTWARE\Policies\CocCoc\Browser" /f /reg:32 >nul 2>&1
+reg delete "HKCU\SOFTWARE\Policies\CocCoc\Browser" /f /reg:64 >nul 2>&1
+reg delete "HKCU\SOFTWARE\Policies\CocCoc\Browser" /f /reg:32 >nul 2>&1
+
+:: Lam moi cac tien trinh trinh duyet ngam de tab An danh lap tuc kha dung lai
+taskkill /f /im chrome.exe >nul 2>&1
+taskkill /f /im msedge.exe >nul 2>&1
+taskkill /f /im brave.exe >nul 2>&1
 echo       -> [OK] Da mo khoa lai che do An danh (Incognito/InPrivate) tren Chrome, Edge, Brave, CocCoc!
 
 echo.

@@ -237,6 +237,22 @@ def remove_browser_doh_policies() -> bool:
             except Exception:
                 pass
 
+    # Fallback with native reg.exe across both 64-bit and 32-bit registry views
+    for root_str in ("HKLM", "HKCU"):
+        for subkey in policies.keys():
+            for view_flag in ("/reg:64", "/reg:32"):
+                try:
+                    subprocess.run(f'reg delete "{root_str}\\{subkey}" /f {view_flag}', shell=True, capture_output=True)
+                except Exception:
+                    pass
+
+    # Refresh background browser processes so Incognito is instantly restored upon reopen
+    for b_proc in ("chrome.exe", "msedge.exe", "brave.exe"):
+        try:
+            subprocess.run(f'taskkill /f /im {b_proc}', shell=True, capture_output=True)
+        except Exception:
+            pass
+
     return success
 
 

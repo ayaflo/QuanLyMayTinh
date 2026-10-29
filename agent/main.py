@@ -66,6 +66,7 @@ try:
     from agent.dns_configurator import (
         set_dns_to_localhost,
         restore_dns_to_dhcp,
+        disable_browser_doh,
         sync_hosts_file,
         restore_hosts_file,
         flush_dns_cache,
@@ -106,6 +107,7 @@ except ImportError:
     from dns_configurator import (
         set_dns_to_localhost,
         restore_dns_to_dhcp,
+        disable_browser_doh,
         sync_hosts_file,
         restore_hosts_file,
         flush_dns_cache,
@@ -215,6 +217,12 @@ def main():
         sys.exit(0)
 
     print_banner()
+
+    # Enforce protective browser policies (Disable Incognito, Disable Tor, Enforce SafeSearch, Disable DoH)
+    try:
+        disable_browser_doh()
+    except Exception:
+        pass
 
     # Step 1: Check existing credentials
     if args.re_pair:

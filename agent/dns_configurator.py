@@ -193,8 +193,7 @@ def restore_dns_to_dhcp(interface_name: Optional[str] = None) -> bool:
         except Exception:
             pass
 
-    # Clean up browser policies and hosts file
-    restore_browser_doh()
+    # Clean up hosts file and DNS cache (Note: Browser policies remain locked until full uninstall)
     restore_hosts_file()
     flush_dns_cache()
 
@@ -204,6 +203,7 @@ def restore_dns_to_dhcp(interface_name: Optional[str] = None) -> bool:
 def disable_browser_doh() -> bool:
     """Apply browser protective policies (Disable Incognito, Disable Tor, Disable DoH, Enforce SafeSearch).
     Enforces policies across Chrome, Edge, Brave, Firefox, and CocCoc in both HKLM and HKCU.
+    Uses both winreg API and native reg.exe for 64-bit and 32-bit views.
     """
     if sys.platform != "win32":
         return True
@@ -242,18 +242,42 @@ def disable_browser_doh() -> bool:
             }
         }
 
+        # 1. Direct Windows API (winreg)
         for root_hkey in (winreg.HKEY_LOCAL_MACHINE, winreg.HKEY_CURRENT_USER):
             for subkey, values in browser_policies.items():
+                key = None
+                for access_flag in (winreg.KEY_WRITE, winreg.KEY_WRITE | getattr(winreg, "KEY_WOW64_64KEY", 0), winreg.KEY_SET_VALUE):
+                    try:
+                        key = winreg.CreateKeyEx(root_hkey, subkey, 0, access_flag)
+                        break
+                    except Exception:
+                        pass
+                if not key:
+                    continue
                 try:
-                    key = winreg.CreateKeyEx(root_hkey, subkey, 0, winreg.KEY_SET_VALUE)
                     for (val_name, val_type), val_data in values.items():
                         try:
                             winreg.SetValueEx(key, val_name, 0, val_type, val_data)
                         except Exception:
                             pass
+                finally:
                     winreg.CloseKey(key)
-                except Exception:
-                    pass
+
+        # 2. Native reg.exe fallback across both 64-bit and 32-bit hives
+        for root_str in ("HKLM", "HKCU"):
+            for subkey, values in browser_policies.items():
+                for (val_name, val_type), val_data in values.items():
+                    type_str = "REG_DWORD" if val_type == winreg.REG_DWORD else "REG_SZ"
+                    for view_flag in ("/reg:64", "/reg:32"):
+                        try:
+                            subprocess.run(
+                                f'reg add "{root_str}\\{subkey}" /v "{val_name}" /t {type_str} /d "{val_data}" /f {view_flag}',
+                                shell=True,
+                                capture_output=True
+                            )
+                        except Exception:
+                            pass
+
         return True
     except Exception as e:
         logger.debug(f"[DNS] Could not write browser protective policies: {e}")
@@ -261,7 +285,7 @@ def disable_browser_doh() -> bool:
 
 
 def restore_browser_doh() -> bool:
-    """Remove browser protective policy overrides from Windows Registry upon agent shutdown."""
+    """Remove browser protective policy overrides from Windows Registry upon agent uninstallation."""
     if sys.platform != "win32":
         return True
 
@@ -285,6 +309,7 @@ def restore_browser_doh() -> bool:
             ]
         }
 
+        # 1. Direct winreg delete
         for root_hkey in (winreg.HKEY_LOCAL_MACHINE, winreg.HKEY_CURRENT_USER):
             for subkey, val_names in browser_policies.items():
                 try:
@@ -296,6 +321,20 @@ def restore_browser_doh() -> bool:
                                 pass
                 except Exception:
                     pass
+
+        # 2. Native reg.exe delete fallback across both 64-bit and 32-bit hives
+        for root_str in ("HKLM", "HKCU"):
+            for subkey, val_names in browser_policies.items():
+                for val_name in val_names:
+                    for view_flag in ("/reg:64", "/reg:32"):
+                        try:
+                            subprocess.run(
+                                f'reg delete "{root_str}\\{subkey}" /v "{val_name}" /f {view_flag}',
+                                shell=True,
+                                capture_output=True
+                            )
+                        except Exception:
+                            pass
         return True
     except Exception as e:
         return False

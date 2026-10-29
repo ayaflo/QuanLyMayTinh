@@ -102,12 +102,88 @@ if defined AGENT_EXE (
 )
 
 :: ============================================================================
-:: BUOC 3: CHUAN BI HE THONG BAO VE MANG
+:: BUOC 3: CHUAN BI HE THONG BAO VE MANG & TRINH DUYET
 :: ============================================================================
 echo.
-echo  [3/4] Chuan bi co che loc ten mien an toan...
+echo  [3/4] Chuan bi co che loc ten mien va khoa tab An danh (Incognito)...
 ipconfig /flushdns >nul 2>&1
-echo       - He thong DNS san sang. Co che loc se tu dong kich hoat khi tac tu khoi chay.
+
+:: 1. Khoa che do an danh va ep SafeSearch tren Google Chrome
+reg add "HKLM\SOFTWARE\Policies\Google\Chrome" /v IncognitoModeAvailability /t REG_DWORD /d 1 /f /reg:64 >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\Google\Chrome" /v IncognitoModeAvailability /t REG_DWORD /d 1 /f /reg:32 >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\Google\Chrome" /v DnsOverHttpsMode /t REG_SZ /d "off" /f /reg:64 >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\Google\Chrome" /v DnsOverHttpsMode /t REG_SZ /d "off" /f /reg:32 >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\Google\Chrome" /v ForceGoogleSafeSearch /t REG_DWORD /d 1 /f /reg:64 >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\Google\Chrome" /v ForceGoogleSafeSearch /t REG_DWORD /d 1 /f /reg:32 >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\Google\Chrome" /v ForceYouTubeSafetyMode /t REG_DWORD /d 2 /f /reg:64 >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\Google\Chrome" /v ForceYouTubeSafetyMode /t REG_DWORD /d 2 /f /reg:32 >nul 2>&1
+
+reg add "HKCU\SOFTWARE\Policies\Google\Chrome" /v IncognitoModeAvailability /t REG_DWORD /d 1 /f /reg:64 >nul 2>&1
+reg add "HKCU\SOFTWARE\Policies\Google\Chrome" /v IncognitoModeAvailability /t REG_DWORD /d 1 /f /reg:32 >nul 2>&1
+reg add "HKCU\SOFTWARE\Policies\Google\Chrome" /v DnsOverHttpsMode /t REG_SZ /d "off" /f /reg:64 >nul 2>&1
+reg add "HKCU\SOFTWARE\Policies\Google\Chrome" /v DnsOverHttpsMode /t REG_SZ /d "off" /f /reg:32 >nul 2>&1
+reg add "HKCU\SOFTWARE\Policies\Google\Chrome" /v ForceGoogleSafeSearch /t REG_DWORD /d 1 /f /reg:64 >nul 2>&1
+reg add "HKCU\SOFTWARE\Policies\Google\Chrome" /v ForceGoogleSafeSearch /t REG_DWORD /d 1 /f /reg:32 >nul 2>&1
+reg add "HKCU\SOFTWARE\Policies\Google\Chrome" /v ForceYouTubeSafetyMode /t REG_DWORD /d 2 /f /reg:64 >nul 2>&1
+reg add "HKCU\SOFTWARE\Policies\Google\Chrome" /v ForceYouTubeSafetyMode /t REG_DWORD /d 2 /f /reg:32 >nul 2>&1
+
+:: 2. Khoa che do InPrivate va ep SafeSearch tren Microsoft Edge
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Edge" /v InPrivateModeAvailability /t REG_DWORD /d 1 /f /reg:64 >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Edge" /v InPrivateModeAvailability /t REG_DWORD /d 1 /f /reg:32 >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Edge" /v DnsOverHttpsMode /t REG_SZ /d "off" /f /reg:64 >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Edge" /v DnsOverHttpsMode /t REG_SZ /d "off" /f /reg:32 >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Edge" /v ForceGoogleSafeSearch /t REG_DWORD /d 1 /f /reg:64 >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Edge" /v ForceGoogleSafeSearch /t REG_DWORD /d 1 /f /reg:32 >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Edge" /v ForceBingSafeSearch /t REG_DWORD /d 1 /f /reg:64 >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Edge" /v ForceBingSafeSearch /t REG_DWORD /d 1 /f /reg:32 >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Edge" /v ForceYouTubeSafetyMode /t REG_DWORD /d 2 /f /reg:64 >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Edge" /v ForceYouTubeSafetyMode /t REG_DWORD /d 2 /f /reg:32 >nul 2>&1
+
+reg add "HKCU\SOFTWARE\Policies\Microsoft\Edge" /v InPrivateModeAvailability /t REG_DWORD /d 1 /f /reg:64 >nul 2>&1
+reg add "HKCU\SOFTWARE\Policies\Microsoft\Edge" /v InPrivateModeAvailability /t REG_DWORD /d 1 /f /reg:32 >nul 2>&1
+reg add "HKCU\SOFTWARE\Policies\Microsoft\Edge" /v DnsOverHttpsMode /t REG_SZ /d "off" /f /reg:64 >nul 2>&1
+reg add "HKCU\SOFTWARE\Policies\Microsoft\Edge" /v DnsOverHttpsMode /t REG_SZ /d "off" /f /reg:32 >nul 2>&1
+reg add "HKCU\SOFTWARE\Policies\Microsoft\Edge" /v ForceGoogleSafeSearch /t REG_DWORD /d 1 /f /reg:64 >nul 2>&1
+reg add "HKCU\SOFTWARE\Policies\Microsoft\Edge" /v ForceGoogleSafeSearch /t REG_DWORD /d 1 /f /reg:32 >nul 2>&1
+reg add "HKCU\SOFTWARE\Policies\Microsoft\Edge" /v ForceBingSafeSearch /t REG_DWORD /d 1 /f /reg:64 >nul 2>&1
+reg add "HKCU\SOFTWARE\Policies\Microsoft\Edge" /v ForceBingSafeSearch /t REG_DWORD /d 1 /f /reg:32 >nul 2>&1
+reg add "HKCU\SOFTWARE\Policies\Microsoft\Edge" /v ForceYouTubeSafetyMode /t REG_DWORD /d 2 /f /reg:64 >nul 2>&1
+reg add "HKCU\SOFTWARE\Policies\Microsoft\Edge" /v ForceYouTubeSafetyMode /t REG_DWORD /d 2 /f /reg:32 >nul 2>&1
+
+:: 3. Khoa che do an danh va Tor tren Brave
+reg add "HKLM\SOFTWARE\Policies\BraveSoftware\Brave" /v IncognitoModeAvailability /t REG_DWORD /d 1 /f /reg:64 >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\BraveSoftware\Brave" /v IncognitoModeAvailability /t REG_DWORD /d 1 /f /reg:32 >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\BraveSoftware\Brave" /v TorDisabled /t REG_DWORD /d 1 /f /reg:64 >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\BraveSoftware\Brave" /v TorDisabled /t REG_DWORD /d 1 /f /reg:32 >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\BraveSoftware\Brave" /v DnsOverHttpsMode /t REG_SZ /d "off" /f /reg:64 >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\BraveSoftware\Brave" /v DnsOverHttpsMode /t REG_SZ /d "off" /f /reg:32 >nul 2>&1
+
+reg add "HKCU\SOFTWARE\Policies\BraveSoftware\Brave" /v IncognitoModeAvailability /t REG_DWORD /d 1 /f /reg:64 >nul 2>&1
+reg add "HKCU\SOFTWARE\Policies\BraveSoftware\Brave" /v IncognitoModeAvailability /t REG_DWORD /d 1 /f /reg:32 >nul 2>&1
+reg add "HKCU\SOFTWARE\Policies\BraveSoftware\Brave" /v TorDisabled /t REG_DWORD /d 1 /f /reg:64 >nul 2>&1
+reg add "HKCU\SOFTWARE\Policies\BraveSoftware\Brave" /v TorDisabled /t REG_DWORD /d 1 /f /reg:32 >nul 2>&1
+reg add "HKCU\SOFTWARE\Policies\BraveSoftware\Brave" /v DnsOverHttpsMode /t REG_SZ /d "off" /f /reg:64 >nul 2>&1
+reg add "HKCU\SOFTWARE\Policies\BraveSoftware\Brave" /v DnsOverHttpsMode /t REG_SZ /d "off" /f /reg:32 >nul 2>&1
+
+:: 4. Khoa che do an danh tren Mozilla Firefox
+reg add "HKLM\SOFTWARE\Policies\Mozilla\Firefox" /v DisablePrivateBrowsing /t REG_DWORD /d 1 /f /reg:64 >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\Mozilla\Firefox" /v DisablePrivateBrowsing /t REG_DWORD /d 1 /f /reg:32 >nul 2>&1
+reg add "HKCU\SOFTWARE\Policies\Mozilla\Firefox" /v DisablePrivateBrowsing /t REG_DWORD /d 1 /f /reg:64 >nul 2>&1
+reg add "HKCU\SOFTWARE\Policies\Mozilla\Firefox" /v DisablePrivateBrowsing /t REG_DWORD /d 1 /f /reg:32 >nul 2>&1
+
+:: 5. Khoa che do an danh tren CocCoc
+reg add "HKLM\SOFTWARE\Policies\CocCoc\Browser" /v IncognitoModeAvailability /t REG_DWORD /d 1 /f /reg:64 >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\CocCoc\Browser" /v IncognitoModeAvailability /t REG_DWORD /d 1 /f /reg:32 >nul 2>&1
+reg add "HKCU\SOFTWARE\Policies\CocCoc\Browser" /v IncognitoModeAvailability /t REG_DWORD /d 1 /f /reg:64 >nul 2>&1
+reg add "HKCU\SOFTWARE\Policies\CocCoc\Browser" /v IncognitoModeAvailability /t REG_DWORD /d 1 /f /reg:32 >nul 2>&1
+
+:: Lam moi cac tien trinh trinh duyet chay ngam de chinh sach khoa An danh duoc Chrome ap dung ngay
+taskkill /f /im chrome.exe >nul 2>&1
+taskkill /f /im msedge.exe >nul 2>&1
+taskkill /f /im brave.exe >nul 2>&1
+
+echo       - Da thiet lap khoa tab An danh va ep SafeSearch tren Chrome, Edge, Brave, CocCoc.
+echo       - Da lam moi tien trinh trinh duyet de che do An danh bi vo hieu hoa ngay lap tuc.
 
 :: ============================================================================
 :: BUOC 4: KHOI DONG TAC TU VA MO GIAO DIEN NHAP MA GHEP DOI
