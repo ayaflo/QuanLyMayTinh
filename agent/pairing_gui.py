@@ -43,14 +43,14 @@ class PairingWindow:
 
         self.root = tk.Tk()
         self.root.title(f"{APP_TITLE} — Ghép Đôi Cùng Ba Mẹ")
-        self.root.geometry("600x560")
-        self.root.minsize(560, 500)
+        self.root.geometry("580x640")
+        self.root.minsize(540, 580)
         self.root.configure(bg="#000000")
 
         # Center on screen
         self.root.update_idletasks()
-        w = max(600, self.root.winfo_width())
-        h = max(560, self.root.winfo_height())
+        w = max(580, self.root.winfo_width())
+        h = max(640, self.root.winfo_height())
         sw = self.root.winfo_screenwidth()
         sh = self.root.winfo_screenheight()
         x = max(0, (sw - w) // 2)
@@ -72,7 +72,7 @@ class PairingWindow:
             self.root,
             bg="#0c0d12",
             padx=20,
-            pady=16,
+            pady=12,
             highlightbackground="#1e2230",
             highlightthickness=1
         )
@@ -89,7 +89,7 @@ class PairingWindow:
             bg="#ffffff",
             fg="#000000",
             padx=10,
-            pady=5
+            pady=4
         )
         brand_badge.pack(side=tk.LEFT, padx=(0, 14))
 
@@ -99,7 +99,7 @@ class PairingWindow:
         title_lbl = tk.Label(
             title_box,
             text="Kết Nối Cùng Ba Mẹ",
-            font=("Segoe UI", 14, "bold"),
+            font=("Segoe UI", 13, "bold"),
             fg="#ffffff",
             bg="#0c0d12"
         )
@@ -111,25 +111,39 @@ class PairingWindow:
             font=("Segoe UI", 8),
             fg="#94a3b8",
             bg="#0c0d12",
-            wraplength=540,
+            wraplength=500,
             justify=tk.LEFT
         )
         sub_lbl.pack(anchor=tk.W, pady=(2, 0))
 
-        # 2. Main Content Body
-        body = tk.Frame(self.root, bg="#000000", padx=24, pady=16)
+        # 2. Ethical Footer (Pack to bottom FIRST so it stays securely on screen)
+        footer = tk.Frame(self.root, bg="#000000", padx=16, pady=6)
+        footer.pack(fill=tk.X, side=tk.BOTTOM)
+
+        fp = get_device_fingerprint()[:16]
+        info_lbl = tk.Label(
+            footer,
+            text=f"Hệ thống đồng hành cùng con  •  Mã thiết bị: {fp}...",
+            font=("Segoe UI", 8),
+            fg="#64748b",
+            bg="#000000"
+        )
+        info_lbl.pack()
+
+        # 3. Main Content Body (fills between header and footer)
+        body = tk.Frame(self.root, bg="#000000", padx=20, pady=10)
         body.pack(fill=tk.BOTH, expand=True)
 
         # Guide Card (3 Steps)
         guide_card = tk.Frame(
             body,
             bg="#0d0e14",
-            padx=16,
-            pady=14,
+            padx=14,
+            pady=10,
             highlightbackground="#1e2230",
             highlightthickness=1
         )
-        guide_card.pack(fill=tk.X, pady=(0, 14))
+        guide_card.pack(fill=tk.X, pady=(0, 10))
 
         guide_title = tk.Label(
             guide_card,
@@ -138,7 +152,7 @@ class PairingWindow:
             fg="#38bdf8",
             bg="#0d0e14"
         )
-        guide_title.pack(anchor=tk.W, pady=(0, 6))
+        guide_title.pack(anchor=tk.W, pady=(0, 4))
 
         steps = [
             ("1️⃣", "Ba mẹ mở trang quản trị Dashboard trên điện thoại hoặc máy tính."),
@@ -147,17 +161,17 @@ class PairingWindow:
         ]
         for icon, txt in steps:
             row = tk.Frame(guide_card, bg="#0d0e14")
-            row.pack(fill=tk.X, pady=3)
+            row.pack(fill=tk.X, pady=2)
             tk.Label(row, text=icon, font=("Segoe UI", 9), bg="#0d0e14", fg="#ffffff").pack(side=tk.LEFT, padx=(0, 8))
-            lbl = tk.Label(row, text=txt, font=("Segoe UI", 8), bg="#0d0e14", fg="#cbd5e1", wraplength=500, justify=tk.LEFT)
+            lbl = tk.Label(row, text=txt, font=("Segoe UI", 8), bg="#0d0e14", fg="#cbd5e1", wraplength=480, justify=tk.LEFT)
             lbl.pack(side=tk.LEFT, anchor=tk.W)
 
-        # 3. Code Input Section
+        # 4. Code Input Section
         code_section = tk.Frame(body, bg="#000000")
-        code_section.pack(fill=tk.X, pady=(0, 10))
+        code_section.pack(fill=tk.X, pady=(0, 8))
 
         code_header = tk.Frame(code_section, bg="#000000")
-        code_header.pack(fill=tk.X, pady=(0, 5))
+        code_header.pack(fill=tk.X, pady=(0, 4))
 
         code_lbl = tk.Label(
             code_header,
@@ -193,18 +207,18 @@ class PairingWindow:
             activebackground="#252c3f",
             activeforeground="#ffffff",
             relief=tk.FLAT,
-            padx=16,
+            padx=14,
             command=self._paste_clipboard,
             cursor="hand2",
             highlightbackground="#2d344d",
             highlightthickness=1
         )
-        paste_btn.pack(side=tk.RIGHT, padx=(10, 0), ipady=7)
+        paste_btn.pack(side=tk.RIGHT, padx=(8, 0), ipady=5)
 
         self.code_entry = tk.Entry(
             entry_row,
             textvariable=self.code_var,
-            font=("Consolas", 20, "bold"),
+            font=("Consolas", 18, "bold"),
             justify="center",
             bg="#121520",
             fg="#ffffff",
@@ -214,12 +228,12 @@ class PairingWindow:
             highlightcolor="#38bdf8",
             highlightthickness=2
         )
-        self.code_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, ipady=5)
+        self.code_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, ipady=4)
         self.code_entry.focus_set()
 
-        # 4. Device Name Section
+        # 5. Device Name Section
         name_section = tk.Frame(body, bg="#000000")
-        name_section.pack(fill=tk.X, pady=(0, 10))
+        name_section.pack(fill=tk.X, pady=(0, 8))
 
         name_lbl = tk.Label(
             name_section,
@@ -228,7 +242,7 @@ class PairingWindow:
             fg="#cbd5e1",
             bg="#000000"
         )
-        name_lbl.pack(anchor=tk.W, pady=(0, 4))
+        name_lbl.pack(anchor=tk.W, pady=(0, 3))
 
         self.name_var = tk.StringVar(value=self.default_device_name)
         self.name_entry = tk.Entry(
@@ -242,9 +256,9 @@ class PairingWindow:
             highlightbackground="#222838",
             highlightthickness=1
         )
-        self.name_entry.pack(fill=tk.X, ipady=5)
+        self.name_entry.pack(fill=tk.X, ipady=4)
 
-        # 5. Action Button (ALWAYS VISIBLE & PACKED ABOVE STATUS)
+        # 6. Action Button (PROMINENT & FULLY VISIBLE)
         self.submit_btn = tk.Button(
             body,
             text="🚀 Kết Nối Ngay",
@@ -255,37 +269,23 @@ class PairingWindow:
             activeforeground="#000000",
             relief=tk.FLAT,
             padx=20,
-            pady=10,
+            pady=9,
             cursor="hand2",
             command=self._on_submit
         )
-        self.submit_btn.pack(fill=tk.X, pady=(12, 6))
+        self.submit_btn.pack(fill=tk.X, pady=(10, 4))
 
-        # 6. Status Message Box (PACKED BELOW BUTTON - NEVER PUSHES BUTTON OFF-SCREEN)
+        # 7. Status Message Box (BELOW BUTTON)
         self.status_box = tk.Label(
             body,
             text="",
             font=("Segoe UI", 9),
             fg="#94a3b8",
             bg="#000000",
-            wraplength=520,
+            wraplength=500,
             justify=tk.CENTER
         )
-        self.status_box.pack(fill=tk.X, pady=(2, 6))
-
-        # 7. Ethical Footer
-        footer = tk.Frame(self.root, bg="#000000", padx=16, pady=8)
-        footer.pack(fill=tk.X, side=tk.BOTTOM)
-
-        fp = get_device_fingerprint()[:16]
-        info_lbl = tk.Label(
-            footer,
-            text=f"Hệ thống đồng hành cùng con  •  Mã thiết bị: {fp}...",
-            font=("Segoe UI", 8),
-            fg="#64748b",
-            bg="#000000"
-        )
-        info_lbl.pack()
+        self.status_box.pack(fill=tk.X, pady=(2, 4))
 
     def _on_code_changed(self, *args):
         """Filter input to uppercase alphanumeric, limit to 8 chars, and update badge."""

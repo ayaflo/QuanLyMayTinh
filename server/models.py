@@ -82,8 +82,8 @@ class HeartbeatLog(Base):
 # ============================================================================
 
 # Default schedule matrix: 7 days x 48 slots (30m each) = 336 chars.
-# Slots 12..43 (06:00 to 22:00) allowed ('1'), night slots (22:00 to 06:00) locked ('0').
-DEFAULT_DAILY_SCHEDULE = ("0" * 12) + ("1" * 32) + ("0" * 4)  # 48 chars
+# Default is 'Cho phép cả ngày' (all slots '1' allowed).
+DEFAULT_DAILY_SCHEDULE = "1" * 48  # 48 chars
 DEFAULT_SCHEDULE_MATRIX = DEFAULT_DAILY_SCHEDULE * 7           # 336 chars
 
 
