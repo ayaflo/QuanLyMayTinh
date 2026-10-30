@@ -159,9 +159,12 @@ async def add_app_rule(
     db: Session = Depends(get_db)
 ) -> AppRuleResponse:
     """Create or update executable SHA-256 application control rule."""
-    rule = create_app_rule(db, rule_in)
-    await _notify_devices_rules_updated(db)
-    return AppRuleResponse.model_validate(rule)
+    try:
+        rule = create_app_rule(db, rule_in)
+        await _notify_devices_rules_updated(db)
+        return AppRuleResponse.model_validate(rule)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
 @router.post("/app-rules/{rule_id}/toggle", response_model=AppRuleResponse, summary="Đảo trạng thái Chặn / Mở khóa ứng dụng")

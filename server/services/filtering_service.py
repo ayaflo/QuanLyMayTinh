@@ -134,6 +134,7 @@ def toggle_domain_rule(db: Session, rule_id: int) -> Optional[DomainRule]:
 def create_app_rule(db: Session, rule_in: AppRuleCreate) -> AppRule:
     """Create a new executable SHA-256 control rule (F2)."""
     import hashlib
+    import re
 
     clean_name = rule_in.app_name.strip()
     # Normalize extension: if no dot, append .exe
@@ -141,7 +142,9 @@ def create_app_rule(db: Session, rule_in: AppRuleCreate) -> AppRule:
         clean_name = f"{clean_name}.exe"
 
     raw_hash = (rule_in.sha256_hash or "").strip().lower()
-    if len(raw_hash) == 64:
+    if raw_hash:
+        if not re.fullmatch(r"[a-f0-9]{64}", raw_hash):
+            raise ValueError("Mã băm SHA-256 không hợp lệ. Vui lòng nhập đúng 64 ký tự thập lục phân (0-9, a-f).")
         clean_hash = raw_hash
     else:
         # Fallback to deterministic hash of executable name so process matching works

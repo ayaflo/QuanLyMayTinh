@@ -578,6 +578,55 @@ def test_download_ogk_agent_zip_and_ui():
     assert "Tải Agent (OGK.zip)" in res_login.text
 
 
+def test_app_rule_with_custom_sha256_hash(client):
+    """Verify creating app rule with valid custom SHA-256 hash succeeds and is stored."""
+    valid_hash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    payload = {
+        "app_name": "malicious_game.exe",
+        "action": "block",
+        "description": "Block harmful game by exact binary hash",
+        "sha256_hash": valid_hash.upper()  # Test normalization to lowercase
+    }
+    res = client.post("/api/v1/filtering/app-rules", json=payload)
+    assert res.status_code == 201
+    data = res.json()
+    assert data["app_name"] == "malicious_game.exe"
+    assert data["sha256_hash"] == valid_hash.lower()
+
+
+def test_app_rule_with_invalid_sha256_hash(client):
+    """Verify creating app rule with invalid SHA-256 hash returns 400 Bad Request."""
+    # Test short hash
+    res_short = client.post("/api/v1/filtering/app-rules", json={
+        "app_name": "game.exe",
+        "sha256_hash": "123456"
+    })
+    assert res_short.status_code == 400
+    assert "64 ký tự" in res_short.json()["detail"]
+
+    # Test non-hex characters
+    res_invalid_hex = client.post("/api/v1/filtering/app-rules", json={
+        "app_name": "game.exe",
+        "sha256_hash": "g" * 64
+    })
+    assert res_invalid_hex.status_code == 400
+    assert "64 ký tự" in res_invalid_hex.json()["detail"]
+
+
+def test_app_rule_auto_hash_when_omitted(client):
+    """Verify creating app rule without sha256_hash generates a deterministic hash."""
+    import hashlib
+    res = client.post("/api/v1/filtering/app-rules", json={
+        "app_name": "notepad.exe",
+        "action": "block"
+    })
+    assert res.status_code == 201
+    data = res.json()
+    expected_hash = hashlib.sha256("notepad.exe".encode()).hexdigest()
+    assert data["sha256_hash"] == expected_hash
+
+
+
 
 
 

@@ -317,16 +317,28 @@
                     </div>
 
                     <!-- Add Blocked App Form -->
-                    <form onsubmit="handleAddAppRule(event)" style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.5rem; background: rgba(255,255,255,0.02); padding: 1.1rem; border-radius: 16px; border: 1px solid rgba(255,255,255,0.06);">
-                        <input type="text" id="inputNewAppName" class="form-input-xai" style="flex: 2; min-width: 200px;" placeholder="Tên tệp thực thi (ví dụ: notepad.exe, roblox.exe, game.exe)" required>
-                        <input type="text" id="inputNewAppDesc" class="form-input-xai" style="flex: 2; min-width: 180px;" placeholder="Ghi chú lý do (ví dụ: Giờ học không chơi game)">
-                        <select id="selectNewAppAction" class="form-input-xai" style="width: 140px;">
-                            <option value="block">Chặn (Block)</option>
-                            <option value="allow">Cho phép (Allow)</option>
-                        </select>
-                        <button type="submit" class="btn-pill-white" style="padding: 0.65rem 1.4rem;">
-                            <span>➕</span> Thêm Ứng Dụng
-                        </button>
+                    <form onsubmit="handleAddAppRule(event)" style="display: flex; flex-direction: column; gap: 0.85rem; margin-bottom: 1.5rem; background: rgba(255,255,255,0.02); padding: 1.25rem; border-radius: 16px; border: 1px solid rgba(255,255,255,0.08);">
+                        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
+                            <input type="text" id="inputNewAppName" class="form-input-xai" style="flex: 2; min-width: 220px;" placeholder="Tên tệp thực thi (ví dụ: notepad.exe, roblox.exe, game.exe)" required>
+                            <input type="text" id="inputNewAppDesc" class="form-input-xai" style="flex: 2; min-width: 200px;" placeholder="Ghi chú lý do (ví dụ: Giờ học không chơi game)">
+                            <select id="selectNewAppAction" class="form-input-xai" style="width: 150px;">
+                                <option value="block">Chặn (Block)</option>
+                                <option value="allow">Cho phép (Allow)</option>
+                            </select>
+                            <button type="submit" class="btn-pill-white" style="padding: 0.65rem 1.4rem; white-space: nowrap;">
+                                <span>➕</span> Thêm Ứng Dụng
+                            </button>
+                        </div>
+                        <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+                            <div style="flex: 2; min-width: 280px; position: relative;">
+                                <input type="text" id="inputNewAppHash" class="form-input-xai" style="width: 100%; font-family: 'Geist Mono', monospace; font-size: 0.825rem; padding-left: 2.2rem;" placeholder="Mã băm SHA-256 (Tùy chọn - Chống đổi tên file thực thi, 64 ký tự hex)" maxlength="64">
+                                <span style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); font-size: 0.85rem; color: #94a3b8; pointer-events: none;">#</span>
+                            </div>
+                            <div style="flex: 2; min-width: 260px; font-size: 0.775rem; color: #94a3b8; display: flex; align-items: center; gap: 0.4rem;">
+                                <span>🛡️</span>
+                                <span>Nhập mã băm SHA-256 để Agent nhận diện chính xác kể cả khi trẻ đổi tên file thực thi.</span>
+                            </div>
+                        </div>
                     </form>
 
                     <!-- Blocked Apps Table -->
@@ -335,6 +347,7 @@
                             <thead>
                                 <tr>
                                     <th>Ứng Dụng (.exe)</th>
+                                    <th>Mã Băm SHA-256 (Chống Đổi Tên)</th>
                                     <th>Mô Tả / Lý Do</th>
                                     <th>Hành Động</th>
                                     <th>Trạng Thái</th>
@@ -346,6 +359,20 @@
                                     <tr>
                                         <td style="font-family: 'Geist Mono', monospace; font-weight: 600; color: #fff;">
                                             📦 {{ app.app_name }}
+                                        </td>
+                                        <td>
+                                            {% if app.sha256_hash %}
+                                                <div style="display: inline-flex; align-items: center; gap: 0.35rem;" title="Mã băm SHA-256 đầy đủ: {{ app.sha256_hash }}">
+                                                    <code style="font-family: 'Geist Mono', monospace; font-size: 0.75rem; color: #93c5fd; background: rgba(59, 130, 246, 0.12); padding: 0.2rem 0.45rem; border-radius: 6px; border: 1px solid rgba(59, 130, 246, 0.25);">
+                                                        {{ app.sha256_hash[:10] }}...{{ app.sha256_hash[-8:] }}
+                                                    </code>
+                                                    <button type="button" class="btn-pill-dark" style="padding: 0.2rem 0.45rem; font-size: 0.7rem; border-radius: 6px;" onclick="navigator.clipboard.writeText('{{ app.sha256_hash }}'); showToast('Đã sao chép mã SHA-256!');" title="Sao chép toàn bộ mã SHA-256">
+                                                        📋
+                                                    </button>
+                                                </div>
+                                            {% else %}
+                                                <span style="color: var(--text-dim); font-size: 0.8rem;">Tự động</span>
+                                            {% endif %}
                                         </td>
                                         <td style="color: var(--text-muted); font-size: 0.85rem;">
                                             {{ app.description or 'Quy định quản lý của cha mẹ' }}
@@ -1602,14 +1629,30 @@
         event.preventDefault();
         const appName = document.getElementById('inputNewAppName').value.trim();
         const description = document.getElementById('inputNewAppDesc').value.trim();
+        const hashEl = document.getElementById('inputNewAppHash');
+        const rawHash = hashEl ? hashEl.value.trim().toLowerCase() : '';
         const actionEl = document.getElementById('selectNewAppAction');
         const action = actionEl ? actionEl.value : 'block';
+
+        if (rawHash && !/^[a-f0-9]{64}$/.test(rawHash)) {
+            showToast('Mã băm SHA-256 không hợp lệ. Vui lòng nhập đúng 64 ký tự hex (0-9, a-f) hoặc để trống.', false);
+            return;
+        }
+
+        const payload = {
+            app_name: appName,
+            action: action,
+            description: description
+        };
+        if (rawHash) {
+            payload.sha256_hash = rawHash;
+        }
 
         try {
             const res = await fetch('/api/v1/filtering/app-rules', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ app_name: appName, action: action, description })
+                body: JSON.stringify(payload)
             });
 
             if (!res.ok) {
