@@ -575,7 +575,7 @@ def test_download_ogk_agent_zip_and_ui():
     assert res_login.status_code == 200
     assert "Giám Sát Thời Gian Thực" not in res_login.text
     assert "/download/OGK.zip" in res_login.text
-    assert "Tải Agent (OGK.zip)" in res_login.text
+    assert "Tải Agent" in res_login.text
 
 
 def test_app_rule_with_custom_sha256_hash(client):

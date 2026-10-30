@@ -317,26 +317,35 @@
                     </div>
 
                     <!-- Add Blocked App Form -->
-                    <form onsubmit="handleAddAppRule(event)" style="display: flex; flex-direction: column; gap: 0.85rem; margin-bottom: 1.5rem; background: rgba(255,255,255,0.02); padding: 1.25rem; border-radius: 16px; border: 1px solid rgba(255,255,255,0.08);">
-                        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
-                            <input type="text" id="inputNewAppName" class="form-input-xai" style="flex: 2; min-width: 220px;" placeholder="Tên tệp thực thi (ví dụ: notepad.exe, roblox.exe, game.exe)" required>
-                            <input type="text" id="inputNewAppDesc" class="form-input-xai" style="flex: 2; min-width: 200px;" placeholder="Ghi chú lý do (ví dụ: Giờ học không chơi game)">
-                            <select id="selectNewAppAction" class="form-input-xai" style="width: 150px;">
-                                <option value="block">Chặn (Block)</option>
-                                <option value="allow">Cho phép (Allow)</option>
-                            </select>
-                            <button type="submit" class="btn-pill-white" style="padding: 0.65rem 1.4rem; white-space: nowrap;">
-                                <span>➕</span> Thêm Ứng Dụng
-                            </button>
-                        </div>
-                        <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
-                            <div style="flex: 2; min-width: 280px; position: relative;">
-                                <input type="text" id="inputNewAppHash" class="form-input-xai" style="width: 100%; font-family: 'Geist Mono', monospace; font-size: 0.825rem; padding-left: 2.2rem;" placeholder="Mã băm SHA-256 (Tùy chọn - Chống đổi tên file thực thi, 64 ký tự hex)" maxlength="64">
-                                <span style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); font-size: 0.85rem; color: #94a3b8; pointer-events: none;">#</span>
+                    <form onsubmit="handleAddAppRule(event)" style="margin-bottom: 1.5rem; background: rgba(255,255,255,0.02); padding: 1.25rem; border-radius: 16px; border: 1px solid rgba(255,255,255,0.08);">
+                        <div style="display: flex; gap: 0.85rem; flex-wrap: wrap; align-items: flex-start;">
+                            <!-- Cột chính: Ô Tên tệp & Ghi lý do, và Ô Mã băm SHA-256 nằm trực tiếp bên dưới -->
+                            <div style="flex: 1; min-width: 320px; display: flex; flex-direction: column; gap: 0.75rem;">
+                                <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                                    <input type="text" id="inputNewAppName" class="form-input-xai" style="flex: 1; min-width: 200px;" placeholder="Tên tệp thực thi (ví dụ: notepad.exe, roblox.exe, game.exe)" required>
+                                    <input type="text" id="inputNewAppDesc" class="form-input-xai" style="flex: 1; min-width: 200px;" placeholder="Ghi chú lý do (ví dụ: Giờ học không chơi game)">
+                                </div>
+                                <div style="position: relative; width: 100%;">
+                                    <input type="text" id="inputNewAppHash" class="form-input-xai" style="width: 100%; font-family: 'Geist Mono', monospace; font-size: 0.825rem; padding-left: 2.2rem;" placeholder="Mã băm SHA-256 (Tùy chọn - Chống đổi tên file thực thi, 64 ký tự hex)" maxlength="64">
+                                    <span style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); font-size: 0.85rem; color: #94a3b8; pointer-events: none;">#</span>
+                                </div>
                             </div>
-                            <div style="flex: 2; min-width: 260px; font-size: 0.775rem; color: #94a3b8; display: flex; align-items: center; gap: 0.4rem;">
-                                <span>🛡️</span>
-                                <span>Nhập mã băm SHA-256 để Agent nhận diện chính xác kể cả khi trẻ đổi tên file thực thi.</span>
+                            
+                            <!-- Cột phụ: Lựa chọn hành động & Nút Thêm -->
+                            <div style="display: flex; flex-direction: column; gap: 0.75rem; min-width: 240px;">
+                                <div style="display: flex; gap: 0.75rem; align-items: center;">
+                                    <select id="selectNewAppAction" class="form-input-xai" style="width: 130px;">
+                                        <option value="block">Chặn (Block)</option>
+                                        <option value="allow">Cho phép (Allow)</option>
+                                    </select>
+                                    <button type="submit" class="btn-pill-white" style="padding: 0.65rem 1.3rem; white-space: nowrap;">
+                                        <span>➕</span> Thêm Ứng Dụng
+                                    </button>
+                                </div>
+                                <div style="font-size: 0.75rem; color: #94a3b8; display: flex; align-items: center; gap: 0.35rem; line-height: 1.3;">
+                                    <span>🛡️</span>
+                                    <span>Khóa theo mã băm giúp nhận diện tiến trình kể cả khi bị đổi tên tệp.</span>
+                                </div>
                             </div>
                         </div>
                     </form>
