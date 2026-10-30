@@ -131,9 +131,12 @@ def test_parent_delete_device_dispatches_uninstall_ws_command(client, parent_tok
         assert del_res.status_code == 200
         assert del_res.json()["status"] == "success"
 
-        # Check command dispatched
-        assert len(sent_commands) == 1
-        cmd = sent_commands[0]
+        # Check commands dispatched in order: 1. purge_local_data -> 2. uninstall
+        assert len(sent_commands) == 2
+        assert sent_commands[0]["device_id"] == dev_id
+        assert sent_commands[0]["message"]["action"] == "purge_local_data"
+
+        cmd = sent_commands[1]
         assert cmd["device_id"] == dev_id
         assert cmd["message"]["action"] == "uninstall"
         payload = cmd["message"]["payload"]

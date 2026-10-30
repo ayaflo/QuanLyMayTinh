@@ -132,16 +132,35 @@ async def delete_device_by_parent(
 
     import time
     import asyncio
+    import logging
+    logger = logging.getLogger(__name__)
+
     try:
         from ..security import UNINSTALL_MASTER_KEY
         from ..services.connection_manager import ws_manager
         from ..services.enrollment_service import unenroll_device
+        from ..services.retention_service import erase_device_data
     except (ImportError, ValueError):
         from server.security import UNINSTALL_MASTER_KEY
         from server.services.connection_manager import ws_manager
         from server.services.enrollment_service import unenroll_device
+        from server.services.retention_service import erase_device_data
 
-    # 1. Chìa khóa giải mã cố định được lưu bảo mật trên máy chủ (Server Master Key)
+    client_ip = request.client.host if request.client else None
+
+    # 1. Gửi lệnh xóa vĩnh viễn dữ liệu (Nghị định 13/2023) trên server và máy con
+    try:
+        await erase_device_data(
+            db=db,
+            device_id=device.id,
+            parent_id=parent.id,
+            ip_address=client_ip
+        )
+        await asyncio.sleep(0.3)
+    except Exception as e:
+        logger.warning(f"Lỗi khi xóa dữ liệu trước khi gỡ thiết bị #{device_id}: {e}")
+
+    # 2. Chìa khóa giải mã cố định được lưu bảo mật trên máy chủ (Server Master Key)
     unlock_key = UNINSTALL_MASTER_KEY
 
     cmd_payload = {
@@ -152,7 +171,7 @@ async def delete_device_by_parent(
         "reason": "uninstalled_by_parent"
     }
 
-    # 2. Gửi lệnh gỡ cài đặt khẩn cấp tới máy tính trẻ qua WebSocket (< 5s)
+    # 3. Gửi lệnh gỡ cài đặt sạch tới máy tính trẻ qua WebSocket (< 5s)
     try:
         await ws_manager.send_command(device_id, {
             "action": "uninstall",
@@ -162,11 +181,12 @@ async def delete_device_by_parent(
     except Exception:
         pass
 
-    # 3. Xóa thiết bị khỏi cơ sở dữ liệu máy chủ
+    # 4. Xóa thiết bị khỏi cơ sở dữ liệu máy chủ
     unenroll_device(db, device_id=device_id)
     return {
         "status": "success",
         "device_id": device_id,
-        "message": f"Đã gửi lệnh gỡ cài đặt sạch tới máy #{device_id} và xóa khỏi tài khoản phụ huynh thành công."
+        "message": f"Đã xóa vĩnh viễn toàn bộ dữ liệu và gửi lệnh gỡ cài đặt sạch tới máy #{device_id}."
     }
+
 

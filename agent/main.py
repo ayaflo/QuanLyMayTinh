@@ -450,13 +450,18 @@ def main():
             unlock_key = payload.get("unlock_key")
             print("\n" + "=" * 65)
             print(" [!] NHẬN ĐƯỢC LỆNH GỠ BỎ THIẾT BỊ TỪ PHỤ HUYNH!")
+            print(" [*] Đang thực hiện xóa vĩnh viễn dữ liệu máy tính (Nghị định 13/2023)...")
+            try:
+                purge_local_data()
+            except Exception:
+                pass
             print(" [*] Đang giải mã module gỡ cài đặt và khôi phục cài đặt gốc...")
             print("=" * 65)
             if tray_icon_holder[0]:
                 show_tray_notification(
                     tray_icon_holder[0],
                     "Gỡ Bỏ Thiết Bị",
-                    "Phụ huynh đã gỡ bỏ thiết bị này. Đang tiến hành khôi phục lại cài đặt gốc máy tính..."
+                    "Phụ huynh đã gỡ bỏ thiết bị này. Đang xóa dữ liệu và khôi phục lại cài đặt gốc..."
                 )
             execute_remote_authorized_uninstall(token=token, unlock_key=unlock_key)
 

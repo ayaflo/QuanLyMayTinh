@@ -642,37 +642,26 @@
             <div class="cockpit-tab-content" id="tab-settings-{{ dev.id }}" style="display: none;">
                 <div class="xai-card" style="margin-bottom: 2rem; border-color: rgba(239, 68, 68, 0.25);">
                     <div style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 1rem; margin-bottom: 1.5rem;">
-                        <div class="xai-card-tag" style="color: #ef4444;">DATA PRIVACY & DEVICE UNPAIR</div>
-                        <h3 style="font-size: 1.3rem; font-weight: 800; color: #ef4444;">Vùng Nguy Hiểm & Quản Lý Dữ Liệu</h3>
+                        <div class="xai-card-tag" style="color: #ef4444;">DEVICE REMOVAL & DATA PRIVACY</div>
+                        <h3 style="font-size: 1.3rem; font-weight: 800; color: #ef4444;">Gỡ Bỏ Máy Tính & Quản Lý Dữ Liệu</h3>
                         <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.2rem;">
-                            Quyền xóa dữ liệu cá nhân theo Nghị định 13/2023/NĐ-CP và hủy liên kết máy tính
+                            Xóa vĩnh viễn toàn bộ dữ liệu cá nhân theo Nghị định 13/2023/NĐ-CP và tự động gỡ cài đặt phần mềm trên máy con
                         </p>
                     </div>
 
-                    <div style="display: flex; flex-direction: column; gap: 1.25rem;">
-                        <!-- Erase Data Option -->
-                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1.25rem; background: rgba(239, 68, 68, 0.04); border: 1px solid rgba(239, 68, 68, 0.15); border-radius: 16px; flex-wrap: wrap; gap: 1rem;">
-                            <div>
-                                <h4 style="font-weight: 700; color: #fff; font-size: 0.95rem;">Xóa Toàn Bộ Dữ Liệu Thiết Bị</h4>
-                                <p style="font-size: 0.825rem; color: var(--text-dim); margin-top: 0.25rem;">
-                                    Xóa vĩnh viễn nhật ký sử dụng, lịch sử ứng dụng và web của máy này trên máy chủ và máy con.
+                    <div>
+                        <!-- Unified Action: Gỡ Bỏ Máy Tính -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1.35rem 1.5rem; background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 16px; flex-wrap: wrap; gap: 1rem;">
+                            <div style="max-width: 660px;">
+                                <h4 style="font-weight: 700; color: #fff; font-size: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                                    <span style="color: #ef4444;">✕</span> Gỡ Bỏ Máy Tính Khỏi Tài Khoản
+                                </h4>
+                                <p style="font-size: 0.835rem; color: var(--text-dim); margin-top: 0.35rem; line-height: 1.6;">
+                                    Khi gỡ bỏ, hệ thống sẽ thực hiện theo thứ tự: <strong style="color: #fca5a5;">(1) Xóa vĩnh viễn toàn bộ dữ liệu</strong> nhật ký hoạt động, ứng dụng và duyệt web trên máy chủ và máy con (theo NĐ 13/2023), <strong style="color: #fca5a5;">(2) Gửi lệnh tự động gỡ cài đặt phần mềm bảo vệ</strong> và khôi phục cài đặt gốc máy con, và <strong style="color: #fca5a5;">(3) Hủy liên kết máy tính</strong> khỏi tài khoản của bạn.
                                 </p>
                             </div>
-                            <button class="btn-pill-danger" onclick="openEraseModal({{ dev.id }}, '{{ dev.device_name }}')">
-                                🗑️ Xóa Vĩnh Viễn Dữ Liệu
-                            </button>
-                        </div>
-
-                        <!-- Remove Device Option -->
-                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1.25rem; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; flex-wrap: wrap; gap: 1rem;">
-                            <div>
-                                <h4 style="font-weight: 700; color: #fff; font-size: 0.95rem;">Gỡ Bỏ Máy Tính Khỏi Tài Khoản</h4>
-                                <p style="font-size: 0.825rem; color: var(--text-dim); margin-top: 0.25rem;">
-                                    Ngừng quản lý máy tính này. Nếu muốn kết nối lại, phụ huynh sẽ cần tạo mã ghép đôi mới.
-                                </p>
-                            </div>
-                            <button class="btn-pill-dark" onclick="handleDeleteDevice({{ dev.id }}, '{{ dev.device_name }}')" style="border-color: rgba(239, 68, 68, 0.3); color: #fca5a5;">
-                                ✕ Gỡ Bỏ Thiết Bị
+                            <button class="btn-pill-danger" onclick="openUninstallModal({{ dev.id }}, '{{ dev.device_name }}')" style="padding: 0.75rem 1.5rem; font-weight: 700; font-size: 0.925rem; white-space: nowrap;">
+                                ✕ Gỡ Bỏ Máy Tính
                             </button>
                         </div>
                     </div>
@@ -770,35 +759,37 @@
 </div>
 
 <!-- ========================================================================
-     MODAL 3: XÁC NHẬN XÓA DỮ LIỆU
+     MODAL 3: XÁC NHẬN GỠ BỎ MÁY TÍNH & XÓA VĨNH VIỄN DỮ LIỆU
      ======================================================================== -->
-<div class="modal-backdrop" id="eraseDataModal">
-    <div class="modal-card">
+<div class="modal-backdrop" id="uninstallDeviceModal">
+    <div class="modal-card" style="max-width: 520px;">
         <div class="modal-header">
             <div>
-                <div class="xai-card-tag" style="color: #ef4444;">DATA REMOVAL</div>
-                <h3 style="font-size: 1.3rem; font-weight: 800; color: #ef4444;">Xác Nhận Xóa Dữ Liệu</h3>
+                <div class="xai-card-tag" style="color: #ef4444;">PERMANENT REMOVAL</div>
+                <h3 style="font-size: 1.3rem; font-weight: 800; color: #ef4444;">Xác Nhận Gỡ Bỏ Máy Tính</h3>
             </div>
-            <button class="modal-close" onclick="closeEraseModal()">✕</button>
+            <button class="modal-close" onclick="closeUninstallModal()">✕</button>
         </div>
-        <form onsubmit="handleConfirmErase(event)">
-            <input type="hidden" id="eraseTargetDevId">
-            <div style="margin-bottom: 1.5rem;">
-                <p style="font-size: 0.875rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1rem;">
-                    Hành động này sẽ xóa toàn bộ lịch sử ứng dụng, sự kiện mạng của thiết bị <strong id="eraseTargetDevName" style="color: #fff;"></strong> trên cả máy chủ và máy tính con.
-                </p>
-                <div>
-                    <label style="font-size: 0.775rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 0.4rem;">Nhập mật khẩu phụ huynh để xác nhận:</label>
-                    <input type="password" id="eraseParentPassword" class="form-input-xai" placeholder="••••••••••••" required>
-                </div>
+        <div style="margin-bottom: 1.5rem;">
+            <p style="font-size: 0.875rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1rem;">
+                Bạn có chắc chắn muốn gỡ bỏ máy tính <strong id="uninstallTargetDevName" style="color: #fff;"></strong> không?
+            </p>
+            <div style="background: rgba(239, 68, 68, 0.08); border-left: 3px solid #ef4444; padding: 0.9rem 1rem; border-radius: 8px; font-size: 0.825rem; color: #fca5a5; line-height: 1.6; margin-bottom: 1.25rem;">
+                <div style="font-weight: 700; margin-bottom: 0.35rem; color: #fff;">Hệ thống sẽ tự động thực hiện các thao tác:</div>
+                <div style="margin-bottom: 0.25rem;">1. <strong>Xóa vĩnh viễn dữ liệu:</strong> Toàn bộ lịch sử duyệt web, nhật ký ứng dụng và thời gian dùng máy sẽ bị xóa sạch hoàn toàn trên cả máy chủ và máy con (NĐ 13/2023).</div>
+                <div style="margin-bottom: 0.25rem;">2. <strong>Tự động gỡ cài đặt (Uninstall):</strong> Gửi lệnh giải mã khôi phục cài đặt gốc và gỡ sạch phần mềm Agent trên máy tính của trẻ.</div>
+                <div>3. <strong>Hủy liên kết thiết bị:</strong> Máy tính sẽ lập tức biến mất khỏi danh sách quản lý của phụ huynh.</div>
             </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-subtle); padding-top: 1.25rem;">
-                <button type="button" class="btn-pill-dark" onclick="closeEraseModal()">Hủy</button>
-                <button type="submit" id="btnSubmitErase" class="btn-pill-danger">
-                    <span>🗑️</span> Xác Nhận Xóa Vĩnh Viễn
-                </button>
-            </div>
-        </form>
+            <p style="font-size: 0.8rem; color: var(--text-dim); margin: 0;">
+                ⚠️ Hành động này là vĩnh viễn và không thể khôi phục lại dữ liệu đã xóa.
+            </p>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-subtle); padding-top: 1.25rem;">
+            <button type="button" class="btn-pill-dark" onclick="closeUninstallModal()">Hủy Bỏ</button>
+            <button type="button" id="btnConfirmUninstall" class="btn-pill-danger" onclick="executeUninstallDevice()">
+                <span>✕</span> Xác Nhận Gỡ Bỏ Máy Tính
+            </button>
+        </div>
     </div>
 </div>
 
@@ -1681,54 +1672,36 @@
     }
 
     // ========================================================================
-    // Data Erase & Delete Device Modals
     // ========================================================================
-    function openEraseModal(devId, devName) {
-        document.getElementById('eraseTargetDevId').value = devId;
-        document.getElementById('eraseTargetDevName').textContent = `"${devName}" (#${devId})`;
-        document.getElementById('eraseParentPassword').value = '';
-        document.getElementById('eraseDataModal').classList.add('active');
+    // Unified Uninstall & Data Erase Modal
+    // ========================================================================
+    let currentUninstallDevId = null;
+    let currentUninstallDevName = '';
+
+    function openUninstallModal(devId, devName) {
+        currentUninstallDevId = devId;
+        currentUninstallDevName = devName;
+        const targetEl = document.getElementById('uninstallTargetDevName');
+        if (targetEl) targetEl.textContent = `"${devName}" (#${devId})`;
+        const modal = document.getElementById('uninstallDeviceModal');
+        if (modal) modal.classList.add('active');
     }
 
-    function closeEraseModal() {
-        document.getElementById('eraseDataModal').classList.remove('active');
+    function closeUninstallModal() {
+        const modal = document.getElementById('uninstallDeviceModal');
+        if (modal) modal.classList.remove('active');
+        currentUninstallDevId = null;
     }
 
-    async function handleConfirmErase(event) {
-        event.preventDefault();
-        const devId = document.getElementById('eraseTargetDevId').value;
-        const password = document.getElementById('eraseParentPassword').value;
-        const btn = document.getElementById('btnSubmitErase');
+    async function executeUninstallDevice() {
+        if (!currentUninstallDevId) return;
+        const devId = currentUninstallDevId;
+        const devName = currentUninstallDevName;
+        const btn = document.getElementById('btnConfirmUninstall');
 
-        btn.disabled = true;
-        btn.textContent = 'Đang xóa dữ liệu...';
-
-        try {
-            const res = await fetch(`/api/v1/devices/${devId}/data`, {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ password })
-            });
-
-            if (!res.ok) {
-                const err = await res.json().catch(() => ({}));
-                throw new Error(err.detail || "Không thể thực hiện xóa dữ liệu.");
-            }
-
-            closeEraseModal();
-            showToast('Đã xóa toàn bộ dữ liệu của thiết bị này.');
-            setTimeout(() => window.location.reload(), 1500);
-        } catch (err) {
-            showToast(`Lỗi: ${err.message}`, false);
-        } finally {
-            btn.disabled = false;
-            btn.innerHTML = '<span>🗑️</span> Xác Nhận Xóa Vĩnh Viễn';
-        }
-    }
-
-    async function handleDeleteDevice(devId, devName) {
-        if (!confirm(`Bạn có chắc chắn muốn gỡ bỏ thiết bị "${devName}" (#${devId}) không?\n\nSau khi gỡ, thiết bị sẽ lập tức biến mất khỏi danh sách quản lý.`)) {
-            return;
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<span>⏳</span> Đang xóa dữ liệu & gửi lệnh gỡ...';
         }
 
         try {
@@ -1742,11 +1715,31 @@
                 throw new Error(err.detail || "Không thể gỡ bỏ thiết bị.");
             }
 
-            showToast(`Đã gỡ bỏ thiết bị "${devName}" (#${devId}) thành công.`);
-            setTimeout(() => window.location.reload(), 1000);
+            closeUninstallModal();
+            showToast(`Đã xóa vĩnh viễn toàn bộ dữ liệu và gửi lệnh gỡ cài đặt tới "${devName}".`);
+            // Xóa session lưu ID cockpit nếu đang mở máy này
+            sessionStorage.removeItem('ogk_active_cockpit_dev_id');
+            setTimeout(() => {
+                window.location.reload();
+            }, 1200);
         } catch (err) {
             showToast(`Lỗi: ${err.message}`, false);
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<span>✕</span> Xác Nhận Gỡ Bỏ Máy Tính';
+            }
         }
+    }
+
+    // Backward compatibility aliases
+    function handleDeleteDevice(devId, devName) {
+        openUninstallModal(devId, devName);
+    }
+    function openEraseModal(devId, devName) {
+        openUninstallModal(devId, devName);
+    }
+    function closeEraseModal() {
+        closeUninstallModal();
     }
 
     // Tự động khôi phục Cockpit và Tab sau khi reload (không bị văng ra danh sách máy)
