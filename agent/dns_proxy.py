@@ -8,7 +8,7 @@ import threading
 import logging
 import time
 from concurrent.futures import ThreadPoolExecutor
-from typing import Optional, Set, Callable, Dict, Any, Tuple
+from typing import Optional, Set, Callable, Dict, Any, Tuple, Iterable
 from dnslib import DNSRecord, DNSQuestion, RR, QTYPE, A, AAAA, RCODE
 
 logger = logging.getLogger("OGK_DNSProxy")
@@ -106,14 +106,22 @@ class DNSProxyServer:
 
     def update_rules(
         self,
-        blocked: Set[str],
+        blocked: Iterable[str],
         whitelist: Optional[Set[str]] = None,
         enforce_safesearch: bool = True
     ):
         """Update live memory rules for instantaneous rule application (< 1s)."""
         self.blocked_domains = {normalize_domain(d) for d in blocked}
+        statutory_whitelist = {
+            "tongdai111.vn",
+            "moet.gov.vn",
+            "hcmus.edu.vn",
+            "vnuhcm.edu.vn"
+        }
         if whitelist:
-            self.permanent_whitelist.update({normalize_domain(d) for d in whitelist})
+            self.permanent_whitelist = statutory_whitelist | {normalize_domain(d) for d in whitelist}
+        else:
+            self.permanent_whitelist = set(statutory_whitelist)
         self.enforce_safesearch = enforce_safesearch
         with self._cache_lock:
             self._cache.clear()

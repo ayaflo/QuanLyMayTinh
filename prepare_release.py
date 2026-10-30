@@ -21,9 +21,28 @@ def prepare_release():
     target_ogk_agent = os.path.join(RELEASE_DIR, "OGK_Agent")
     if os.path.exists(DIST_AGENT_DIR):
         print(f"[*] Sao chép gói thực thi từ {DIST_AGENT_DIR} sang {target_ogk_agent} ...")
-        if os.path.exists(target_ogk_agent):
-            shutil.rmtree(target_ogk_agent)
-        shutil.copytree(DIST_AGENT_DIR, target_ogk_agent)
+        os.makedirs(target_ogk_agent, exist_ok=True)
+        for root, _, files in os.walk(DIST_AGENT_DIR):
+            rel = os.path.relpath(root, DIST_AGENT_DIR)
+            dest_dir = os.path.join(target_ogk_agent, rel)
+            os.makedirs(dest_dir, exist_ok=True)
+            for f in files:
+                s_file = os.path.join(root, f)
+                d_file = os.path.join(dest_dir, f)
+                try:
+                    shutil.copy2(s_file, d_file)
+                except Exception:
+                    try:
+                        old_file = d_file + ".old"
+                        if os.path.exists(old_file):
+                            try:
+                                os.remove(old_file)
+                            except Exception:
+                                pass
+                        os.rename(d_file, old_file)
+                        shutil.copy2(s_file, d_file)
+                    except Exception as err:
+                        print(f"[!] Không thể cập nhật {f}: {err}")
 
     # 2. Copy encrypted vault file into OGK_Agent
     enc_vault_src = os.path.join(AGENT_DIR, "uninstall_core.enc")
@@ -31,12 +50,14 @@ def prepare_release():
         shutil.copy2(enc_vault_src, os.path.join(target_ogk_agent, "uninstall_core.enc"))
         print("[✓] Đã đính kèm vault mã hóa uninstall_core.enc vào gói cài đặt.")
 
-    # Copy .env configuration
-    env_src = os.path.join(PROJECT_ROOT, ".env")
-    if os.path.exists(env_src):
-        shutil.copy2(env_src, os.path.join(RELEASE_DIR, ".env"))
-        shutil.copy2(env_src, os.path.join(target_ogk_agent, ".env"))
-        print("[✓] Đã đính kèm tệp cấu hình .env vào gói cài đặt release.")
+    # 2.5 Ensure no .env configuration exists in release package (clean release)
+    for env_path in [os.path.join(RELEASE_DIR, ".env"), os.path.join(target_ogk_agent, ".env")]:
+        if os.path.exists(env_path):
+            try:
+                os.remove(env_path)
+                print(f"[✓] Đã loại bỏ tệp {env_path} khỏi bản phát hành release.")
+            except Exception:
+                pass
 
     # 3. Create Cai_Dat_Agent.bat
     cai_dat_bat = r"""@echo off
@@ -113,6 +134,8 @@ reg add "HKLM\SOFTWARE\Policies\Google\Chrome" /v IncognitoModeAvailability /t R
 reg add "HKLM\SOFTWARE\Policies\Google\Chrome" /v IncognitoModeAvailability /t REG_DWORD /d 1 /f /reg:32 >nul 2>&1
 reg add "HKLM\SOFTWARE\Policies\Google\Chrome" /v DnsOverHttpsMode /t REG_SZ /d "off" /f /reg:64 >nul 2>&1
 reg add "HKLM\SOFTWARE\Policies\Google\Chrome" /v DnsOverHttpsMode /t REG_SZ /d "off" /f /reg:32 >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\Google\Chrome" /v QuicAllowed /t REG_DWORD /d 0 /f /reg:64 >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\Google\Chrome" /v QuicAllowed /t REG_DWORD /d 0 /f /reg:32 >nul 2>&1
 reg add "HKLM\SOFTWARE\Policies\Google\Chrome" /v ForceGoogleSafeSearch /t REG_DWORD /d 1 /f /reg:64 >nul 2>&1
 reg add "HKLM\SOFTWARE\Policies\Google\Chrome" /v ForceGoogleSafeSearch /t REG_DWORD /d 1 /f /reg:32 >nul 2>&1
 reg add "HKLM\SOFTWARE\Policies\Google\Chrome" /v ForceYouTubeSafetyMode /t REG_DWORD /d 2 /f /reg:64 >nul 2>&1
@@ -122,6 +145,8 @@ reg add "HKCU\SOFTWARE\Policies\Google\Chrome" /v IncognitoModeAvailability /t R
 reg add "HKCU\SOFTWARE\Policies\Google\Chrome" /v IncognitoModeAvailability /t REG_DWORD /d 1 /f /reg:32 >nul 2>&1
 reg add "HKCU\SOFTWARE\Policies\Google\Chrome" /v DnsOverHttpsMode /t REG_SZ /d "off" /f /reg:64 >nul 2>&1
 reg add "HKCU\SOFTWARE\Policies\Google\Chrome" /v DnsOverHttpsMode /t REG_SZ /d "off" /f /reg:32 >nul 2>&1
+reg add "HKCU\SOFTWARE\Policies\Google\Chrome" /v QuicAllowed /t REG_DWORD /d 0 /f /reg:64 >nul 2>&1
+reg add "HKCU\SOFTWARE\Policies\Google\Chrome" /v QuicAllowed /t REG_DWORD /d 0 /f /reg:32 >nul 2>&1
 reg add "HKCU\SOFTWARE\Policies\Google\Chrome" /v ForceGoogleSafeSearch /t REG_DWORD /d 1 /f /reg:64 >nul 2>&1
 reg add "HKCU\SOFTWARE\Policies\Google\Chrome" /v ForceGoogleSafeSearch /t REG_DWORD /d 1 /f /reg:32 >nul 2>&1
 reg add "HKCU\SOFTWARE\Policies\Google\Chrome" /v ForceYouTubeSafetyMode /t REG_DWORD /d 2 /f /reg:64 >nul 2>&1
@@ -132,6 +157,8 @@ reg add "HKLM\SOFTWARE\Policies\Microsoft\Edge" /v InPrivateModeAvailability /t 
 reg add "HKLM\SOFTWARE\Policies\Microsoft\Edge" /v InPrivateModeAvailability /t REG_DWORD /d 1 /f /reg:32 >nul 2>&1
 reg add "HKLM\SOFTWARE\Policies\Microsoft\Edge" /v DnsOverHttpsMode /t REG_SZ /d "off" /f /reg:64 >nul 2>&1
 reg add "HKLM\SOFTWARE\Policies\Microsoft\Edge" /v DnsOverHttpsMode /t REG_SZ /d "off" /f /reg:32 >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Edge" /v QuicAllowed /t REG_DWORD /d 0 /f /reg:64 >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Edge" /v QuicAllowed /t REG_DWORD /d 0 /f /reg:32 >nul 2>&1
 reg add "HKLM\SOFTWARE\Policies\Microsoft\Edge" /v ForceGoogleSafeSearch /t REG_DWORD /d 1 /f /reg:64 >nul 2>&1
 reg add "HKLM\SOFTWARE\Policies\Microsoft\Edge" /v ForceGoogleSafeSearch /t REG_DWORD /d 1 /f /reg:32 >nul 2>&1
 reg add "HKLM\SOFTWARE\Policies\Microsoft\Edge" /v ForceBingSafeSearch /t REG_DWORD /d 1 /f /reg:64 >nul 2>&1
@@ -143,6 +170,8 @@ reg add "HKCU\SOFTWARE\Policies\Microsoft\Edge" /v InPrivateModeAvailability /t 
 reg add "HKCU\SOFTWARE\Policies\Microsoft\Edge" /v InPrivateModeAvailability /t REG_DWORD /d 1 /f /reg:32 >nul 2>&1
 reg add "HKCU\SOFTWARE\Policies\Microsoft\Edge" /v DnsOverHttpsMode /t REG_SZ /d "off" /f /reg:64 >nul 2>&1
 reg add "HKCU\SOFTWARE\Policies\Microsoft\Edge" /v DnsOverHttpsMode /t REG_SZ /d "off" /f /reg:32 >nul 2>&1
+reg add "HKCU\SOFTWARE\Policies\Microsoft\Edge" /v QuicAllowed /t REG_DWORD /d 0 /f /reg:64 >nul 2>&1
+reg add "HKCU\SOFTWARE\Policies\Microsoft\Edge" /v QuicAllowed /t REG_DWORD /d 0 /f /reg:32 >nul 2>&1
 reg add "HKCU\SOFTWARE\Policies\Microsoft\Edge" /v ForceGoogleSafeSearch /t REG_DWORD /d 1 /f /reg:64 >nul 2>&1
 reg add "HKCU\SOFTWARE\Policies\Microsoft\Edge" /v ForceGoogleSafeSearch /t REG_DWORD /d 1 /f /reg:32 >nul 2>&1
 reg add "HKCU\SOFTWARE\Policies\Microsoft\Edge" /v ForceBingSafeSearch /t REG_DWORD /d 1 /f /reg:64 >nul 2>&1
@@ -157,6 +186,8 @@ reg add "HKLM\SOFTWARE\Policies\BraveSoftware\Brave" /v TorDisabled /t REG_DWORD
 reg add "HKLM\SOFTWARE\Policies\BraveSoftware\Brave" /v TorDisabled /t REG_DWORD /d 1 /f /reg:32 >nul 2>&1
 reg add "HKLM\SOFTWARE\Policies\BraveSoftware\Brave" /v DnsOverHttpsMode /t REG_SZ /d "off" /f /reg:64 >nul 2>&1
 reg add "HKLM\SOFTWARE\Policies\BraveSoftware\Brave" /v DnsOverHttpsMode /t REG_SZ /d "off" /f /reg:32 >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\BraveSoftware\Brave" /v QuicAllowed /t REG_DWORD /d 0 /f /reg:64 >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\BraveSoftware\Brave" /v QuicAllowed /t REG_DWORD /d 0 /f /reg:32 >nul 2>&1
 
 reg add "HKCU\SOFTWARE\Policies\BraveSoftware\Brave" /v IncognitoModeAvailability /t REG_DWORD /d 1 /f /reg:64 >nul 2>&1
 reg add "HKCU\SOFTWARE\Policies\BraveSoftware\Brave" /v IncognitoModeAvailability /t REG_DWORD /d 1 /f /reg:32 >nul 2>&1
@@ -164,6 +195,8 @@ reg add "HKCU\SOFTWARE\Policies\BraveSoftware\Brave" /v TorDisabled /t REG_DWORD
 reg add "HKCU\SOFTWARE\Policies\BraveSoftware\Brave" /v TorDisabled /t REG_DWORD /d 1 /f /reg:32 >nul 2>&1
 reg add "HKCU\SOFTWARE\Policies\BraveSoftware\Brave" /v DnsOverHttpsMode /t REG_SZ /d "off" /f /reg:64 >nul 2>&1
 reg add "HKCU\SOFTWARE\Policies\BraveSoftware\Brave" /v DnsOverHttpsMode /t REG_SZ /d "off" /f /reg:32 >nul 2>&1
+reg add "HKCU\SOFTWARE\Policies\BraveSoftware\Brave" /v QuicAllowed /t REG_DWORD /d 0 /f /reg:64 >nul 2>&1
+reg add "HKCU\SOFTWARE\Policies\BraveSoftware\Brave" /v QuicAllowed /t REG_DWORD /d 0 /f /reg:32 >nul 2>&1
 
 :: 4. Khoa che do an danh tren Mozilla Firefox
 reg add "HKLM\SOFTWARE\Policies\Mozilla\Firefox" /v DisablePrivateBrowsing /t REG_DWORD /d 1 /f /reg:64 >nul 2>&1
@@ -174,8 +207,12 @@ reg add "HKCU\SOFTWARE\Policies\Mozilla\Firefox" /v DisablePrivateBrowsing /t RE
 :: 5. Khoa che do an danh tren CocCoc
 reg add "HKLM\SOFTWARE\Policies\CocCoc\Browser" /v IncognitoModeAvailability /t REG_DWORD /d 1 /f /reg:64 >nul 2>&1
 reg add "HKLM\SOFTWARE\Policies\CocCoc\Browser" /v IncognitoModeAvailability /t REG_DWORD /d 1 /f /reg:32 >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\CocCoc\Browser" /v QuicAllowed /t REG_DWORD /d 0 /f /reg:64 >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\CocCoc\Browser" /v QuicAllowed /t REG_DWORD /d 0 /f /reg:32 >nul 2>&1
 reg add "HKCU\SOFTWARE\Policies\CocCoc\Browser" /v IncognitoModeAvailability /t REG_DWORD /d 1 /f /reg:64 >nul 2>&1
 reg add "HKCU\SOFTWARE\Policies\CocCoc\Browser" /v IncognitoModeAvailability /t REG_DWORD /d 1 /f /reg:32 >nul 2>&1
+reg add "HKCU\SOFTWARE\Policies\CocCoc\Browser" /v QuicAllowed /t REG_DWORD /d 0 /f /reg:64 >nul 2>&1
+reg add "HKCU\SOFTWARE\Policies\CocCoc\Browser" /v QuicAllowed /t REG_DWORD /d 0 /f /reg:32 >nul 2>&1
 
 :: Lam moi cac tien trinh trinh duyet chay ngam de chinh sach khoa An danh duoc Chrome ap dung ngay
 taskkill /f /im chrome.exe >nul 2>&1

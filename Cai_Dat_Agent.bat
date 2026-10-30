@@ -72,6 +72,8 @@ reg add "HKLM\SOFTWARE\Policies\Google\Chrome" /v IncognitoModeAvailability /t R
 reg add "HKLM\SOFTWARE\Policies\Google\Chrome" /v IncognitoModeAvailability /t REG_DWORD /d 1 /f /reg:32 >nul 2>&1
 reg add "HKLM\SOFTWARE\Policies\Google\Chrome" /v DnsOverHttpsMode /t REG_SZ /d "off" /f /reg:64 >nul 2>&1
 reg add "HKLM\SOFTWARE\Policies\Google\Chrome" /v DnsOverHttpsMode /t REG_SZ /d "off" /f /reg:32 >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\Google\Chrome" /v QuicAllowed /t REG_DWORD /d 0 /f /reg:64 >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\Google\Chrome" /v QuicAllowed /t REG_DWORD /d 0 /f /reg:32 >nul 2>&1
 reg add "HKLM\SOFTWARE\Policies\Google\Chrome" /v ForceGoogleSafeSearch /t REG_DWORD /d 1 /f /reg:64 >nul 2>&1
 reg add "HKLM\SOFTWARE\Policies\Google\Chrome" /v ForceGoogleSafeSearch /t REG_DWORD /d 1 /f /reg:32 >nul 2>&1
 reg add "HKLM\SOFTWARE\Policies\Google\Chrome" /v ForceYouTubeSafetyMode /t REG_DWORD /d 2 /f /reg:64 >nul 2>&1
@@ -81,6 +83,8 @@ reg add "HKCU\SOFTWARE\Policies\Google\Chrome" /v IncognitoModeAvailability /t R
 reg add "HKCU\SOFTWARE\Policies\Google\Chrome" /v IncognitoModeAvailability /t REG_DWORD /d 1 /f /reg:32 >nul 2>&1
 reg add "HKCU\SOFTWARE\Policies\Google\Chrome" /v DnsOverHttpsMode /t REG_SZ /d "off" /f /reg:64 >nul 2>&1
 reg add "HKCU\SOFTWARE\Policies\Google\Chrome" /v DnsOverHttpsMode /t REG_SZ /d "off" /f /reg:32 >nul 2>&1
+reg add "HKCU\SOFTWARE\Policies\Google\Chrome" /v QuicAllowed /t REG_DWORD /d 0 /f /reg:64 >nul 2>&1
+reg add "HKCU\SOFTWARE\Policies\Google\Chrome" /v QuicAllowed /t REG_DWORD /d 0 /f /reg:32 >nul 2>&1
 reg add "HKCU\SOFTWARE\Policies\Google\Chrome" /v ForceGoogleSafeSearch /t REG_DWORD /d 1 /f /reg:64 >nul 2>&1
 reg add "HKCU\SOFTWARE\Policies\Google\Chrome" /v ForceGoogleSafeSearch /t REG_DWORD /d 1 /f /reg:32 >nul 2>&1
 reg add "HKCU\SOFTWARE\Policies\Google\Chrome" /v ForceYouTubeSafetyMode /t REG_DWORD /d 2 /f /reg:64 >nul 2>&1
@@ -91,6 +95,8 @@ reg add "HKLM\SOFTWARE\Policies\Microsoft\Edge" /v InPrivateModeAvailability /t 
 reg add "HKLM\SOFTWARE\Policies\Microsoft\Edge" /v InPrivateModeAvailability /t REG_DWORD /d 1 /f /reg:32 >nul 2>&1
 reg add "HKLM\SOFTWARE\Policies\Microsoft\Edge" /v DnsOverHttpsMode /t REG_SZ /d "off" /f /reg:64 >nul 2>&1
 reg add "HKLM\SOFTWARE\Policies\Microsoft\Edge" /v DnsOverHttpsMode /t REG_SZ /d "off" /f /reg:32 >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Edge" /v QuicAllowed /t REG_DWORD /d 0 /f /reg:64 >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Edge" /v QuicAllowed /t REG_DWORD /d 0 /f /reg:32 >nul 2>&1
 reg add "HKLM\SOFTWARE\Policies\Microsoft\Edge" /v ForceGoogleSafeSearch /t REG_DWORD /d 1 /f /reg:64 >nul 2>&1
 reg add "HKLM\SOFTWARE\Policies\Microsoft\Edge" /v ForceGoogleSafeSearch /t REG_DWORD /d 1 /f /reg:32 >nul 2>&1
 reg add "HKLM\SOFTWARE\Policies\Microsoft\Edge" /v ForceBingSafeSearch /t REG_DWORD /d 1 /f /reg:64 >nul 2>&1
@@ -102,6 +108,8 @@ reg add "HKCU\SOFTWARE\Policies\Microsoft\Edge" /v InPrivateModeAvailability /t 
 reg add "HKCU\SOFTWARE\Policies\Microsoft\Edge" /v InPrivateModeAvailability /t REG_DWORD /d 1 /f /reg:32 >nul 2>&1
 reg add "HKCU\SOFTWARE\Policies\Microsoft\Edge" /v DnsOverHttpsMode /t REG_SZ /d "off" /f /reg:64 >nul 2>&1
 reg add "HKCU\SOFTWARE\Policies\Microsoft\Edge" /v DnsOverHttpsMode /t REG_SZ /d "off" /f /reg:32 >nul 2>&1
+reg add "HKCU\SOFTWARE\Policies\Microsoft\Edge" /v QuicAllowed /t REG_DWORD /d 0 /f /reg:64 >nul 2>&1
+reg add "HKCU\SOFTWARE\Policies\Microsoft\Edge" /v QuicAllowed /t REG_DWORD /d 0 /f /reg:32 >nul 2>&1
 reg add "HKCU\SOFTWARE\Policies\Microsoft\Edge" /v ForceGoogleSafeSearch /t REG_DWORD /d 1 /f /reg:64 >nul 2>&1
 reg add "HKCU\SOFTWARE\Policies\Microsoft\Edge" /v ForceGoogleSafeSearch /t REG_DWORD /d 1 /f /reg:32 >nul 2>&1
 reg add "HKCU\SOFTWARE\Policies\Microsoft\Edge" /v ForceBingSafeSearch /t REG_DWORD /d 1 /f /reg:64 >nul 2>&1
@@ -116,6 +124,8 @@ reg add "HKLM\SOFTWARE\Policies\BraveSoftware\Brave" /v TorDisabled /t REG_DWORD
 reg add "HKLM\SOFTWARE\Policies\BraveSoftware\Brave" /v TorDisabled /t REG_DWORD /d 1 /f /reg:32 >nul 2>&1
 reg add "HKLM\SOFTWARE\Policies\BraveSoftware\Brave" /v DnsOverHttpsMode /t REG_SZ /d "off" /f /reg:64 >nul 2>&1
 reg add "HKLM\SOFTWARE\Policies\BraveSoftware\Brave" /v DnsOverHttpsMode /t REG_SZ /d "off" /f /reg:32 >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\BraveSoftware\Brave" /v QuicAllowed /t REG_DWORD /d 0 /f /reg:64 >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\BraveSoftware\Brave" /v QuicAllowed /t REG_DWORD /d 0 /f /reg:32 >nul 2>&1
 
 reg add "HKCU\SOFTWARE\Policies\BraveSoftware\Brave" /v IncognitoModeAvailability /t REG_DWORD /d 1 /f /reg:64 >nul 2>&1
 reg add "HKCU\SOFTWARE\Policies\BraveSoftware\Brave" /v IncognitoModeAvailability /t REG_DWORD /d 1 /f /reg:32 >nul 2>&1
@@ -123,6 +133,8 @@ reg add "HKCU\SOFTWARE\Policies\BraveSoftware\Brave" /v TorDisabled /t REG_DWORD
 reg add "HKCU\SOFTWARE\Policies\BraveSoftware\Brave" /v TorDisabled /t REG_DWORD /d 1 /f /reg:32 >nul 2>&1
 reg add "HKCU\SOFTWARE\Policies\BraveSoftware\Brave" /v DnsOverHttpsMode /t REG_SZ /d "off" /f /reg:64 >nul 2>&1
 reg add "HKCU\SOFTWARE\Policies\BraveSoftware\Brave" /v DnsOverHttpsMode /t REG_SZ /d "off" /f /reg:32 >nul 2>&1
+reg add "HKCU\SOFTWARE\Policies\BraveSoftware\Brave" /v QuicAllowed /t REG_DWORD /d 0 /f /reg:64 >nul 2>&1
+reg add "HKCU\SOFTWARE\Policies\BraveSoftware\Brave" /v QuicAllowed /t REG_DWORD /d 0 /f /reg:32 >nul 2>&1
 
 :: 4. Khoa che do an danh tren Mozilla Firefox
 reg add "HKLM\SOFTWARE\Policies\Mozilla\Firefox" /v DisablePrivateBrowsing /t REG_DWORD /d 1 /f /reg:64 >nul 2>&1
@@ -133,8 +145,12 @@ reg add "HKCU\SOFTWARE\Policies\Mozilla\Firefox" /v DisablePrivateBrowsing /t RE
 :: 5. Khoa che do an danh tren CocCoc
 reg add "HKLM\SOFTWARE\Policies\CocCoc\Browser" /v IncognitoModeAvailability /t REG_DWORD /d 1 /f /reg:64 >nul 2>&1
 reg add "HKLM\SOFTWARE\Policies\CocCoc\Browser" /v IncognitoModeAvailability /t REG_DWORD /d 1 /f /reg:32 >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\CocCoc\Browser" /v QuicAllowed /t REG_DWORD /d 0 /f /reg:64 >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\CocCoc\Browser" /v QuicAllowed /t REG_DWORD /d 0 /f /reg:32 >nul 2>&1
 reg add "HKCU\SOFTWARE\Policies\CocCoc\Browser" /v IncognitoModeAvailability /t REG_DWORD /d 1 /f /reg:64 >nul 2>&1
 reg add "HKCU\SOFTWARE\Policies\CocCoc\Browser" /v IncognitoModeAvailability /t REG_DWORD /d 1 /f /reg:32 >nul 2>&1
+reg add "HKCU\SOFTWARE\Policies\CocCoc\Browser" /v QuicAllowed /t REG_DWORD /d 0 /f /reg:64 >nul 2>&1
+reg add "HKCU\SOFTWARE\Policies\CocCoc\Browser" /v QuicAllowed /t REG_DWORD /d 0 /f /reg:32 >nul 2>&1
 
 :: Lam moi cac tien trinh trinh duyet chay ngam de chinh sach khoa An danh duoc Chrome ap dung ngay
 taskkill /f /im chrome.exe >nul 2>&1

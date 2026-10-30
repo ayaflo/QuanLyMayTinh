@@ -68,17 +68,50 @@ def flush_dns_cache() -> bool:
 
 
 def reset_browser_connections() -> int:
-    """Reset active HTTP/HTTPS browser sockets (TCP RST) using Windows iphlpapi.SetTcpEntry.
+    """Reset active HTTP/HTTPS browser sockets and internal DNS cache.
     
-    When parent updates domain blocklist while a child has a site open, browsers (Chrome, Edge,
-    Brave, Firefox, CocCoc) keep open keep-alive HTTP/2/TLS sockets. Resetting these sockets
-    ensures that on the very next refresh (F5), the browser is forced to perform a new DNS lookup
-    and immediately hits the DNS sinkhole / hosts file without needing to restart the browser.
+    When parent updates domain blocklist while a child has a site open, modern browsers
+    (Chrome, Edge, Brave, CocCoc, Opera) keep open persistent HTTP/2 and HTTP/3 (QUIC) sockets
+    and maintain their own internal DNS cache inside their dedicated NetworkService utility process.
+    
+    Terminating ONLY the Chromium network utility process (network.mojom.NetworkService):
+    1. Instantly clears all persistent HTTP/1.1, HTTP/2, HTTP/3 (QUIC) sockets and internal DNS cache.
+    2. Does NOT close or crash any tabs or browser windows (the browser automatically and silently
+       spawns a fresh NetworkService process in milliseconds).
+    3. Guarantees that on the very next refresh (F5), the browser is forced to perform a new DNS lookup
+       and immediately hits the DNS sinkhole / hosts file (0.0.0.0 / ::1).
+       
+    Also executes Windows iphlpapi.SetTcpEntry for any remaining TCP connections and flushes
+    the Windows DNS resolver cache.
     """
     if sys.platform != "win32":
         return 0
 
     count = 0
+    browser_names = ("chrome", "msedge", "brave", "coccoc", "opera", "firefox")
+    browser_executables = {"chrome.exe", "msedge.exe", "brave.exe", "coccoc.exe", "opera.exe"}
+
+    # 1. Reset Chromium internal network sockets & DNS cache via NetworkService termination
+    try:
+        import psutil
+        for proc in psutil.process_iter(['pid', 'name']):
+            try:
+                proc_name = (proc.info.get('name') or '').lower()
+                if proc_name in browser_executables:
+                    cmd_list = proc.cmdline() or []
+                    cmd_str = ' '.join(cmd_list).lower()
+                    if 'network.mojom.networkservice' in cmd_str:
+                        proc.kill()
+                        count += 1
+                        logger.info(f"[DNS] Đã làm mới NetworkService của '{proc_name}' (PID {proc.pid}) để xóa sạch socket/cache.")
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                pass
+            except Exception:
+                pass
+    except Exception as e:
+        logger.debug(f"[DNS] Lỗi khi làm mới Chromium NetworkService: {e}")
+
+    # 2. Reset active TCP entries using iphlpapi.SetTcpEntry (for other browsers / TCP sockets)
     try:
         import ctypes
         import socket
@@ -96,9 +129,7 @@ def reset_browser_connections() -> int:
         MIB_TCP_STATE_DELETE_TCB = 12
         set_tcp_entry = ctypes.windll.iphlpapi.SetTcpEntry
 
-        browser_names = ("chrome", "msedge", "brave", "firefox", "coccoc", "opera")
         browser_pids = set()
-
         try:
             import psutil
             for proc in psutil.process_iter(['pid', 'name']):
@@ -123,11 +154,14 @@ def reset_browser_connections() -> int:
                             pass
         except Exception:
             pass
-
-        if count > 0:
-            logger.info(f"[DNS] Đã làm mới {count} kết nối socket trình duyệt để áp dụng chặn tức thì.")
     except Exception as e:
         logger.debug(f"[DNS] Không thể reset socket trình duyệt: {e}")
+
+    # 3. Always flush Windows DNS cache
+    flush_dns_cache()
+
+    if count > 0:
+        logger.info(f"[DNS] Đã làm mới {count} tiến trình/socket mạng trình duyệt để áp dụng chặn tức thì.")
 
     return count
 
@@ -215,12 +249,14 @@ def disable_browser_doh() -> bool:
             r"SOFTWARE\Policies\Google\Chrome": {
                 ("DnsOverHttpsMode", winreg.REG_SZ): "off",
                 ("IncognitoModeAvailability", winreg.REG_DWORD): 1,  # 1 = Disabled
+                ("QuicAllowed", winreg.REG_DWORD): 0,               # 0 = Disabled (forces standard TCP/TLS for instant DNS enforcement)
                 ("ForceGoogleSafeSearch", winreg.REG_DWORD): 1,
                 ("ForceYouTubeSafetyMode", winreg.REG_DWORD): 2,
             },
             r"SOFTWARE\Policies\Microsoft\Edge": {
                 ("DnsOverHttpsMode", winreg.REG_SZ): "off",
                 ("InPrivateModeAvailability", winreg.REG_DWORD): 1,  # 1 = Disabled
+                ("QuicAllowed", winreg.REG_DWORD): 0,
                 ("ForceGoogleSafeSearch", winreg.REG_DWORD): 1,
                 ("ForceBingSafeSearch", winreg.REG_DWORD): 1,
                 ("ForceYouTubeSafetyMode", winreg.REG_DWORD): 2,
@@ -229,6 +265,7 @@ def disable_browser_doh() -> bool:
                 ("DnsOverHttpsMode", winreg.REG_SZ): "off",
                 ("IncognitoModeAvailability", winreg.REG_DWORD): 1,  # 1 = Disabled
                 ("TorDisabled", winreg.REG_DWORD): 1,               # 1 = Disable Tor Window
+                ("QuicAllowed", winreg.REG_DWORD): 0,
                 ("ForceGoogleSafeSearch", winreg.REG_DWORD): 1,
                 ("ForceYouTubeSafetyMode", winreg.REG_DWORD): 2,
             },
@@ -238,6 +275,7 @@ def disable_browser_doh() -> bool:
             r"SOFTWARE\Policies\CocCoc\Browser": {
                 ("DnsOverHttpsMode", winreg.REG_SZ): "off",
                 ("IncognitoModeAvailability", winreg.REG_DWORD): 1,
+                ("QuicAllowed", winreg.REG_DWORD): 0,
                 ("ForceGoogleSafeSearch", winreg.REG_DWORD): 1,
             }
         }
@@ -293,19 +331,19 @@ def restore_browser_doh() -> bool:
         import winreg
         browser_policies = {
             r"SOFTWARE\Policies\Google\Chrome": [
-                "DnsOverHttpsMode", "IncognitoModeAvailability", "ForceGoogleSafeSearch", "ForceYouTubeSafetyMode"
+                "DnsOverHttpsMode", "IncognitoModeAvailability", "QuicAllowed", "ForceGoogleSafeSearch", "ForceYouTubeSafetyMode"
             ],
             r"SOFTWARE\Policies\Microsoft\Edge": [
-                "DnsOverHttpsMode", "InPrivateModeAvailability", "ForceGoogleSafeSearch", "ForceBingSafeSearch", "ForceYouTubeSafetyMode"
+                "DnsOverHttpsMode", "InPrivateModeAvailability", "QuicAllowed", "ForceGoogleSafeSearch", "ForceBingSafeSearch", "ForceYouTubeSafetyMode"
             ],
             r"SOFTWARE\Policies\BraveSoftware\Brave": [
-                "DnsOverHttpsMode", "IncognitoModeAvailability", "TorDisabled", "ForceGoogleSafeSearch", "ForceYouTubeSafetyMode"
+                "DnsOverHttpsMode", "IncognitoModeAvailability", "TorDisabled", "QuicAllowed", "ForceGoogleSafeSearch", "ForceYouTubeSafetyMode"
             ],
             r"SOFTWARE\Policies\Mozilla\Firefox": [
                 "DisablePrivateBrowsing"
             ],
             r"SOFTWARE\Policies\CocCoc\Browser": [
-                "DnsOverHttpsMode", "IncognitoModeAvailability", "ForceGoogleSafeSearch"
+                "DnsOverHttpsMode", "IncognitoModeAvailability", "QuicAllowed", "ForceGoogleSafeSearch"
             ]
         }
 

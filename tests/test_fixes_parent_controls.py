@@ -521,10 +521,39 @@ def test_browser_incognito_policy_and_bypass_browser_blocking(monkeypatch):
     assert proc_opera.killed is True
     assert proc_tor.killed is True
 
-    # Test disable_browser_doh
-    from agent.dns_configurator import disable_browser_doh, restore_browser_doh
+    # Test disable_browser_doh and restore_browser_doh
+    from agent.dns_configurator import disable_browser_doh, restore_browser_doh, reset_browser_connections
     assert disable_browser_doh() is True
     assert restore_browser_doh() is True
+
+    # Test reset_browser_connections with mock Chromium NetworkService
+    class MockChromiumProc:
+        def __init__(self, pid, name, cmdline):
+            self.pid = pid
+            self.info = {'pid': pid, 'name': name}
+            self._cmdline = cmdline
+            self.killed = False
+
+        def cmdline(self):
+            return self._cmdline
+
+        def kill(self):
+            self.killed = True
+
+    mock_chrome_net = MockChromiumProc(
+        8888, "chrome.exe", ["chrome.exe", "--type=utility", "--utility-sub-type=network.mojom.NetworkService"]
+    )
+    mock_chrome_render = MockChromiumProc(
+        8889, "chrome.exe", ["chrome.exe", "--type=renderer"]
+    )
+    monkeypatch.setattr(psutil, "process_iter", lambda attrs: [mock_chrome_net, mock_chrome_render])
+    monkeypatch.setattr(psutil, "net_connections", lambda kind: [])
+
+    reset_count = reset_browser_connections()
+    assert mock_chrome_net.killed is True
+    assert mock_chrome_render.killed is False
+    assert reset_count >= 1
+
 
 
 
