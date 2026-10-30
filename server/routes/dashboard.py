@@ -5,8 +5,8 @@ Renders Jinja2 HTML templates for login, device management, and pairing code mod
 import os
 from typing import Optional
 from datetime import datetime, timezone, timedelta
-from fastapi import APIRouter, Depends, Request, Response, Form, status
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi import APIRouter, Depends, Request, Response, Form, status, HTTPException
+from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
@@ -429,5 +429,24 @@ def devices_page(
             "pending_requests": pending_requests
         }
     )
+
+
+@router.get("/download/agent", tags=["Download"])
+@router.get("/download/OGK.zip", tags=["Download"])
+def download_ogk_agent_zip():
+    """Download the production OGK Agent installer package (OGK.zip)."""
+    candidates = [
+        os.path.join(PROJECT_ROOT, "server", "OGK.zip"),
+        os.path.join(PROJECT_ROOT, "OGK.zip"),
+    ]
+    for zip_path in candidates:
+        if os.path.isfile(zip_path):
+            return FileResponse(
+                path=zip_path,
+                filename="OGK.zip",
+                media_type="application/zip"
+            )
+    raise HTTPException(status_code=404, detail="File OGK.zip không tồn tại trên máy chủ.")
+
 
 

@@ -5,11 +5,11 @@ FastAPI application entrypoint configuring CORS, database tables, and API router
 import os
 import sys
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, FileResponse
 
 # Ensure project root is in sys.path
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -139,6 +139,23 @@ def root():
     """Redirect to dashboard devices page."""
     return RedirectResponse(url="/devices")
 
+
+@app.get("/download/agent", tags=["General"])
+@app.get("/download/OGK.zip", tags=["General"])
+def download_agent():
+    """Download the OGK Agent installer package (OGK.zip)."""
+    candidates = [
+        os.path.join(PROJECT_ROOT, "server", "OGK.zip"),
+        os.path.join(PROJECT_ROOT, "OGK.zip"),
+    ]
+    for zip_path in candidates:
+        if os.path.isfile(zip_path):
+            return FileResponse(
+                path=zip_path,
+                filename="OGK.zip",
+                media_type="application/zip"
+            )
+    raise HTTPException(status_code=404, detail="File OGK.zip không tồn tại trên máy chủ.")
 
 
 @app.get("/api/v1/health", tags=["General"])

@@ -1,13 +1,17 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Open Guardian Kids (OGK){% endblock %} — Giám Sát An Toàn Máy Tính</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&family=Hanken+Grotesk:wght@500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛡️</text></svg>">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&family=Hanken+Grotesk:wght@500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛡️</text></svg>">
     <!-- Chart.js for data visualization -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -34,7 +38,8 @@
             box-sizing: border-box;
         }
 
-        html, body {
+        html,
+        body {
             color-scheme: dark !important;
             background-color: #000000 !important;
             color: #ffffff !important;
@@ -159,7 +164,9 @@
         }
 
         /* Buttons (xai247 Pill Style) */
-        .btn-pill-white, button.btn-pill-white, a.btn-pill-white {
+        .btn-pill-white,
+        button.btn-pill-white,
+        a.btn-pill-white {
             display: inline-flex !important;
             align-items: center !important;
             justify-content: center !important;
@@ -178,14 +185,18 @@
             white-space: nowrap !important;
         }
 
-        .btn-pill-white:hover, button.btn-pill-white:hover, a.btn-pill-white:hover {
+        .btn-pill-white:hover,
+        button.btn-pill-white:hover,
+        a.btn-pill-white:hover {
             background: #f1f5f9 !important;
             transform: translateY(-2px) !important;
             box-shadow: 0 0 28px -2px rgba(255, 255, 255, 0.6) !important;
             color: #000000 !important;
         }
 
-        .btn-pill-dark, button.btn-pill-dark, a.btn-pill-dark {
+        .btn-pill-dark,
+        button.btn-pill-dark,
+        a.btn-pill-dark {
             display: inline-flex !important;
             align-items: center !important;
             justify-content: center !important;
@@ -203,11 +214,40 @@
             white-space: nowrap !important;
         }
 
-        .btn-pill-dark:hover, button.btn-pill-dark:hover, a.btn-pill-dark:hover {
+        .btn-pill-dark:hover,
+        button.btn-pill-dark:hover,
+        a.btn-pill-dark:hover {
             background: rgba(255, 255, 255, 0.08) !important;
             border-color: rgba(255, 255, 255, 0.3) !important;
             color: #ffffff !important;
             transform: translateY(-1px) !important;
+        }
+
+        .btn-download-agent {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 0.45rem !important;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.16), rgba(99, 102, 241, 0.22)) !important;
+            border: 1px solid rgba(99, 102, 241, 0.45) !important;
+            color: #93c5fd !important;
+            border-radius: 9999px !important;
+            padding: 0.45rem 1.05rem !important;
+            font-size: 0.8rem !important;
+            font-weight: 600 !important;
+            cursor: pointer !important;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+            text-decoration: none !important;
+            white-space: nowrap !important;
+            box-shadow: 0 0 16px -3px rgba(59, 130, 246, 0.3) !important;
+        }
+
+        .btn-download-agent:hover {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.32), rgba(99, 102, 241, 0.4)) !important;
+            border-color: rgba(147, 197, 253, 0.7) !important;
+            color: #ffffff !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 0 24px -2px rgba(59, 130, 246, 0.6) !important;
         }
 
         .btn-pill-danger {
@@ -308,8 +348,17 @@
         }
 
         @keyframes lpPulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.4; transform: scale(0.9); }
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.4;
+                transform: scale(0.9);
+            }
         }
 
         /* Hero Typography */
@@ -539,7 +588,9 @@
         }
 
         /* Inputs & Selects */
-        .form-input-xai, select.form-input-xai, select {
+        .form-input-xai,
+        select.form-input-xai,
+        select {
             width: 100% !important;
             padding: 0.75rem 1.15rem !important;
             background-color: #0d0e14 !important;
@@ -553,7 +604,9 @@
             transition: all 0.2s ease !important;
         }
 
-        .form-input-xai:focus, select.form-input-xai:focus, select:focus {
+        .form-input-xai:focus,
+        select.form-input-xai:focus,
+        select:focus {
             border-color: #ffffff !important;
             background-color: #14151e !important;
             box-shadow: 0 0 16px rgba(255, 255, 255, 0.2) !important;
@@ -561,13 +614,16 @@
         }
 
         /* Native Dropdown Options dark theme override */
-        select option, option, optgroup {
+        select option,
+        option,
+        optgroup {
             background-color: #0d0e14 !important;
             color: #ffffff !important;
             padding: 0.6rem 1rem !important;
         }
 
-        select option:checked, select option:hover {
+        select option:checked,
+        select option:hover {
             background-color: #2563eb !important;
             color: #ffffff !important;
         }
@@ -607,6 +663,7 @@
                 opacity: 0;
                 transform: translateX(60px) translateY(-10px) scale(0.95);
             }
+
             to {
                 opacity: 1;
                 transform: translateX(0) translateY(0) scale(1);
@@ -917,10 +974,12 @@
         }
     </style>
 </head>
+
 <body>
     <!-- FIXED BACKGROUND LAYERS (Dot Matrix Grid + Floating Starfield Particles) -->
     <div class="xai-bg-grid"></div>
-    <canvas id="xaiStarfieldCanvas" style="position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; pointer-events: none !important; z-index: 0 !important; display: block !important;"></canvas>
+    <canvas id="xaiStarfieldCanvas"
+        style="position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; pointer-events: none !important; z-index: 0 !important; display: block !important;"></canvas>
     <div class="spotlight-radial"></div>
 
     <div class="app-container">
@@ -936,26 +995,31 @@
                 </a>
 
                 <div class="nav-actions">
-                    <div class="xai-badge-pill" style="margin-bottom: 0; padding: 0.35rem 0.85rem;">
-                        <span class="live-dot"></span>
-                        <span style="font-size: 0.775rem;">Giám Sát Thời Gian Thực</span>
-                    </div>
+                    <a href="/download/OGK.zip" class="btn-download-agent" title="Tải xuống tệp cài đặt Agent (OGK.zip) cho máy tính con" download="OGK.zip">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        <span>Tải Agent (OGK.zip)</span>
+                    </a>
 
                     {% if parent %}
-                        <div class="user-tag">
-                            <div class="user-avatar">{{ parent.username[0]|upper }}</div>
-                            <span>{{ parent.username }}</span>
-                        </div>
-                        <a href="/logout" class="btn-pill-dark" style="padding: 0.45rem 1rem; font-size: 0.825rem;" title="Đăng xuất khỏi hệ thống">
-                            Đăng xuất ⏻
-                        </a>
+                    <div class="user-tag">
+                        <div class="user-avatar">{{ parent.username[0]|upper }}</div>
+                        <span>{{ parent.username }}</span>
+                    </div>
+                    <a href="/logout" class="btn-pill-dark" style="padding: 0.45rem 1rem; font-size: 0.825rem;"
+                        title="Đăng xuất khỏi hệ thống">
+                        Đăng xuất ⏻
+                    </a>
                     {% else %}
-                        <a href="/login" class="btn-pill-dark" style="padding: 0.5rem 1.1rem; font-size: 0.85rem;">
-                            Đăng nhập
-                        </a>
-                        <a href="/register" class="btn-pill-white" style="padding: 0.5rem 1.25rem; font-size: 0.85rem;">
-                            Đăng ký miễn phí
-                        </a>
+                    <a href="/login" class="btn-pill-dark" style="padding: 0.5rem 1.1rem; font-size: 0.85rem;">
+                        Đăng nhập
+                    </a>
+                    <a href="/register" class="btn-pill-white" style="padding: 0.5rem 1.25rem; font-size: 0.85rem;">
+                        Đăng ký miễn phí
+                    </a>
                     {% endif %}
                 </div>
             </div>
@@ -964,28 +1028,32 @@
         <!-- Main Content Area -->
         <main class="main-content">
             {% if error %}
-                <div class="alert alert-danger" style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.3); color: #fca5a5; padding: 0.85rem 1.2rem; border-radius: 14px; margin-bottom: 1.5rem;">
-                    <span>⚠️</span>
-                    <div>{{ error }}</div>
-                </div>
+            <div class="alert alert-danger"
+                style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.3); color: #fca5a5; padding: 0.85rem 1.2rem; border-radius: 14px; margin-bottom: 1.5rem;">
+                <span>⚠️</span>
+                <div>{{ error }}</div>
+            </div>
             {% endif %}
             {% if message %}
-                <div class="alert alert-success" style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); color: #86efac; padding: 0.85rem 1.2rem; border-radius: 14px; margin-bottom: 1.5rem;">
-                    <span>✅</span>
-                    <div>{{ message }}</div>
-                </div>
+            <div class="alert alert-success"
+                style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); color: #86efac; padding: 0.85rem 1.2rem; border-radius: 14px; margin-bottom: 1.5rem;">
+                <span>✅</span>
+                <div>{{ message }}</div>
+            </div>
             {% endif %}
 
             {% block content %}{% endblock %}
         </main>
 
         <!-- Ethical Footer (NT1-NT6) -->
-        <footer style="border-top: 1px solid rgba(255, 255, 255, 0.08); background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(20px); padding: 1.75rem 0; margin-top: auto; z-index: 10;">
-            <div style="max-width: 1280px; margin: 0 auto; padding: 0 1.75rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; font-size: 0.825rem; color: #64748b;">
+        <footer
+            style="border-top: 1px solid rgba(255, 255, 255, 0.08); background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(20px); padding: 1.75rem 0; margin-top: auto; z-index: 10;">
+            <div
+                style="max-width: 1280px; margin: 0 auto; padding: 0 1.75rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; font-size: 0.825rem; color: #64748b;">
                 <div style="display: flex; align-items: center; gap: 0.6rem;">
                     <strong style="color: #fff;">Open Guardian Kids</strong>
                     <span>—</span>
-                    <span style="color: #94a3b8;">Đồng hành, không theo dõi lén</span>
+                    <span style="color: #94a3b8;">Đồng hành cùng con</span>
                 </div>
                 <div>
                     Tuân thủ Nghị định 13/2023/NĐ-CP & Luật Trẻ em 2016
@@ -996,7 +1064,7 @@
 
     <!-- Starfield Particles Canvas Animation (xai247 Exact Floating White Dots) -->
     <script>
-        (function() {
+        (function () {
             const canvas = document.getElementById('xaiStarfieldCanvas');
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
@@ -1062,4 +1130,5 @@
 
     {% block scripts %}{% endblock %}
 </body>
+
 </html>

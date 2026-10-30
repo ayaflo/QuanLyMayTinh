@@ -555,6 +555,30 @@ def test_browser_incognito_policy_and_bypass_browser_blocking(monkeypatch):
     assert reset_count >= 1
 
 
+def test_download_ogk_agent_zip_and_ui():
+    """Verify downloading OGK.zip works and the top header displays the download button instead of realtime monitor."""
+    from fastapi.testclient import TestClient
+    from server.main import app
+
+    client = TestClient(app)
+    res_zip = client.get("/download/OGK.zip")
+    assert res_zip.status_code == 200
+    assert "application/zip" in res_zip.headers.get("content-type", "")
+    assert 'filename="OGK.zip"' in res_zip.headers.get("content-disposition", "")
+
+    res_agent = client.get("/download/agent")
+    assert res_agent.status_code == 200
+    assert "application/zip" in res_agent.headers.get("content-type", "")
+
+    # Check UI replacement
+    res_login = client.get("/login")
+    assert res_login.status_code == 200
+    assert "Giám Sát Thời Gian Thực" not in res_login.text
+    assert "/download/OGK.zip" in res_login.text
+    assert "Tải Agent (OGK.zip)" in res_login.text
+
+
+
 
 
 
