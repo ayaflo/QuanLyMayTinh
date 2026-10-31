@@ -166,8 +166,11 @@ def reset_browser_connections() -> int:
     return count
 
 
+SAVED_SYSTEM_DNS: List[str] = []
+
+
 def set_dns_to_localhost(interface_name: Optional[str] = None) -> bool:
-    """Configure network adapter DNS to 127.0.0.1 (IPv4) and ::1 (IPv6) (T3_036)."""
+    """Configure network adapter DNS to 127.0.0.1 (IPv4) with backup fallback (T3_036)."""
     if sys.platform != "win32":
         logger.info(f"[SIMULATED] Set DNS to 127.0.0.1 on {interface_name or 'MockInterface'}")
         return True
@@ -175,7 +178,25 @@ def set_dns_to_localhost(interface_name: Optional[str] = None) -> bool:
     targets = [interface_name] if interface_name else get_active_interfaces()
     success = False
 
+    global SAVED_SYSTEM_DNS
     for iface in targets:
+        # Ghi nhận DNS gốc của hệ thống trước khi trỏ loopback để làm fallback
+        try:
+            from .dns_watchdog import get_adapter_dns_servers
+        except ImportError:
+            try:
+                from dns_watchdog import get_adapter_dns_servers
+            except ImportError:
+                get_adapter_dns_servers = None
+
+        if get_adapter_dns_servers:
+            try:
+                for s in get_adapter_dns_servers(iface):
+                    if s and not s.startswith("127.") and s not in SAVED_SYSTEM_DNS:
+                        SAVED_SYSTEM_DNS.append(s)
+            except Exception:
+                pass
+
         # 1. Set IPv4 DNS to 127.0.0.1
         try:
             cmd = f'netsh interface ipv4 set dns name="{iface}" static 127.0.0.1 primary'
@@ -183,15 +204,36 @@ def set_dns_to_localhost(interface_name: Optional[str] = None) -> bool:
             if res.returncode == 0:
                 logger.info(f"[DNS] Đã trỏ IPv4 DNS trên '{iface}' về 127.0.0.1.")
                 success = True
+                # Thêm DNS dự phòng (secondary) từ DNS router/8.8.8.8 để bảo hiểm máy con không bao giờ mất mạng
+                backup_dns = SAVED_SYSTEM_DNS[0] if SAVED_SYSTEM_DNS else "8.8.8.8"
+                try:
+                    cmd_sec = f'netsh interface ipv4 add dns name="{iface}" {backup_dns} index=2 validate=no'
+                    subprocess.run(cmd_sec, shell=True, capture_output=True, text=True)
+                except Exception:
+                    pass
             else:
                 logger.warning(f"[DNS] netsh ipv4 trả về mã {res.returncode} cho '{iface}': {res.stderr.strip()}")
         except Exception as e:
             logger.error(f"[DNS] Lỗi cấu hình IPv4 DNS cho '{iface}': {e}")
 
-        # 2. Set IPv6 DNS to ::1 (loopback) to prevent IPv6 DNS bypass
+        # 2. Xử lý IPv6: Chỉ trỏ ::1 nếu socket IPv6 53 có mở, tránh blackhole mạng
         try:
-            cmd_v6 = f'netsh interface ipv6 set dnsservers name="{iface}" static ::1 primary'
-            subprocess.run(cmd_v6, shell=True, capture_output=True, text=True)
+            import socket
+            v6_ok = False
+            try:
+                s6 = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
+                s6.connect(("::1", 53))
+                s6.close()
+                v6_ok = True
+            except Exception:
+                v6_ok = False
+
+            if v6_ok:
+                cmd_v6 = f'netsh interface ipv6 set dnsservers name="{iface}" static ::1 primary'
+                subprocess.run(cmd_v6, shell=True, capture_output=True, text=True)
+            else:
+                cmd_v6_dhcp = f'netsh interface ipv6 set dnsservers name="{iface}" dhcp'
+                subprocess.run(cmd_v6_dhcp, shell=True, capture_output=True, text=True)
         except Exception:
             pass
 

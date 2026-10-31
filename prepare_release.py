@@ -325,6 +325,12 @@ pause >nul
     with open(os.path.join(RELEASE_DIR, "Kiem_Tra_Trang_Thai.bat"), "w", encoding="utf-8") as f:
         f.write(kiem_tra_bat)
 
+    # 5.1 Copy Khoi_Phuc_Mang.bat to release
+    src_khoi_phuc = os.path.join(PROJECT_ROOT, "Khoi_Phuc_Mang.bat")
+    if os.path.exists(src_khoi_phuc):
+        shutil.copy2(src_khoi_phuc, os.path.join(RELEASE_DIR, "Khoi_Phuc_Mang.bat"))
+        print("[✓] Đã đính kèm công cụ Khoi_Phuc_Mang.bat vào thư mục release.")
+
     # 5. Đảm bảo KHÔNG đính kèm file gỡ cài đặt chủ động vào gói cài đặt máy con
     chu_dong_release = os.path.join(RELEASE_DIR, "Go_Cai_Dat_Chu_Dong.bat")
     if os.path.exists(chu_dong_release):

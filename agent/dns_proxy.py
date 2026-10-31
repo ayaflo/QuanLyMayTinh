@@ -23,8 +23,8 @@ SAFESEARCH_YOUTUBE_IPV6 = "2001:4860:4806::78" # restrict.youtube.com (IPv6)
 DOH_CANARY_DOMAIN = "use-application-dns.net"
 
 # Default fallback upstream DNS servers
-DEFAULT_UPSTREAM_DNS = "1.1.1.3"  # Cloudflare Families (Malware + Adult block)
-DEFAULT_FALLBACK_DNS = "8.8.8.8"  # Google Public DNS
+DEFAULT_UPSTREAM_DNS = "8.8.8.8"  # Google Public DNS (tính sẵn sàng cao nhất)
+DEFAULT_FALLBACK_DNS = "1.1.1.1"  # Cloudflare Public DNS
 
 
 def normalize_domain(domain_str: str) -> str:
@@ -68,6 +68,29 @@ def is_youtube_domain(domain: str) -> bool:
     return clean in ("youtube.com", "www.youtube.com", "m.youtube.com", "youtube-nocookie.com")
 
 
+def get_system_dns_servers() -> list:
+    """Truy xuất các máy chủ DNS gốc của máy trước khi trỏ về 127.0.0.1 để tránh mất mạng."""
+    servers = []
+    try:
+        from agent.dns_watchdog import get_adapter_dns_servers
+        from agent.dns_configurator import get_active_interfaces
+    except ImportError:
+        try:
+            from dns_watchdog import get_adapter_dns_servers
+            from dns_configurator import get_active_interfaces
+        except ImportError:
+            return servers
+
+    try:
+        for iface in get_active_interfaces():
+            for s in get_adapter_dns_servers(iface):
+                if s and not s.startswith("127.") and s not in servers:
+                    servers.append(s)
+    except Exception:
+        pass
+    return servers
+
+
 class DNSProxyServer:
     """High-performance multi-threaded UDP DNS Proxy Server running on 127.0.0.1 & [::1] (F2)."""
 
@@ -95,6 +118,8 @@ class DNSProxyServer:
             "vnuhcm.edu.vn"
         }
         self.enforce_safesearch: bool = True
+        self.system_dns_servers: list = get_system_dns_servers()
+        self._active_upstream: Optional[Tuple[str, int]] = None
 
         self._running = False
         self._threads: list[threading.Thread] = []
@@ -212,26 +237,37 @@ class DNSProxyServer:
 
     def forward_upstream(self, data: bytes) -> bytes:
         """Forward raw DNS query packet to upstream recursive resolver with fast multi-server failover (T3_034)."""
-        upstreams = [
+        candidates = []
+        if self._active_upstream:
+            candidates.append(self._active_upstream)
+
+        # Ưu tiên các DNS gốc từ router/nhà mạng của máy trước khi trỏ loopback
+        for s in self.system_dns_servers:
+            candidates.append((s, 53))
+
+        candidates.extend([
             (self.upstream_ip, self.upstream_port),
             (DEFAULT_FALLBACK_DNS, 53),
-            ("1.1.1.1", 53),
-            ("8.8.4.4", 53)
-        ]
+            ("8.8.4.4", 53),
+            ("1.0.0.1", 53),
+            ("1.1.1.3", 53)
+        ])
+
         seen = set()
         targets = []
-        for u in upstreams:
+        for u in candidates:
             if u not in seen:
                 seen.add(u)
                 targets.append(u)
 
         for target_ip, target_port in targets:
             sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            sock.settimeout(1.2)
+            sock.settimeout(0.8)
             try:
                 sock.sendto(data, (target_ip, target_port))
                 response, _ = sock.recvfrom(4096)
                 if response:
+                    self._active_upstream = (target_ip, target_port)
                     return response
             except Exception:
                 continue
@@ -269,12 +305,23 @@ class DNSProxyServer:
                     self._executor.submit(self._handle_packet, sock, data, addr)
                 else:
                     resp = self.process_dns_query(data)
-                    if resp:
-                        sock.sendto(resp, addr)
+                    if resp and self._running:
+                        try:
+                            sock.sendto(resp, addr)
+                        except Exception:
+                            pass
             except (socket.error, OSError):
-                break
+                # Bắt và bỏ qua lỗi WSAECONNRESET (10054) trên Windows khi client ngắt kết nối
+                # TUYỆT ĐỐI không break khỏi vòng lặp khi self._running vẫn True!
+                if not self._running:
+                    break
+                time.sleep(0.005)
+                continue
             except Exception as e:
+                if not self._running:
+                    break
                 logger.error(f"Error handling DNS packet: {e}")
+                time.sleep(0.005)
 
     def start(self):
         """Bind sockets and start concurrent background listening threads (T3_029)."""
@@ -304,6 +351,10 @@ class DNSProxyServer:
             logger.info(f"[*] DNS Proxy Server started on IPv6 [::1]:{self.port}")
         except Exception as e:
             logger.debug(f"[*] IPv6 loopback [::1]:53 not available or bound: {e}")
+
+    def is_ipv6_listening(self) -> bool:
+        """Kiểm tra cổng IPv6 [::1]:53 có đang mở và nhận gói tin hay không."""
+        return bool(self._sock_v6 is not None and self._running)
 
     def stop(self):
         """Stop proxy server, close sockets, and gracefully terminate thread pool."""
