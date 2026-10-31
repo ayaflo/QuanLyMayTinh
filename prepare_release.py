@@ -325,11 +325,14 @@ pause >nul
     with open(os.path.join(RELEASE_DIR, "Kiem_Tra_Trang_Thai.bat"), "w", encoding="utf-8") as f:
         f.write(kiem_tra_bat)
 
-    # Copy Go_Cai_Dat_Chu_Dong.bat into release
-    chu_dong_src = os.path.join(PROJECT_ROOT, "Go_Cai_Dat_Chu_Dong.bat")
-    if os.path.exists(chu_dong_src):
-        shutil.copy2(chu_dong_src, os.path.join(RELEASE_DIR, "Go_Cai_Dat_Chu_Dong.bat"))
-        print("[✓] Đã đính kèm Go_Cai_Dat_Chu_Dong.bat vào gói cài đặt.")
+    # 5. Đảm bảo KHÔNG đính kèm file gỡ cài đặt chủ động vào gói cài đặt máy con
+    chu_dong_release = os.path.join(RELEASE_DIR, "Go_Cai_Dat_Chu_Dong.bat")
+    if os.path.exists(chu_dong_release):
+        try:
+            os.remove(chu_dong_release)
+            print("[✓] Đã loại bỏ Go_Cai_Dat_Chu_Dong.bat khỏi thư mục release.")
+        except Exception as e:
+            print(f"[!] Lỗi khi xóa Go_Cai_Dat_Chu_Dong.bat trong release: {e}")
 
     # 6. Create Huong_Dan_Cai_Dat.txt
     huong_dan_txt = """================================================================================
