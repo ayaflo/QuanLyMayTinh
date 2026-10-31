@@ -325,20 +325,15 @@ pause >nul
     with open(os.path.join(RELEASE_DIR, "Kiem_Tra_Trang_Thai.bat"), "w", encoding="utf-8") as f:
         f.write(kiem_tra_bat)
 
-    # 5.1 Copy Khoi_Phuc_Mang.bat to release
-    src_khoi_phuc = os.path.join(PROJECT_ROOT, "Khoi_Phuc_Mang.bat")
-    if os.path.exists(src_khoi_phuc):
-        shutil.copy2(src_khoi_phuc, os.path.join(RELEASE_DIR, "Khoi_Phuc_Mang.bat"))
-        print("[✓] Đã đính kèm công cụ Khoi_Phuc_Mang.bat vào thư mục release.")
-
-    # 5. Đảm bảo KHÔNG đính kèm file gỡ cài đặt chủ động vào gói cài đặt máy con
-    chu_dong_release = os.path.join(RELEASE_DIR, "Go_Cai_Dat_Chu_Dong.bat")
-    if os.path.exists(chu_dong_release):
-        try:
-            os.remove(chu_dong_release)
-            print("[✓] Đã loại bỏ Go_Cai_Dat_Chu_Dong.bat khỏi thư mục release.")
-        except Exception as e:
-            print(f"[!] Lỗi khi xóa Go_Cai_Dat_Chu_Dong.bat trong release: {e}")
+    # 5. Đảm bảo KHÔNG đính kèm file khôi phục mạng hay gỡ cài đặt vào gói cài đặt máy con (chống trẻ tự ý bypass/gỡ bỏ)
+    for unwanted_file in ["Khoi_Phuc_Mang.bat", "khoi_phuc_mang.bat", "Go_Cai_Dat_Chu_Dong.bat"]:
+        target_path = os.path.join(RELEASE_DIR, unwanted_file)
+        if os.path.exists(target_path):
+            try:
+                os.remove(target_path)
+                print(f"[✓] Đã loại bỏ {unwanted_file} khỏi thư mục release để chống trẻ bypass.")
+            except Exception as e:
+                print(f"[!] Lỗi khi xóa {unwanted_file} trong release: {e}")
 
     # 6. Create Huong_Dan_Cai_Dat.txt
     huong_dan_txt = """================================================================================
@@ -390,6 +385,20 @@ IV. CÁCH GỠ CÀI ĐẶT & HOÀN NGUYÊN MÁY TÍNH VỀ THIẾT LẬP GỐC
 """
     with open(os.path.join(RELEASE_DIR, "Huong_Dan_Cai_Dat.txt"), "w", encoding="utf-8") as f:
         f.write(huong_dan_txt)
+
+    # 7. Đóng gói bản phát hành thành server/OGK.zip (chỉ gồm các file cần thiết, sạch sẽ không chứa script bypass)
+    import zipfile
+    zip_target = os.path.join(PROJECT_ROOT, "server", "OGK.zip")
+    print(f"[*] Đang đóng gói {zip_target} từ {RELEASE_DIR} ...")
+    with zipfile.ZipFile(zip_target, "w", zipfile.ZIP_DEFLATED) as zipf:
+        for root, dirs, files in os.walk(RELEASE_DIR):
+            for file in files:
+                if file.endswith(".old") or file.endswith(".db") or file.lower() in ["khoi_phuc_mang.bat", "go_cai_dat_chu_dong.bat"]:
+                    continue
+                file_path = os.path.join(root, file)
+                arcname = os.path.relpath(file_path, RELEASE_DIR)
+                zipf.write(file_path, arcname)
+    print(f"[✓] Đã tạo thành công {zip_target} (Kích thước: {os.path.getsize(zip_target) / (1024*1024):.2f} MB)")
 
     print("[✓] Đã tạo thành công toàn bộ thư mục release sẵn sàng cài đặt thực tế!")
 
