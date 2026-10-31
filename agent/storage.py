@@ -18,8 +18,13 @@ def _get_connection(db_path: str = DB_PATH) -> sqlite3.Connection:
     db_dir = os.path.dirname(os.path.abspath(db_path))
     if db_dir:
         os.makedirs(db_dir, exist_ok=True)
-    conn = sqlite3.connect(db_path)
+    conn = sqlite3.connect(db_path, timeout=30.0)
     conn.row_factory = sqlite3.Row
+    try:
+        conn.execute("PRAGMA journal_mode = WAL;")
+        conn.execute("PRAGMA busy_timeout = 30000;")
+    except Exception:
+        pass
     with conn:
         conn.execute("""
             CREATE TABLE IF NOT EXISTS credentials (
@@ -139,8 +144,12 @@ def clear_credentials(db_path: str = DB_PATH) -> None:
 # Week 2 (Version 0.2): Policy Cache & Daily Usage Persistence
 # ============================================================================
 
+_LAST_POLICY_CACHE: Optional[Dict[str, Any]] = None
+
+
 def save_policy_cache(policy_data: Dict[str, Any], db_path: str = DB_PATH) -> None:
     """Save or update local cached policy with HMAC signature."""
+    global _LAST_POLICY_CACHE
     conn = _get_connection(db_path)
     now_str = datetime.now(timezone.utc).isoformat()
     with conn:
@@ -158,30 +167,46 @@ def save_policy_cache(policy_data: Dict[str, Any], db_path: str = DB_PATH) -> No
             now_str
         ))
     conn.close()
+    _LAST_POLICY_CACHE = {
+        "version": policy_data["version"],
+        "weekday_quota_minutes": policy_data["weekday_quota_minutes"],
+        "weekend_quota_minutes": policy_data["weekend_quota_minutes"],
+        "schedule_matrix": policy_data["schedule_matrix"],
+        "hmac_signature": policy_data["hmac_signature"],
+        "updated_at": now_str
+    }
 
 
 def load_policy_cache(db_path: str = DB_PATH) -> Optional[Dict[str, Any]]:
     """Load cached policy from local database, or return None if not cached yet."""
-    conn = _get_connection(db_path)
-    cursor = conn.cursor()
-    cursor.execute("""
-        SELECT version, weekday_quota_minutes, weekend_quota_minutes, schedule_matrix, hmac_signature, updated_at
-        FROM policy_cache WHERE id = 1;
-    """)
-    row = cursor.fetchone()
-    conn.close()
+    global _LAST_POLICY_CACHE
+    try:
+        conn = _get_connection(db_path)
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT version, weekday_quota_minutes, weekend_quota_minutes, schedule_matrix, hmac_signature, updated_at
+            FROM policy_cache WHERE id = 1;
+        """)
+        row = cursor.fetchone()
+        conn.close()
 
-    if not row:
+        if not row:
+            return _LAST_POLICY_CACHE
+
+        policy = {
+            "version": row["version"],
+            "weekday_quota_minutes": row["weekday_quota_minutes"],
+            "weekend_quota_minutes": row["weekend_quota_minutes"],
+            "schedule_matrix": row["schedule_matrix"],
+            "hmac_signature": row["hmac_signature"],
+            "updated_at": row["updated_at"]
+        }
+        _LAST_POLICY_CACHE = policy
+        return policy
+    except Exception as e:
+        if _LAST_POLICY_CACHE:
+            return _LAST_POLICY_CACHE
         return None
-
-    return {
-        "version": row["version"],
-        "weekday_quota_minutes": row["weekday_quota_minutes"],
-        "weekend_quota_minutes": row["weekend_quota_minutes"],
-        "schedule_matrix": row["schedule_matrix"],
-        "hmac_signature": row["hmac_signature"],
-        "updated_at": row["updated_at"]
-    }
 
 
 def get_daily_usage(date_str: str, db_path: str = DB_PATH) -> Dict[str, Any]:

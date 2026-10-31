@@ -400,6 +400,7 @@ def main():
             else:
                 sync_policy_from_server()
             sync_filtering_rules()
+            tracker.recheck_schedule_now()
         elif action == "request_reviewed":
             status = payload.get("status", "") if payload else ""
             req_type = payload.get("request_type", "") if payload else ""
@@ -567,6 +568,7 @@ def main():
             synced = sync_policy_from_server()
             if synced:
                 print(f" [✓] Đã đồng bộ policy mới (v{synced.get('version', '?')}) bao gồm lịch biểu giờ cấm.")
+                tracker.recheck_schedule_now()
 
         pending_cmds = result.get("pending_commands") or []
         for pcmd in pending_cmds:
@@ -578,6 +580,7 @@ def main():
 
     hb_thread, stop_event = start_heartbeat_thread(on_response_callback=handle_heartbeat_response)
     tracker.start()
+    tracker.recheck_schedule_now()
     system_locker.start_enforcement()
     ws_listener.start()
     event_collector.start()

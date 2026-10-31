@@ -734,3 +734,111 @@ def test_screen_time_tracker_schedule_block(tmp_path, monkeypatch):
 
     assert len(blocked_reasons) == 1
     assert tracker.schedule_countdown_active is True
+
+
+def test_policy_update_creates_pending_device_command(client):
+    """Verify updating policy persists a DeviceCommand for offline/heartbeat delivery."""
+    db = TestingSessionLocal()
+    parent = Parent(username="policy_parent_test", password_hash=hash_password("password123"))
+    db.add(parent)
+    db.commit()
+
+    device = Device(
+        parent_id=parent.id,
+        device_fingerprint="FINGERPRINT_POL_TEST",
+        device_name="Child Laptop",
+        status="offline"
+    )
+    db.add(device)
+    db.commit()
+    dev_id = device.id
+    parent_id = parent.id
+    db.close()
+
+    token = create_access_token({"sub": f"parent:{parent_id}", "parent_id": parent_id, "role": "parent"})
+    school_matrix = ['0'] * 336
+    for d in range(5):
+        for h in range(8, 17):
+            school_matrix[d * 48 + h * 2] = '1'
+            school_matrix[d * 48 + h * 2 + 1] = '1'
+    school_str = ''.join(school_matrix)
+
+    res = client.post(
+        f"/api/v1/policy?device_id={dev_id}",
+        json={
+            "weekday_quota_minutes": 90,
+            "weekend_quota_minutes": 150,
+            "schedule_matrix": school_str
+        },
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    assert res.status_code == 200
+
+    # Verify DeviceCommand is queued as pending
+    db = TestingSessionLocal()
+    cmd = db.query(DeviceCommand).filter(
+        DeviceCommand.device_id == dev_id,
+        DeviceCommand.command_type == "policy_updated"
+    ).order_by(DeviceCommand.id.desc()).first()
+    assert cmd is not None
+    assert cmd.status == "pending"
+    payload = json.loads(cmd.payload)
+    assert payload["action"] == "policy_updated"
+    assert payload["schedule_matrix"] == school_str
+    assert payload["version"] >= 2
+    db.close()
+
+    # Verify Heartbeat delivers this pending command
+    hb_res = client.post(
+        "/api/v1/heartbeat",
+        json={"device_fingerprint": "FINGERPRINT_POL_TEST"}
+    )
+    assert hb_res.status_code == 200
+    hb_data = hb_res.json()
+    assert hb_data["pending_commands"] is not None
+    assert len(hb_data["pending_commands"]) >= 1
+    hb_cmd = hb_data["pending_commands"][0]
+    assert hb_cmd["action"] == "policy_updated"
+    assert hb_cmd["payload"]["schedule_matrix"] == school_str
+
+
+def test_screen_time_tracker_recheck_schedule_now(monkeypatch):
+    """Verify tracker.recheck_schedule_now() immediately triggers on_schedule_block."""
+    from agent.screen_time_tracker import ScreenTimeTracker
+    from datetime import datetime
+
+    blocked_matrix = '0' * 336
+    monkeypatch.setattr('agent.screen_time_tracker.load_policy_cache', lambda: {'schedule_matrix': blocked_matrix})
+    monkeypatch.setattr('agent.screen_time_tracker.get_daily_usage', lambda d: {'used_seconds': 0, 'bonus_minutes': 0, 'is_locked': 0})
+    monkeypatch.setattr('agent.screen_time_tracker.update_daily_usage', lambda **kwargs: None)
+
+    blocked_calls = []
+    tracker = ScreenTimeTracker(
+        on_schedule_block=lambda r: blocked_calls.append(r)
+    )
+
+    allowed = tracker.recheck_schedule_now()
+    assert allowed is False
+    assert len(blocked_calls) == 1
+    assert "Đang trong khoảng thời gian cấm" in blocked_calls[0]
+    assert tracker.schedule_countdown_active is True
+
+
+def test_school_preset_matrix_saturday_blocked():
+    """Verify Saturday is 100% blocked under school preset (8h-17h Mon-Fri)."""
+    from agent.schedule_evaluator import is_time_allowed
+    from datetime import datetime
+
+    school = ['0'] * 336
+    for d in range(5):
+        for h in range(8, 17):
+            school[d * 48 + h * 2] = '1'
+            school[d * 48 + h * 2 + 1] = '1'
+    school_matrix = ''.join(school)
+
+    # Test all 48 slots on Saturday (e.g. 2026-10-31 is Saturday)
+    for hour in range(24):
+        for minute in (0, 30):
+            sat_dt = datetime(2026, 10, 31, hour, minute)
+            assert sat_dt.weekday() == 5  # Saturday
+            assert is_time_allowed(school_matrix, sat_dt) is False

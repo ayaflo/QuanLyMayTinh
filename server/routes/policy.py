@@ -2,6 +2,8 @@
 Provides endpoints for retrieving and updating screen-time policies (F1 & F4).
 """
 
+import json
+from datetime import datetime, timezone
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Request, Query, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -9,14 +11,14 @@ from sqlalchemy.orm import Session
 
 try:
     from ..database import get_db
-    from ..models import Parent, Device, Policy
+    from ..models import Parent, Device, Policy, DeviceCommand
     from ..schemas import PolicyUpdate, PolicyResponse
     from ..security import decode_access_token
     from ..services.policy_service import get_or_create_default_policy, update_policy_and_log_audit
     from ..services.connection_manager import ws_manager
 except (ImportError, ValueError):
     from server.database import get_db
-    from server.models import Parent, Device, Policy
+    from server.models import Parent, Device, Policy, DeviceCommand
     from server.schemas import PolicyUpdate, PolicyResponse
     from server.security import decode_access_token
     from server.services.policy_service import get_or_create_default_policy, update_policy_and_log_audit
@@ -118,7 +120,7 @@ async def update_policy(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(security_scheme),
     db: Session = Depends(get_db)
 ) -> PolicyResponse:
-    """Update device policy, increment version, recalculate HMAC, and notify Agent via WebSocket."""
+    """Update device policy, increment version, recalculate HMAC, and notify Agent via WebSocket and fallback queue."""
     parent = _get_parent_from_request(request, credentials, db)
     if not parent:
         raise HTTPException(
@@ -149,19 +151,43 @@ async def update_policy(
         ip_address=client_ip
     )
 
-    # Notify Agent in real-time via WebSocket if connected
-    await ws_manager.send_command(device.id, {
+    payload_dict = {
+        "action": "policy_updated",
+        "device_id": updated_policy.device_id,
+        "version": updated_policy.version,
+        "weekday_quota_minutes": updated_policy.weekday_quota_minutes,
+        "weekend_quota_minutes": updated_policy.weekend_quota_minutes,
+        "schedule_matrix": updated_policy.schedule_matrix,
+        "hmac_signature": updated_policy.hmac_signature
+    }
+    cmd_payload = json.dumps(payload_dict)
+    now = datetime.now(timezone.utc)
+
+    # Persist pending command for offline / reconnecting / heartbeat delivery
+    cmd = DeviceCommand(
+        device_id=device.id,
+        command_type="policy_updated",
+        payload=cmd_payload,
+        status="pending",
+        created_at=now
+    )
+    db.add(cmd)
+    db.commit()
+    db.refresh(cmd)
+
+    # Notify Agent in real-time via WebSocket (< 5s) if connected
+    ws_msg = {
         "action": "policy_updated",
         "version": updated_policy.version,
-        "payload": {
-            "device_id": updated_policy.device_id,
-            "version": updated_policy.version,
-            "weekday_quota_minutes": updated_policy.weekday_quota_minutes,
-            "weekend_quota_minutes": updated_policy.weekend_quota_minutes,
-            "schedule_matrix": updated_policy.schedule_matrix,
-            "hmac_signature": updated_policy.hmac_signature
-        }
-    })
+        "command_id": cmd.id,
+        "payload": payload_dict,
+        "timestamp": now.isoformat()
+    }
+    sent = await ws_manager.send_command(device.id, ws_msg)
+    if sent:
+        cmd.status = "delivered"
+        cmd.delivered_at = datetime.now(timezone.utc)
+        db.commit()
 
     return updated_policy
 
@@ -183,4 +209,3 @@ async def update_policy_by_device_id(
         credentials=credentials,
         db=db
     )
-

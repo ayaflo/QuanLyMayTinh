@@ -1531,12 +1531,13 @@
     async function savePolicyChanges() {
         const deviceId = document.getElementById('policyDeviceId').value;
         if (deviceId) {
-            await saveQuickQuota(deviceId);
+            const matrixStr = (currentMatrixArray && currentMatrixArray.length === 336) ? currentMatrixArray.join('') : null;
+            await saveQuickQuota(deviceId, matrixStr);
             closePolicyModal();
         }
     }
 
-    async function saveQuickQuota(deviceId) {
+    async function saveQuickQuota(deviceId, explicitMatrix = null) {
         const weekdayInput = document.getElementById(`inputWeekdayQuota-${deviceId}`);
         const weekendInput = document.getElementById(`inputWeekendQuota-${deviceId}`);
         const weekdayQuota = weekdayInput ? parseInt(weekdayInput.value) || 90 : 90;
@@ -1545,7 +1546,9 @@
 
         const curModalDevId = document.getElementById('policyDeviceId')?.value;
         let scheduleMatrix = '';
-        if (curModalDevId == deviceId && currentMatrixArray && currentMatrixArray.length === 336) {
+        if (explicitMatrix && explicitMatrix.length === 336) {
+            scheduleMatrix = explicitMatrix;
+        } else if (curModalDevId == deviceId && currentMatrixArray && currentMatrixArray.length === 336) {
             scheduleMatrix = currentMatrixArray.join('');
         } else if (policy.schedule_matrix && policy.schedule_matrix.length === 336) {
             scheduleMatrix = policy.schedule_matrix;
@@ -1574,7 +1577,7 @@
             policiesMap[deviceId].weekend_quota_minutes = weekendQuota;
             policiesMap[deviceId].schedule_matrix = scheduleMatrix;
 
-            showToast('Đã lưu hạn ngạch và ma trận lịch biểu thành công!');
+            showToast('Đã lưu hạn ngạch và ma trận lịch biểu thành công! Tác tử sẽ lập tức áp dụng.');
         } catch (err) {
             showToast(`Lỗi: ${err.message}`, false);
         }
