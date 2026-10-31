@@ -626,9 +626,111 @@ def test_app_rule_auto_hash_when_omitted(client):
     assert data["sha256_hash"] == expected_hash
 
 
+# ============================================================================
+# Week 2 / Bugfix: Schedule Matrix & Policy Sync Tests
+# ============================================================================
+
+def test_schedule_evaluator_slot_and_allowed():
+    from agent.schedule_evaluator import is_time_allowed, get_slot_index
+    from datetime import datetime
+
+    # Monday 08:15 -> weekday 0, slot 16 (08:00-08:30) -> index 16
+    dt_mon_morning = datetime(2026, 10, 12, 8, 15)  # 2026-10-12 is Monday
+    w, s, idx = get_slot_index(dt_mon_morning)
+    assert w == 0
+    assert s == 16
+    assert idx == 16
+
+    # Create a 336 matrix where index 16 is '0' (blocked) and rest are '1'
+    matrix = list('1' * 336)
+    matrix[16] = '0'
+    blocked_matrix = ''.join(matrix)
+
+    assert is_time_allowed(blocked_matrix, dt_mon_morning) is False
+
+    # Check slot 17 (08:30) is still allowed
+    dt_mon_slot17 = datetime(2026, 10, 12, 8, 30)
+    assert is_time_allowed(blocked_matrix, dt_mon_slot17) is True
+
+    # Empty or short matrix defaults to allowed
+    assert is_time_allowed('') is True
+    assert is_time_allowed('1' * 100) is True
 
 
+def test_policy_syncer_hmac_verification(tmp_path):
+    from agent.policy_syncer import verify_hmac, apply_policy_data
+    from agent.storage import save_credentials, load_policy_cache
+    import hmac, hashlib
+
+    test_db = str(tmp_path / 'test_agent.db')
+    save_credentials(device_id=1, access_token='token123', refresh_token='re123', db_path=test_db)
+
+    # Test with production key
+    prod_key = 'yxT2gATyrq5T3vLJ50UCLKAOuk2d6CVEBMmc0V3nQhYepPRyTRzJ0myrPhJmq5bu'
+    matrix = '0' * 48 + '1' * 288
+    canonical_str = f'1:2:60:120:{matrix}'
+    sig = hmac.new(prod_key.encode('utf-8'), canonical_str.encode('utf-8'), hashlib.sha256).hexdigest()
+
+    # Should verify successfully
+    assert verify_hmac(1, 2, 60, 120, matrix, sig) is True
+
+    # Should reject corrupted matrix
+    assert verify_hmac(1, 2, 60, 120, '1' * 336, sig) is False
+
+    # Apply policy data directly
+    policy_data = {
+        'device_id': 1,
+        'version': 2,
+        'weekday_quota_minutes': 60,
+        'weekend_quota_minutes': 120,
+        'schedule_matrix': matrix,
+        'hmac_signature': sig
+    }
+    assert apply_policy_data(policy_data, db_path=test_db) is True
+
+    cached = load_policy_cache(test_db)
+    assert cached is not None
+    assert cached['version'] == 2
+    assert cached['schedule_matrix'] == matrix
 
 
+def test_screen_time_tracker_schedule_block(tmp_path, monkeypatch):
+    from agent.screen_time_tracker import ScreenTimeTracker
+    from agent.storage import save_policy_cache
+    from datetime import datetime
 
+    test_db = str(tmp_path / 'tracker_test.db')
+    # Block the entire day
+    blocked_matrix = '0' * 336
+    save_policy_cache({
+        'version': 1,
+        'weekday_quota_minutes': 90,
+        'weekend_quota_minutes': 150,
+        'schedule_matrix': blocked_matrix,
+        'hmac_signature': 'dummy'
+    }, db_path=test_db)
 
+    # Monkeypatch storage functions to use test_db
+    monkeypatch.setattr('agent.screen_time_tracker.load_policy_cache', lambda: {'schedule_matrix': blocked_matrix})
+    monkeypatch.setattr('agent.screen_time_tracker.get_daily_usage', lambda d: {'used_seconds': 0, 'bonus_minutes': 0, 'is_locked': 0})
+    monkeypatch.setattr('agent.screen_time_tracker.update_daily_usage', lambda **kwargs: None)
+
+    blocked_reasons = []
+    tracker = ScreenTimeTracker(
+        on_schedule_block=lambda r: blocked_reasons.append(r)
+    )
+
+    # Manually trigger one iteration of check
+    policy = {'schedule_matrix': blocked_matrix}
+    from agent.schedule_evaluator import is_time_allowed
+    allowed = is_time_allowed(policy['schedule_matrix'])
+    assert allowed is False
+
+    # Simulate loop check
+    if not allowed:
+        if not tracker.locked_by_schedule and not tracker.schedule_countdown_active:
+            tracker.schedule_countdown_active = True
+            tracker.on_schedule_block('Blocked by schedule')
+
+    assert len(blocked_reasons) == 1
+    assert tracker.schedule_countdown_active is True

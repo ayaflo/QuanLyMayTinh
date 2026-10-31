@@ -786,9 +786,14 @@
                 <p style="font-size: 0.85rem; color: var(--text-dim); margin: 0; line-height: 1.5;">
                     💡 Lựa chọn của bạn được tự động ghi nhớ. Nhấn <strong>"Lưu Hạn Ngạch & Lịch Biểu"</strong> ở trang quản lý để áp dụng.
                 </p>
-                <button type="button" class="btn-pill-dark" onclick="closePolicyModal()" style="padding: 0.5rem 1.4rem; font-size: 0.85rem;">
-                    Đóng cửa sổ
-                </button>
+                <div style="display: flex; gap: 0.75rem;">
+                    <button type="button" class="btn-pill-dark" onclick="closePolicyModal()" style="padding: 0.5rem 1.4rem; font-size: 0.85rem;">
+                        Hủy / Đóng
+                    </button>
+                    <button type="button" class="btn-pill-white" id="btnSavePolicyModal" onclick="savePolicyChanges()" style="padding: 0.5rem 1.4rem; font-size: 0.85rem; background: #10b981; color: #fff; font-weight: 700; border: none; cursor: pointer;">
+                        💾 Lưu Lịch Biểu Ngay
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -844,7 +849,7 @@
             {{ dev.id }}: {
                 weekday_quota: {{ pol.weekday_quota_minutes if pol else 90 }},
                 weekend_quota: {{ pol.weekend_quota_minutes if pol else 150 }},
-                schedule_matrix: "{{ pol.schedule_matrix if pol else '1'*336 }}"
+                schedule_matrix: {{ (pol.schedule_matrix if (pol and pol.schedule_matrix and pol.schedule_matrix|length == 336) else DEFAULT_SCHEDULE_MATRIX) | tojson }}
             }{% if not loop.last %},{% endif %}
         {% endfor %}
     };
@@ -1436,7 +1441,7 @@
     function openPolicyModal(deviceId) {
         document.getElementById('policyDeviceId').value = deviceId;
         const policy = policiesMap[deviceId] || {};
-        const matrixStr = policy.schedule_matrix || "1".repeat(336);
+        const matrixStr = (policy.schedule_matrix && policy.schedule_matrix.length === 336) ? policy.schedule_matrix : "1".repeat(336);
         currentMatrixArray = matrixStr.split('');
         renderScheduleMatrixGrid();
         policyModal.classList.add('active');

@@ -154,8 +154,12 @@ async def update_policy(
         "action": "policy_updated",
         "version": updated_policy.version,
         "payload": {
+            "device_id": updated_policy.device_id,
+            "version": updated_policy.version,
             "weekday_quota_minutes": updated_policy.weekday_quota_minutes,
-            "weekend_quota_minutes": updated_policy.weekend_quota_minutes
+            "weekend_quota_minutes": updated_policy.weekend_quota_minutes,
+            "schedule_matrix": updated_policy.schedule_matrix,
+            "hmac_signature": updated_policy.hmac_signature
         }
     })
 

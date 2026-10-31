@@ -15,7 +15,11 @@ except ImportError:
     from config import SERVER_URL, DB_PATH, REQUEST_TIMEOUT
     from storage import load_credentials, save_policy_cache, load_policy_cache
 
-SECRET_KEY = os.getenv("SECRET_KEY", "change-this-secret-key-in-production")
+KNOWN_SECRET_KEYS = [
+    os.getenv("SECRET_KEY", ""),
+    "yxT2gATyrq5T3vLJ50UCLKAOuk2d6CVEBMmc0V3nQhYepPRyTRzJ0myrPhJmq5bu",
+    "change-this-secret-key-in-production",
+]
 
 
 def verify_hmac(
@@ -28,12 +32,48 @@ def verify_hmac(
 ) -> bool:
     """Verify policy HMAC-SHA256 signature locally on Agent."""
     canonical_str = f"{device_id}:{version}:{weekday_quota}:{weekend_quota}:{schedule_matrix}"
-    expected = hmac.new(
-        SECRET_KEY.encode("utf-8"),
-        canonical_str.encode("utf-8"),
-        hashlib.sha256
-    ).hexdigest()
-    return hmac.compare_digest(expected, signature)
+    for key in KNOWN_SECRET_KEYS:
+        if not key:
+            continue
+        expected = hmac.new(
+            key.encode("utf-8"),
+            canonical_str.encode("utf-8"),
+            hashlib.sha256
+        ).hexdigest()
+        if hmac.compare_digest(expected, signature):
+            return True
+    return False
+
+
+def apply_policy_data(policy_data: Dict[str, Any], db_path: str = DB_PATH) -> bool:
+    """Validate HMAC and save policy data directly to local cache."""
+    try:
+        device_id = policy_data.get("device_id")
+        if not device_id:
+            creds = load_credentials(db_path)
+            device_id = creds["device_id"] if creds else None
+        if not device_id:
+            return False
+
+        is_valid = verify_hmac(
+            device_id=device_id,
+            version=policy_data["version"],
+            weekday_quota=policy_data["weekday_quota_minutes"],
+            weekend_quota=policy_data["weekend_quota_minutes"],
+            schedule_matrix=policy_data["schedule_matrix"],
+            signature=policy_data["hmac_signature"]
+        )
+
+        if not is_valid:
+            print("[POLICY] WARNING: HMAC signature verification failed! Rejecting corrupted policy.")
+            return False
+
+        save_policy_cache(policy_data, db_path)
+        print(f"[POLICY] Applied policy v{policy_data['version']} successfully (HMAC Verified).")
+        return True
+    except Exception as e:
+        print(f"[POLICY] Error applying policy data: {e}")
+        return False
 
 
 def sync_policy_from_server(server_url: str = SERVER_URL, db_path: str = DB_PATH) -> Optional[Dict[str, Any]]:

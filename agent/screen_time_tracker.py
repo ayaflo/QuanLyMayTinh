@@ -163,6 +163,8 @@ class ScreenTimeTracker:
                 self.warned_5m = False
                 self.warned_1m = False
                 self.is_locked = False
+                self.locked_by_schedule = False
+                self.schedule_countdown_active = False
                 self.grace_period_active = False
 
             # Check schedule matrix (F1 7x48)
@@ -172,7 +174,10 @@ class ScreenTimeTracker:
 
             # If currently outside scheduled hours
             if not allowed_by_schedule:
-                if not self.is_locked and not self.schedule_countdown_active:
+                # Trigger schedule block if not already in a schedule-based countdown/lock.
+                # Use locked_by_schedule (not is_locked) so that quota-based lock state
+                # does not prevent the schedule block from triggering.
+                if not self.locked_by_schedule and not self.schedule_countdown_active:
                     self.schedule_countdown_active = True
                     reason = "Đang trong khoảng thời gian cấm sử dụng máy tính theo lịch của cha mẹ"
                     if self.on_schedule_block:

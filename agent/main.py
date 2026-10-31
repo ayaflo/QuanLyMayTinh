@@ -60,7 +60,7 @@ try:
     from agent.tray import init_tray_icon, show_startup_notification, show_tray_notification
     from agent.screen_time_tracker import ScreenTimeTracker
     from agent.system_locker import SystemLocker
-    from agent.policy_syncer import sync_policy_from_server
+    from agent.policy_syncer import sync_policy_from_server, apply_policy_data
     from agent.ws_listener import WebSocketListener
     from agent.dns_proxy import DNSProxyServer
     from agent.dns_configurator import (
@@ -103,7 +103,7 @@ except ImportError:
     from tray import init_tray_icon, show_startup_notification, show_tray_notification
     from screen_time_tracker import ScreenTimeTracker
     from system_locker import SystemLocker
-    from policy_syncer import sync_policy_from_server
+    from policy_syncer import sync_policy_from_server, apply_policy_data
     from ws_listener import WebSocketListener
     from dns_proxy import DNSProxyServer
     from dns_configurator import (
@@ -393,7 +393,12 @@ def main():
             if tray_icon_holder[0]:
                 show_tray_notification(tray_icon_holder[0], "Thưởng Thời Gian", f"Phụ huynh đã cộng thêm {mins} phút sử dụng!")
         elif action == "policy_updated":
-            sync_policy_from_server()
+            if payload and "schedule_matrix" in payload and "hmac_signature" in payload:
+                applied = apply_policy_data(payload)
+                if not applied:
+                    sync_policy_from_server()
+            else:
+                sync_policy_from_server()
             sync_filtering_rules()
         elif action == "request_reviewed":
             status = payload.get("status", "") if payload else ""

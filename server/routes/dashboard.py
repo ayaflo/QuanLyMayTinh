@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 
 try:
     from ..database import get_db
-    from ..models import Parent, Device, Policy, AuditLog, DomainRule, AppRule, AccessRequest
+    from ..models import Parent, Device, Policy, AuditLog, DomainRule, AppRule, AccessRequest, DEFAULT_SCHEDULE_MATRIX
     from ..security import (
         verify_password,
         hash_password,
@@ -28,7 +28,7 @@ try:
     from ..services.request_service import get_requests
 except (ImportError, ValueError):
     from server.database import get_db
-    from server.models import Parent, Device, Policy, AuditLog, DomainRule, AppRule, AccessRequest
+    from server.models import Parent, Device, Policy, AuditLog, DomainRule, AppRule, AccessRequest, DEFAULT_SCHEDULE_MATRIX
     from server.security import (
         verify_password,
         hash_password,
@@ -426,7 +426,8 @@ def devices_page(
             "category_summaries": category_summaries,
             "app_rules": app_rules,
             "all_requests": all_requests,
-            "pending_requests": pending_requests
+            "pending_requests": pending_requests,
+            "DEFAULT_SCHEDULE_MATRIX": DEFAULT_SCHEDULE_MATRIX
         }
     )
 
