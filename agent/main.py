@@ -1,4 +1,4 @@
-"""Main entry point for the Open Guardian Kids (OGK) Client Agent.
+﻿"""Main entry point for the Open Guardian Kids (OGK) Client Agent.
 Manages enrollment workflow, launches heartbeat background worker, and system tray icon.
 """
 
@@ -82,6 +82,7 @@ try:
         load_dns_rules_cache,
         save_app_rules_cache,
         load_app_rules_cache,
+        load_policy_cache,
         purge_local_data
     )
 except ImportError:
@@ -94,6 +95,7 @@ except ImportError:
         load_dns_rules_cache,
         save_app_rules_cache,
         load_app_rules_cache,
+        load_policy_cache,
         purge_local_data
     )
     from enrollment_client import pair_with_server
@@ -550,6 +552,17 @@ def main():
     def handle_heartbeat_response(result: dict):
         if not result:
             return
+
+        # Auto-sync policy khi server báo có version mới hơn cache (fallback nếu WebSocket bị miss)
+        server_policy_version = result.get("policy_version", 1)
+        cached_policy = load_policy_cache()
+        cached_version = cached_policy.get("version", 0) if cached_policy else 0
+        if server_policy_version > cached_version:
+            print(f" [♥] Phát hiện policy mới (server v{server_policy_version} > cache v{cached_version}). Đang đồng bộ lịch biểu giờ cấm...")
+            synced = sync_policy_from_server()
+            if synced:
+                print(f" [✓] Đã đồng bộ policy mới (v{synced.get('version', '?')}) bao gồm lịch biểu giờ cấm.")
+
         pending_cmds = result.get("pending_commands") or []
         for pcmd in pending_cmds:
             p_action = pcmd.get("action")
