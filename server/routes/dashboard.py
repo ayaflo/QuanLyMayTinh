@@ -409,6 +409,17 @@ def devices_page(
     all_requests = [r for r in get_requests(db) if r.device_id in dev_ids] if dev_ids else []
     pending_requests = [r for r in all_requests if r.status == "pending"]
 
+    policies_client_map = {
+        dev.id: {
+            "weekday_quota": policies_map[dev.id].weekday_quota_minutes if policies_map.get(dev.id) else 90,
+            "weekend_quota": policies_map[dev.id].weekend_quota_minutes if policies_map.get(dev.id) else 150,
+            "schedule_matrix": policies_map[dev.id].schedule_matrix if (policies_map.get(dev.id) and len(policies_map[dev.id].schedule_matrix) == 336) else DEFAULT_SCHEDULE_MATRIX
+        }
+        for dev in devices
+    }
+    devices_client_map = {dev.id: dev.device_name for dev in devices}
+    pending_request_ids = [r.id for r in pending_requests]
+
     return templates.TemplateResponse(
         request=request,
         name="devices.html",
@@ -416,6 +427,9 @@ def devices_page(
             "parent": parent,
             "devices": devices,
             "policies_map": policies_map,
+            "policies_client_map": policies_client_map,
+            "devices_client_map": devices_client_map,
+            "pending_request_ids": pending_request_ids,
             "audit_logs": audit_logs,
             "online_count": online_count,
             "offline_count": offline_count,
