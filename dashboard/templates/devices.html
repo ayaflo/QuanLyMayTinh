@@ -781,19 +781,11 @@
                 </div>
             </div>
 
-            <!-- Footer hướng dẫn & Đóng modal -->
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.25rem; border-top: 1px solid var(--border-subtle); padding-top: 1.25rem; flex-wrap: wrap; gap: 1rem;">
-                <p style="font-size: 0.85rem; color: var(--text-dim); margin: 0; line-height: 1.5;">
-                    💡 Lựa chọn của bạn được tự động ghi nhớ. Nhấn <strong>"Lưu Hạn Ngạch & Lịch Biểu"</strong> ở trang quản lý để áp dụng.
+            <!-- Footer hướng dẫn -->
+            <div style="margin-top: 1.25rem; border-top: 1px solid var(--border-subtle); padding-top: 1.25rem;">
+                <p style="font-size: 0.85rem; color: #10b981; margin: 0; line-height: 1.6; display: flex; align-items: center; gap: 0.5rem;">
+                    <span>✓</span> Thiết lập ma trận được tự động ghi nhớ. Đóng cửa sổ (nhấn <strong>✕</strong> góc trên) và nhấn nút <strong>"💾 Lưu Hạn Ngạch & Lịch Biểu"</strong> ở trang quản lý để chính thức gửi đi.
                 </p>
-                <div style="display: flex; gap: 0.75rem;">
-                    <button type="button" class="btn-pill-dark" onclick="closePolicyModal()" style="padding: 0.5rem 1.4rem; font-size: 0.85rem;">
-                        Hủy / Đóng
-                    </button>
-                    <button type="button" class="btn-pill-white" id="btnSavePolicyModal" onclick="savePolicyChanges()" style="padding: 0.5rem 1.4rem; font-size: 0.85rem; background: #10b981; color: #fff; font-weight: 700; border: none; cursor: pointer;">
-                        💾 Lưu Lịch Biểu Ngay
-                    </button>
-                </div>
             </div>
         </div>
     </div>
@@ -1448,6 +1440,11 @@
     }
 
     function closePolicyModal() {
+        const devId = document.getElementById('policyDeviceId')?.value;
+        if (devId && currentMatrixArray && currentMatrixArray.length === 336) {
+            if (!policiesMap[devId]) policiesMap[devId] = {};
+            policiesMap[devId].schedule_matrix = currentMatrixArray.join('');
+        }
         policyModal.classList.remove('active');
     }
 
